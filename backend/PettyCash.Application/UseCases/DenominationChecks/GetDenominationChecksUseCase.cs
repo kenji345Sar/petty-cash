@@ -5,9 +5,9 @@ namespace PettyCash.Application.UseCases.DenominationChecks;
 
 public class GetDenominationChecksUseCase(IDenominationCheckRepository checkRepository)
 {
-    public async Task<IReadOnlyList<DenominationCheckDto>> ExecuteAsync()
+    public async Task<IReadOnlyList<DenominationCheckDto>> ExecuteAsync(int safeId)
     {
-        var checks = await checkRepository.GetAllAsync();
+        var checks = await checkRepository.GetBySafeIdAsync(safeId);
 
         return checks.Select(c => new DenominationCheckDto(
             c.Id, c.ChangeBagId, c.CashBagId, c.PrepBagId,

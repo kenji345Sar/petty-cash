@@ -9,7 +9,7 @@ public class DepositCashBagUseCase(ICashBagRepository cashBagRepository)
     public async Task<CashBagDto> ExecuteAsync(DepositRequestDto dto)
     {
         var date = DateTime.SpecifyKind(dto.Date, DateTimeKind.Utc);
-        var bag = CashBag.CreateDeposit(dto.Amount, dto.Description, date);
+        var bag = CashBag.CreateDeposit(dto.SafeId, dto.Amount, dto.Description, date);
         await cashBagRepository.AddAsync(bag);
 
         return ToDto(bag);

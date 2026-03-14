@@ -14,6 +14,14 @@ public class TransactionRepository(PettyCashDbContext context) : ITransactionRep
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<Transaction>> GetBySafeIdAsync(int safeId)
+    {
+        return await context.Transactions
+            .Where(t => t.SafeId == safeId)
+            .OrderByDescending(t => t.CreatedAt)
+            .ToListAsync();
+    }
+
     public async Task AddAsync(Transaction transaction)
     {
         context.Transactions.Add(transaction);

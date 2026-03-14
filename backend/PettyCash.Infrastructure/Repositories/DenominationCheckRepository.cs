@@ -30,4 +30,12 @@ public class DenominationCheckRepository(PettyCashDbContext context) : IDenomina
             .OrderByDescending(c => c.CreatedAt)
             .ToListAsync();
     }
+
+    public async Task<IReadOnlyList<DenominationCheck>> GetBySafeIdAsync(int safeId)
+    {
+        return await context.DenominationChecks
+            .Where(c => c.SafeId == safeId)
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync();
+    }
 }

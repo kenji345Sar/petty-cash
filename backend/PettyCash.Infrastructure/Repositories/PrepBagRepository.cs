@@ -22,6 +22,15 @@ public class PrepBagRepository(PettyCashDbContext context) : IPrepBagRepository
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<PrepBag>> GetBySafeIdAsync(int safeId)
+    {
+        return await context.PrepBags
+            .Include(b => b.CashBags)
+            .Where(b => b.SafeId == safeId)
+            .OrderByDescending(b => b.CreatedAt)
+            .ToListAsync();
+    }
+
     public async Task AddAsync(PrepBag bag)
     {
         context.PrepBags.Add(bag);

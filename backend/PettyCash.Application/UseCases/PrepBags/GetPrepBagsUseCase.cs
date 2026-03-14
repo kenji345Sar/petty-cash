@@ -5,9 +5,9 @@ namespace PettyCash.Application.UseCases.PrepBags;
 
 public class GetPrepBagsUseCase(IPrepBagRepository prepBagRepository)
 {
-    public async Task<IReadOnlyList<PrepBagDto>> ExecuteAsync()
+    public async Task<IReadOnlyList<PrepBagDto>> ExecuteAsync(int safeId)
     {
-        var bags = await prepBagRepository.GetAllAsync();
+        var bags = await prepBagRepository.GetBySafeIdAsync(safeId);
 
         return bags.Select(bag => new PrepBagDto(
             bag.Id,

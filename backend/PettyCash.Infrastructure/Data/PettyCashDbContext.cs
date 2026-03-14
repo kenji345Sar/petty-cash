@@ -5,6 +5,7 @@ namespace PettyCash.Infrastructure.Data;
 
 public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : DbContext(options)
 {
+    public DbSet<Safe> Safes => Set<Safe>();
     public DbSet<ChangeBag> ChangeBags => Set<ChangeBag>();
     public DbSet<CashBag> CashBags => Set<CashBag>();
     public DbSet<Transaction> Transactions => Set<Transaction>();
@@ -13,11 +14,38 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Safe>(entity =>
+        {
+            entity.ToTable("safes");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Name).HasColumnName("name").HasMaxLength(100);
+            entity.Property(e => e.Description).HasColumnName("description").HasMaxLength(200);
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+
+            entity.HasMany(e => e.ChangeBags)
+                .WithOne(b => b.Safe)
+                .HasForeignKey(b => b.SafeId);
+
+            entity.HasMany(e => e.CashBags)
+                .WithOne(b => b.Safe)
+                .HasForeignKey(b => b.SafeId);
+
+            entity.HasMany(e => e.PrepBags)
+                .WithOne(b => b.Safe)
+                .HasForeignKey(b => b.SafeId);
+
+            entity.HasMany(e => e.Transactions)
+                .WithOne(t => t.Safe)
+                .HasForeignKey(t => t.SafeId);
+        });
+
         modelBuilder.Entity<ChangeBag>(entity =>
         {
             entity.ToTable("change_bags");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.SafeId).HasColumnName("safe_id");
             entity.Property(e => e.TotalAmount).HasColumnName("total_amount");
             entity.Property(e => e.Description).HasColumnName("description").HasMaxLength(200);
             entity.Property(e => e.Status).HasColumnName("status");
@@ -38,6 +66,7 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
             entity.ToTable("cash_bags");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.SafeId).HasColumnName("safe_id");
             entity.Property(e => e.TotalAmount).HasColumnName("total_amount");
             entity.Property(e => e.Description).HasColumnName("description").HasMaxLength(200);
             entity.Property(e => e.Status).HasColumnName("status");
@@ -63,6 +92,7 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
             entity.ToTable("transactions");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.SafeId).HasColumnName("safe_id");
             entity.Property(e => e.ChangeBagId).HasColumnName("change_bag_id");
             entity.Property(e => e.CashBagId).HasColumnName("cash_bag_id");
             entity.Property(e => e.Type).HasColumnName("type");
@@ -77,6 +107,7 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
             entity.ToTable("prep_bags");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.SafeId).HasColumnName("safe_id");
             entity.Property(e => e.TotalAmount).HasColumnName("total_amount");
             entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
@@ -92,6 +123,7 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
             entity.ToTable("denomination_checks");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.SafeId).HasColumnName("safe_id");
             entity.Property(e => e.ChangeBagId).HasColumnName("change_bag_id");
             entity.Property(e => e.CashBagId).HasColumnName("cash_bag_id");
             entity.Property(e => e.PrepBagId).HasColumnName("prep_bag_id");

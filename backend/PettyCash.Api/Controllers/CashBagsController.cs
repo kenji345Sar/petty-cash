@@ -11,9 +11,9 @@ public class CashBagsController(
     GetCashBagsUseCase getCashBagsUseCase) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<CashBagDto>>> GetAll()
+    public async Task<ActionResult<IReadOnlyList<CashBagDto>>> GetAll([FromQuery] int safeId)
     {
-        var bags = await getCashBagsUseCase.ExecuteAsync();
+        var bags = await getCashBagsUseCase.ExecuteAsync(safeId);
         return Ok(bags);
     }
 

@@ -14,9 +14,9 @@ public class DenominationChecksController(
     UpdateDenominationCheckUseCase updateDenominationCheckUseCase) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<DenominationCheckDto>>> GetAll()
+    public async Task<ActionResult<IReadOnlyList<DenominationCheckDto>>> GetAll([FromQuery] int safeId)
     {
-        var checks = await getDenominationChecksUseCase.ExecuteAsync();
+        var checks = await getDenominationChecksUseCase.ExecuteAsync(safeId);
         return Ok(checks);
     }
 

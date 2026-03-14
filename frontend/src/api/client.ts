@@ -10,13 +10,23 @@ export interface Denomination {
   count1: number;
 }
 
+export interface Safe {
+  id: number;
+  name: string;
+  description: string;
+  currentBalance: number;
+  createdAt: string;
+}
+
 export interface DepositRequest {
+  safeId: number;
   amount: number;
   description: string;
   date: string;
 }
 
 export interface CreateTransactionRequest {
+  safeId: number;
   type: "Deposit" | "Withdrawal";
   amount: number;
   description: string;
@@ -96,7 +106,15 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  getBags: () => fetchJson<ChangeBag[]>(`${API_BASE}/bags`),
+  getSafes: () => fetchJson<Safe[]>(`${API_BASE}/safes`),
+
+  createSafe: (req: { name: string; description: string }) =>
+    fetchJson<Safe>(`${API_BASE}/safes`, {
+      method: "POST",
+      body: JSON.stringify(req),
+    }),
+
+  getBags: (safeId: number) => fetchJson<ChangeBag[]>(`${API_BASE}/bags?safeId=${safeId}`),
 
   depositBag: (req: DepositRequest) =>
     fetchJson<ChangeBag>(`${API_BASE}/bags/deposit`, {
@@ -109,7 +127,7 @@ export const api = {
       method: "POST",
     }),
 
-  getCashBags: () => fetchJson<CashBag[]>(`${API_BASE}/cashbags`),
+  getCashBags: (safeId: number) => fetchJson<CashBag[]>(`${API_BASE}/cashbags?safeId=${safeId}`),
 
   depositCashBag: (req: DepositRequest) =>
     fetchJson<CashBag>(`${API_BASE}/cashbags/deposit`, {
@@ -122,8 +140,8 @@ export const api = {
       method: "POST",
     }),
 
-  getTransactions: () =>
-    fetchJson<Transaction[]>(`${API_BASE}/transactions`),
+  getTransactions: (safeId: number) =>
+    fetchJson<Transaction[]>(`${API_BASE}/transactions?safeId=${safeId}`),
 
   createTransaction: (req: CreateTransactionRequest) =>
     fetchJson<Transaction>(`${API_BASE}/transactions`, {
@@ -149,8 +167,8 @@ export const api = {
       body: JSON.stringify(denomination),
     }),
 
-  getDenominationChecks: () =>
-    fetchJson<DenominationCheck[]>(`${API_BASE}/denominationchecks`),
+  getDenominationChecks: (safeId: number) =>
+    fetchJson<DenominationCheck[]>(`${API_BASE}/denominationchecks?safeId=${safeId}`),
 
   updateDenominationCheck: (id: number, denomination: Denomination) =>
     fetchJson<DenominationCheck>(`${API_BASE}/denominationchecks/${id}`, {
@@ -158,12 +176,12 @@ export const api = {
       body: JSON.stringify(denomination),
     }),
 
-  getPrepBags: () => fetchJson<PrepBag[]>(`${API_BASE}/prepbags`),
+  getPrepBags: (safeId: number) => fetchJson<PrepBag[]>(`${API_BASE}/prepbags?safeId=${safeId}`),
 
-  createPrepBag: (cashBagIds: number[]) =>
+  createPrepBag: (safeId: number, cashBagIds: number[]) =>
     fetchJson<PrepBag>(`${API_BASE}/prepbags`, {
       method: "POST",
-      body: JSON.stringify({ cashBagIds }),
+      body: JSON.stringify({ safeId, cashBagIds }),
     }),
 
   handOverPrepBag: (id: number) =>

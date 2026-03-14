@@ -20,7 +20,7 @@ public class CreatePrepBagUseCase(ICashBagRepository cashBagRepository, IPrepBag
             cashBags.Add(cashBag);
         }
 
-        var prepBag = PrepBag.Create(cashBags, DateTime.UtcNow);
+        var prepBag = PrepBag.Create(dto.SafeId, cashBags, DateTime.UtcNow);
         await prepBagRepository.AddAsync(prepBag);
 
         return ToDto(prepBag);

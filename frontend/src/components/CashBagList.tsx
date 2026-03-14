@@ -4,6 +4,7 @@ import type { CashBag, PrepBag, DenominationCheck } from "../api/client";
 import { DenominationCheckForm } from "./DenominationCheckForm";
 
 interface Props {
+  safeId: number;
   bags: CashBag[];
   prepBags: PrepBag[];
   denomChecks: DenominationCheck[];
@@ -14,7 +15,7 @@ function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function CashBagList({ bags, prepBags, denomChecks, onUpdate }: Props) {
+export function CashBagList({ safeId, bags, prepBags, denomChecks, onUpdate }: Props) {
   const checksByBag = (bagId: number) =>
     denomChecks
       .filter((c) => c.cashBagId === bagId)
@@ -61,7 +62,7 @@ export function CashBagList({ bags, prepBags, denomChecks, onUpdate }: Props) {
   const handleDeposit = async () => {
     setLoading(true);
     try {
-      await api.depositCashBag({ amount, description, date });
+      await api.depositCashBag({ safeId, amount, description, date });
       setAmount(0);
       setDescription("");
       setDate(todayStr());
@@ -78,7 +79,7 @@ export function CashBagList({ bags, prepBags, denomChecks, onUpdate }: Props) {
     if (selected.size === 0) return;
     setCreating(true);
     try {
-      await api.createPrepBag([...selected]);
+      await api.createPrepBag(safeId, [...selected]);
       setSelected(new Set());
       setSelectMode(false);
       onUpdate();

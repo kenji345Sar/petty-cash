@@ -5,6 +5,8 @@ namespace PettyCash.Domain.Entities;
 public class ChangeBag
 {
     public int Id { get; private set; }
+    public int SafeId { get; private set; }
+    public Safe? Safe { get; private set; }
     public int TotalAmount { get; private set; }
     public string Description { get; private set; } = string.Empty;
     public BagStatus Status { get; private set; }
@@ -20,13 +22,14 @@ public class ChangeBag
 
     private ChangeBag() { }
 
-    public static ChangeBag CreateDeposit(int amount, string description, DateTime date)
+    public static ChangeBag CreateDeposit(int safeId, int amount, string description, DateTime date)
     {
         if (amount <= 0)
             throw new ArgumentException("金額は1以上である必要があります。");
 
         var bag = new ChangeBag
         {
+            SafeId = safeId,
             TotalAmount = amount,
             Description = description,
             Status = BagStatus.InSafe,

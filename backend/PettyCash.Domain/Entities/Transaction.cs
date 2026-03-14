@@ -5,6 +5,8 @@ namespace PettyCash.Domain.Entities;
 public class Transaction
 {
     public int Id { get; private set; }
+    public int SafeId { get; private set; }
+    public Safe? Safe { get; private set; }
     public int? ChangeBagId { get; private set; }
     public int? CashBagId { get; private set; }
     public int? PrepBagId { get; private set; }
@@ -23,6 +25,7 @@ public class Transaction
     {
         return new Transaction
         {
+            SafeId = bag.SafeId,
             ChangeBag = bag,
             Type = TransactionType.Deposit,
             Amount = amount,
@@ -35,6 +38,7 @@ public class Transaction
     {
         return new Transaction
         {
+            SafeId = bag.SafeId,
             ChangeBag = bag,
             Type = TransactionType.Withdrawal,
             Amount = amount,
@@ -47,6 +51,7 @@ public class Transaction
     {
         return new Transaction
         {
+            SafeId = bag.SafeId,
             CashBag = bag,
             Type = TransactionType.Deposit,
             Amount = amount,
@@ -55,10 +60,11 @@ public class Transaction
         };
     }
 
-    public static Transaction CreateStandalone(TransactionType type, int amount, string description, DateTime date)
+    public static Transaction CreateStandalone(int safeId, TransactionType type, int amount, string description, DateTime date)
     {
         return new Transaction
         {
+            SafeId = safeId,
             Type = type,
             Amount = amount,
             Description = description,
@@ -71,6 +77,7 @@ public class Transaction
         var ids = string.Join(", ", bag.CashBags.Select(cb => $"#{cb.Id}"));
         return new Transaction
         {
+            SafeId = bag.SafeId,
             PrepBag = bag,
             Type = TransactionType.Withdrawal,
             Amount = amount,

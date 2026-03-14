@@ -12,9 +12,9 @@ public class BagsController(
     GetBagsUseCase getBagsUseCase) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<ChangeBagDto>>> GetAll()
+    public async Task<ActionResult<IReadOnlyList<ChangeBagDto>>> GetAll([FromQuery] int safeId)
     {
-        var bags = await getBagsUseCase.ExecuteAsync();
+        var bags = await getBagsUseCase.ExecuteAsync(safeId);
         return Ok(bags);
     }
 

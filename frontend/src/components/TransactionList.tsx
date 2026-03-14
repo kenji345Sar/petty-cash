@@ -8,6 +8,7 @@ import { CashBagList } from "./CashBagList";
 import { DenominationReportPage } from "./DenominationReportPage";
 
 interface Props {
+  safeId: number;
   transactions: Transaction[];
   denomChecks: DenominationCheck[];
   bags: ChangeBag[];
@@ -59,7 +60,7 @@ function formatBag(
   return "-";
 }
 
-export function TransactionList({ transactions, denomChecks, bags, cashBags, prepBags, onUpdate }: Props) {
+export function TransactionList({ safeId, transactions, denomChecks, bags, cashBags, prepBags, onUpdate }: Props) {
   const [view, setView] = useState<View>("list");
   const [editCheck, setEditCheck] = useState<DenominationCheck | null>(null);
   const [txType, setTxType] = useState<"Deposit" | "Withdrawal">("Deposit");
@@ -94,7 +95,7 @@ export function TransactionList({ transactions, denomChecks, bags, cashBags, pre
         ? (txType === "Deposit" ? "小口入金" : "小口出金")
         : (txType === "Deposit" ? "業者入金" : "業者出金");
       const desc = description || label;
-      await api.createTransaction({ type: txType, amount, description: desc, date });
+      await api.createTransaction({ safeId, type: txType, amount, description: desc, date });
       setAmount(0);
       setDescription("");
       setDate(new Date().toISOString().slice(0, 10));
@@ -200,9 +201,9 @@ export function TransactionList({ transactions, denomChecks, bags, cashBags, pre
 
       {view === "bagManagement" && (
         <>
-          <BagList bags={bags} denomChecks={denomChecks} onUpdate={onUpdate} />
+          <BagList safeId={safeId} bags={bags} denomChecks={denomChecks} onUpdate={onUpdate} />
           <hr style={{ margin: "32px 0" }} />
-          <CashBagList bags={cashBags} prepBags={prepBags} denomChecks={denomChecks} onUpdate={onUpdate} />
+          <CashBagList safeId={safeId} bags={cashBags} prepBags={prepBags} denomChecks={denomChecks} onUpdate={onUpdate} />
         </>
       )}
 

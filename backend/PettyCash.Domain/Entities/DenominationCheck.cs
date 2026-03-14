@@ -5,6 +5,8 @@ namespace PettyCash.Domain.Entities;
 public class DenominationCheck
 {
     public int Id { get; private set; }
+    public int SafeId { get; private set; }
+    public Safe? Safe { get; private set; }
     public int? ChangeBagId { get; private set; }
     public int? CashBagId { get; private set; }
     public int? PrepBagId { get; private set; }
@@ -25,6 +27,7 @@ public class DenominationCheck
         var checkedAmount = denomination.TotalAmount;
         return new DenominationCheck
         {
+            SafeId = bag.SafeId,
             ChangeBagId = bag.Id,
             ChangeBag = bag,
             Denomination = denomination,
@@ -48,6 +51,7 @@ public class DenominationCheck
         var checkedAmount = denomination.TotalAmount;
         return new DenominationCheck
         {
+            SafeId = bag.SafeId,
             CashBagId = bag.Id,
             CashBag = bag,
             Denomination = denomination,
@@ -63,6 +67,7 @@ public class DenominationCheck
         var checkedAmount = denomination.TotalAmount;
         return new DenominationCheck
         {
+            SafeId = bag.SafeId,
             PrepBagId = bag.Id,
             PrepBag = bag,
             Denomination = denomination,

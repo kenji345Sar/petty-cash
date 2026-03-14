@@ -5,9 +5,9 @@ namespace PettyCash.Application.UseCases.Transactions;
 
 public class GetTransactionsUseCase(ITransactionRepository transactionRepository)
 {
-    public async Task<IReadOnlyList<TransactionDto>> ExecuteAsync()
+    public async Task<IReadOnlyList<TransactionDto>> ExecuteAsync(int safeId)
     {
-        var transactions = await transactionRepository.GetAllAsync();
+        var transactions = await transactionRepository.GetBySafeIdAsync(safeId);
 
         return transactions.Select(t => new TransactionDto(
             t.Id,

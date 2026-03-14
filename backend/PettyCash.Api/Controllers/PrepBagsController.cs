@@ -12,9 +12,9 @@ public class PrepBagsController(
     HandOverPrepBagUseCase handOverPrepBagUseCase) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<PrepBagDto>>> GetAll()
+    public async Task<ActionResult<IReadOnlyList<PrepBagDto>>> GetAll([FromQuery] int safeId)
     {
-        var bags = await getPrepBagsUseCase.ExecuteAsync();
+        var bags = await getPrepBagsUseCase.ExecuteAsync(safeId);
         return Ok(bags);
     }
 

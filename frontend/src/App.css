@@ -13,6 +13,39 @@ header {
 header h1 {
   font-size: 1.6rem;
   color: #333;
+  margin-bottom: 8px;
+}
+
+.safe-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.safe-selector select {
+  padding: 8px 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 2px solid #2563eb;
+  border-radius: 8px;
+  background: white;
+  color: #1e40af;
+  cursor: pointer;
+}
+
+.safe-selector select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.safe-balance {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 6px 14px;
+  border-radius: 6px;
 }
 
 .tabs {

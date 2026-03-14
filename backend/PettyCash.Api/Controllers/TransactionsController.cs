@@ -11,9 +11,9 @@ public class TransactionsController(
     CreateTransactionUseCase createTransactionUseCase) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<TransactionDto>>> GetAll()
+    public async Task<ActionResult<IReadOnlyList<TransactionDto>>> GetAll([FromQuery] int safeId)
     {
-        var transactions = await getTransactionsUseCase.ExecuteAsync();
+        var transactions = await getTransactionsUseCase.ExecuteAsync(safeId);
         return Ok(transactions);
     }
 

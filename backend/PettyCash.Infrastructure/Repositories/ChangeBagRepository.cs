@@ -22,6 +22,15 @@ public class ChangeBagRepository(PettyCashDbContext context) : IChangeBagReposit
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<ChangeBag>> GetBySafeIdAsync(int safeId)
+    {
+        return await context.ChangeBags
+            .Include("_transactions")
+            .Where(b => b.SafeId == safeId)
+            .OrderByDescending(b => b.CreatedAt)
+            .ToListAsync();
+    }
+
     public async Task AddAsync(ChangeBag bag)
     {
         context.ChangeBags.Add(bag);

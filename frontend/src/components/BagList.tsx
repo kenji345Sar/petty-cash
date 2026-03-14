@@ -4,6 +4,7 @@ import type { ChangeBag, DenominationCheck } from "../api/client";
 import { DenominationCheckForm } from "./DenominationCheckForm";
 
 interface Props {
+  safeId: number;
   bags: ChangeBag[];
   denomChecks: DenominationCheck[];
   onUpdate: () => void;
@@ -13,7 +14,7 @@ function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function BagList({ bags, denomChecks, onUpdate }: Props) {
+export function BagList({ safeId, bags, denomChecks, onUpdate }: Props) {
   const checksByBag = (bagId: number) =>
     denomChecks
       .filter((c) => c.changeBagId === bagId)
@@ -33,7 +34,7 @@ export function BagList({ bags, denomChecks, onUpdate }: Props) {
   const handleDeposit = async () => {
     setLoading(true);
     try {
-      await api.depositBag({ amount, description, date });
+      await api.depositBag({ safeId, amount, description, date });
       setAmount(0);
       setDescription("");
       setDate(todayStr());

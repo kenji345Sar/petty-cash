@@ -15,7 +15,7 @@ public class CreateTransactionUseCase(ITransactionRepository transactionReposito
         var type = dto.Type == "Deposit" ? TransactionType.Deposit : TransactionType.Withdrawal;
         var date = DateTime.SpecifyKind(dto.Date, DateTimeKind.Utc);
 
-        var transaction = Transaction.CreateStandalone(type, dto.Amount, dto.Description, date);
+        var transaction = Transaction.CreateStandalone(dto.SafeId, type, dto.Amount, dto.Description, date);
         await transactionRepository.AddAsync(transaction);
 
         return new TransactionDto(
