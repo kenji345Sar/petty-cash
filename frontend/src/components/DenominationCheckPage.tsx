@@ -155,15 +155,11 @@ export function DenominationCheckPage({ bags, cashBags, prepBags, onDone }: Prop
                       {hasSet ? (
                         <>
                           <input
-                            type="number"
-                            min="0"
-                            value={sets[k] || ""}
+                            type="number" min="0" value={sets[k] || ""}
                             onChange={(e) => setSets({ ...sets, [d.key]: Math.max(0, parseInt(e.target.value) || 0) })}
                             style={{ width: 60 }}
                           />
-                          <span style={{ fontSize: "0.8rem", color: "#666", marginLeft: 2 }}>
-                            ×{d.perSet}
-                          </span>
+                          <span style={{ fontSize: "0.8rem", color: "#666", marginLeft: 2 }}>×{d.perSet}</span>
                         </>
                       ) : (
                         <span style={{ color: "#aaa" }}>-</span>
@@ -171,9 +167,7 @@ export function DenominationCheckPage({ bags, cashBags, prepBags, onDone }: Prop
                     </td>
                     <td>
                       <input
-                        type="number"
-                        min="0"
-                        value={counts[k] || ""}
+                        type="number" min="0" value={counts[k] || ""}
                         onChange={(e) => setCounts({ ...counts, [d.key]: Math.max(0, parseInt(e.target.value) || 0) })}
                         style={{ width: 60 }}
                       />
