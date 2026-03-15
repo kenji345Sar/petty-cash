@@ -34,18 +34,18 @@ public class Safe
         };
     }
 
-    public int CurrentBalance
+    public int CurrentBalance => VendorBalance + PettyCashBalance;
+
+    public int VendorBalance => CalcBalance(t => t.HasBag);
+
+    public int PettyCashBalance => CalcBalance(t => !t.HasBag);
+
+    private int CalcBalance(Func<Transaction, bool> filter)
     {
-        get
-        {
-            var deposits = _transactions
-                .Where(t => t.Type == Enums.TransactionType.Deposit)
-                .Sum(t => t.Amount);
-            var withdrawals = _transactions
-                .Where(t => t.Type == Enums.TransactionType.Withdrawal)
-                .Sum(t => t.Amount);
-            return deposits - withdrawals;
-        }
+        var filtered = _transactions.Where(filter);
+        var deposits = filtered.Where(t => t.Type == Enums.TransactionType.Deposit).Sum(t => t.Amount);
+        var withdrawals = filtered.Where(t => t.Type == Enums.TransactionType.Withdrawal).Sum(t => t.Amount);
+        return deposits - withdrawals;
     }
 
     public void UpdateName(string name)

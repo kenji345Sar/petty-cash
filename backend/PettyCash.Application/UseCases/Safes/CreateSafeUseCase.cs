@@ -16,6 +16,8 @@ public class CreateSafeUseCase(ISafeRepository safeRepository)
             safe.Name,
             safe.Description,
             safe.CurrentBalance,
+            safe.VendorBalance,
+            safe.PettyCashBalance,
             safe.CreatedAt
         );
     }

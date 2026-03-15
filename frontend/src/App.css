@@ -39,6 +39,12 @@ header h1 {
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
+.safe-balance-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .safe-balance {
   font-size: 1.1rem;
   font-weight: 700;
@@ -46,6 +52,16 @@ header h1 {
   background: #ecfdf5;
   padding: 6px 14px;
   border-radius: 6px;
+}
+
+.safe-balance.vendor {
+  color: #2563eb;
+  background: #dbeafe;
+}
+
+.safe-balance.petty {
+  color: #d97706;
+  background: #fef3c7;
 }
 
 .tabs {

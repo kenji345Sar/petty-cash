@@ -5,6 +5,8 @@ public record SafeDto(
     string Name,
     string Description,
     int CurrentBalance,
+    int VendorBalance,
+    int PettyCashBalance,
     DateTime CreatedAt
 );
 

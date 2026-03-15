@@ -77,17 +77,17 @@ using (var scope = app.Services.CreateScope())
     {
         db.Database.ExecuteSqlRaw(@"
             INSERT INTO safes (name, description, created_at) VALUES
-            ('住吉', '住吉店の金庫', NOW()),
+            ('名古屋', '名古屋店の金庫', NOW()),
             ('梅田', '梅田店の金庫', NOW()),
             ('銀座', '銀座店の金庫', NOW())");
     }
 
-    // 「デフォルト金庫」を「住吉」にリネーム＋梅田・銀座が無ければ追加
+    // 「デフォルト金庫」「住吉」を「名古屋」にリネーム＋梅田・銀座が無ければ追加
     if (hasSafesTable > 0)
     {
         db.Database.ExecuteSqlRaw(@"
-            UPDATE safes SET name = '住吉', description = '住吉店の金庫'
-            WHERE name = 'デフォルト金庫'");
+            UPDATE safes SET name = '名古屋', description = '名古屋店の金庫'
+            WHERE name IN ('デフォルト金庫', '住吉')");
         db.Database.ExecuteSqlRaw(@"
             INSERT INTO safes (name, description, created_at)
             SELECT '梅田', '梅田店の金庫', NOW()
@@ -109,10 +109,10 @@ using (var scope = app.Services.CreateScope())
                 created_at TIMESTAMP NOT NULL DEFAULT NOW()
             )");
 
-        // サンプル金庫を作成（既存データはID=1の住吉に紐づけ）
+        // サンプル金庫を作成（既存データはID=1の名古屋に紐づけ）
         db.Database.ExecuteSqlRaw(@"
             INSERT INTO safes (name, description, created_at) VALUES
-            ('住吉', '住吉店の金庫', NOW()),
+            ('名古屋', '名古屋店の金庫', NOW()),
             ('梅田', '梅田店の金庫', NOW()),
             ('銀座', '銀座店の金庫', NOW())");
 

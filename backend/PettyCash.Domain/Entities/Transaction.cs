@@ -19,6 +19,8 @@ public class Transaction
     public CashBag? CashBag { get; private set; }
     public PrepBag? PrepBag { get; private set; }
 
+    public bool HasBag => ChangeBagId != null || CashBagId != null || PrepBagId != null;
+
     private Transaction() { }
 
     internal static Transaction CreateDeposit(ChangeBag bag, int amount, string description, DateTime date)

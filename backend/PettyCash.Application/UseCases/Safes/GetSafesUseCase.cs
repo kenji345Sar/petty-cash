@@ -13,6 +13,8 @@ public class GetSafesUseCase(ISafeRepository safeRepository)
             s.Name,
             s.Description,
             s.CurrentBalance,
+            s.VendorBalance,
+            s.PettyCashBalance,
             s.CreatedAt
         )).ToList();
     }

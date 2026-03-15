@@ -15,6 +15,8 @@ export interface Safe {
   name: string;
   description: string;
   currentBalance: number;
+  vendorBalance: number;
+  pettyCashBalance: number;
   createdAt: string;
 }
 

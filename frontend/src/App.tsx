@@ -63,9 +63,17 @@ function App() {
               ))}
             </select>
             {selectedSafe && (
-              <span className="safe-balance">
-                残高: {selectedSafe.currentBalance.toLocaleString()}円
-              </span>
+              <div className="safe-balance-group">
+                <span className="safe-balance">
+                  合計: {selectedSafe.currentBalance.toLocaleString()}円
+                </span>
+                <span className="safe-balance vendor">
+                  業者: {selectedSafe.vendorBalance.toLocaleString()}円
+                </span>
+                <span className="safe-balance petty">
+                  小口: {selectedSafe.pettyCashBalance.toLocaleString()}円
+                </span>
+              </div>
             )}
           </div>
         )}

@@ -22,6 +22,9 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
             entity.Property(e => e.Name).HasColumnName("name").HasMaxLength(100);
             entity.Property(e => e.Description).HasColumnName("description").HasMaxLength(200);
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Ignore(e => e.CurrentBalance);
+            entity.Ignore(e => e.VendorBalance);
+            entity.Ignore(e => e.PettyCashBalance);
 
             entity.HasMany(e => e.ChangeBags)
                 .WithOne(b => b.Safe)
@@ -100,6 +103,7 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
             entity.Property(e => e.Description).HasColumnName("description").HasMaxLength(200);
             entity.Property(e => e.PrepBagId).HasColumnName("prep_bag_id");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Ignore(e => e.HasBag);
         });
 
         modelBuilder.Entity<PrepBag>(entity =>
