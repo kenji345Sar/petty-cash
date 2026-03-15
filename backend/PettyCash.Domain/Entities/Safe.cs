@@ -10,15 +10,6 @@ public class Safe
     private readonly List<Transaction> _transactions = [];
     public IReadOnlyCollection<Transaction> Transactions => _transactions.AsReadOnly();
 
-    private readonly List<ChangeBag> _changeBags = [];
-    public IReadOnlyCollection<ChangeBag> ChangeBags => _changeBags.AsReadOnly();
-
-    private readonly List<CashBag> _cashBags = [];
-    public IReadOnlyCollection<CashBag> CashBags => _cashBags.AsReadOnly();
-
-    private readonly List<PrepBag> _prepBags = [];
-    public IReadOnlyCollection<PrepBag> PrepBags => _prepBags.AsReadOnly();
-
     private Safe() { }
 
     public static Safe Create(string name, string description, DateTime date)

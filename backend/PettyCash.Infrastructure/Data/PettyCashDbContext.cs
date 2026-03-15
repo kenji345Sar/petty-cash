@@ -26,18 +26,6 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
             entity.Ignore(e => e.VendorBalance);
             entity.Ignore(e => e.PettyCashBalance);
 
-            entity.HasMany(e => e.ChangeBags)
-                .WithOne(b => b.Safe)
-                .HasForeignKey(b => b.SafeId);
-
-            entity.HasMany(e => e.CashBags)
-                .WithOne(b => b.Safe)
-                .HasForeignKey(b => b.SafeId);
-
-            entity.HasMany(e => e.PrepBags)
-                .WithOne(b => b.Safe)
-                .HasForeignKey(b => b.SafeId);
-
             entity.HasMany(e => e.Transactions)
                 .WithOne(t => t.Safe)
                 .HasForeignKey(t => t.SafeId);
@@ -54,6 +42,8 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
             entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.Property(e => e.MovedAt).HasColumnName("moved_at");
+
+            entity.HasOne(e => e.Safe).WithMany().HasForeignKey(e => e.SafeId);
 
             entity.HasMany<Transaction>("_transactions")
                 .WithOne(t => t.ChangeBag)
@@ -76,6 +66,8 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.Property(e => e.MovedAt).HasColumnName("moved_at");
             entity.Property(e => e.PrepBagId).HasColumnName("prep_bag_id");
+
+            entity.HasOne(e => e.Safe).WithMany().HasForeignKey(e => e.SafeId);
 
             entity.HasOne(e => e.PrepBag)
                 .WithMany(p => p.CashBags)
@@ -104,6 +96,19 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
             entity.Property(e => e.PrepBagId).HasColumnName("prep_bag_id");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.Ignore(e => e.HasBag);
+
+            entity.OwnsOne(e => e.Denomination, d =>
+            {
+                d.Property(p => p.Count10000).HasColumnName("denom_10000");
+                d.Property(p => p.Count5000).HasColumnName("denom_5000");
+                d.Property(p => p.Count1000).HasColumnName("denom_1000");
+                d.Property(p => p.Count500).HasColumnName("denom_500");
+                d.Property(p => p.Count100).HasColumnName("denom_100");
+                d.Property(p => p.Count50).HasColumnName("denom_50");
+                d.Property(p => p.Count10).HasColumnName("denom_10");
+                d.Property(p => p.Count5).HasColumnName("denom_5");
+                d.Property(p => p.Count1).HasColumnName("denom_1");
+            });
         });
 
         modelBuilder.Entity<PrepBag>(entity =>
@@ -116,6 +121,8 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
             entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             entity.Property(e => e.HandedOverAt).HasColumnName("handed_over_at");
+
+            entity.HasOne(e => e.Safe).WithMany().HasForeignKey(e => e.SafeId);
 
             entity.HasOne(e => e.Transaction)
                 .WithOne(t => t.PrepBag)

@@ -9,15 +9,16 @@ public class GetTransactionsUseCase(ITransactionRepository transactionRepository
     {
         var transactions = await transactionRepository.GetBySafeIdAsync(safeId);
 
-        return transactions.Select(t => new TransactionDto(
-            t.Id,
-            t.ChangeBagId,
-            t.CashBagId,
-            t.PrepBagId,
-            t.Type.ToString(),
-            t.Amount,
-            t.Description,
-            t.CreatedAt
-        )).ToList();
+        return transactions.Select(t =>
+        {
+            var denomDto = t.Denomination is { } dn
+                ? new DenominationDto(dn.Count10000, dn.Count5000, dn.Count1000, dn.Count500, dn.Count100, dn.Count50, dn.Count10, dn.Count5, dn.Count1)
+                : null;
+
+            return new TransactionDto(
+                t.Id, t.ChangeBagId, t.CashBagId, t.PrepBagId,
+                t.Type.ToString(), t.Amount, t.Description, t.CreatedAt, denomDto
+            );
+        }).ToList();
     }
 }

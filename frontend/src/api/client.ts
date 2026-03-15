@@ -25,6 +25,7 @@ export interface DepositRequest {
   amount: number;
   description: string;
   date: string;
+  denomination?: Denomination;
 }
 
 export interface CreateTransactionRequest {
@@ -33,6 +34,7 @@ export interface CreateTransactionRequest {
   amount: number;
   description: string;
   date: string;
+  denomination?: Denomination;
 }
 
 export interface ChangeBag {
@@ -62,6 +64,7 @@ export interface Transaction {
   amount: number;
   description: string;
   createdAt: string;
+  denomination: Denomination | null;
 }
 
 export interface DenominationCheck {

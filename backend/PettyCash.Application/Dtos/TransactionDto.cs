@@ -8,5 +8,6 @@ public record TransactionDto(
     string Type,
     int Amount,
     string Description,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    DenominationDto? Denomination
 );

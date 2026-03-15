@@ -5,5 +5,6 @@ public record CreateTransactionRequestDto(
     string Type,
     int Amount,
     string Description,
-    DateTime Date
+    DateTime Date,
+    DenominationDto? Denomination = null
 );

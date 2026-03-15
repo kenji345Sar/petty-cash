@@ -21,7 +21,8 @@ public class MoveBagToRegisterUseCase(IChangeBagRepository bagRepository)
             transaction.Type.ToString(),
             transaction.Amount,
             transaction.Description,
-            transaction.CreatedAt
+            transaction.CreatedAt,
+            null
         );
     }
 }

@@ -144,6 +144,19 @@ using (var scope = app.Services.CreateScope())
             ALTER TABLE denomination_checks ADD CONSTRAINT fk_denomination_checks_safe FOREIGN KEY (safe_id) REFERENCES safes(id)
         ");
     }
+
+    // transactionsテーブルに金種カラムを追加
+    db.Database.ExecuteSqlRaw(@"
+        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_10000 INTEGER;
+        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_5000 INTEGER;
+        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_1000 INTEGER;
+        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_500 INTEGER;
+        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_100 INTEGER;
+        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_50 INTEGER;
+        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_10 INTEGER;
+        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_5 INTEGER;
+        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_1 INTEGER
+    ");
 }
 
 app.Run();

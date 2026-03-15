@@ -1,4 +1,5 @@
 using PettyCash.Domain.Enums;
+using PettyCash.Domain.ValueObjects;
 
 namespace PettyCash.Domain.Entities;
 
@@ -22,21 +23,22 @@ public class ChangeBag
 
     private ChangeBag() { }
 
-    public static ChangeBag CreateDeposit(int safeId, int amount, string description, DateTime date)
+    public static ChangeBag CreateDeposit(int safeId, int amount, string description, DateTime date, Denomination? denomination = null)
     {
-        if (amount <= 0)
+        var finalAmount = denomination?.TotalAmount ?? amount;
+        if (finalAmount <= 0)
             throw new ArgumentException("金額は1以上である必要があります。");
 
         var bag = new ChangeBag
         {
             SafeId = safeId,
-            TotalAmount = amount,
+            TotalAmount = finalAmount,
             Description = description,
             Status = BagStatus.InSafe,
             CreatedAt = date
         };
 
-        bag._transactions.Add(Transaction.CreateDeposit(bag, amount, description, date));
+        bag._transactions.Add(Transaction.CreateDeposit(bag, finalAmount, description, date, denomination));
 
         return bag;
     }

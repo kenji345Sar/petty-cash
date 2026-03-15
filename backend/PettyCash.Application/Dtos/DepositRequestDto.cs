@@ -4,5 +4,6 @@ public record DepositRequestDto(
     int SafeId,
     int Amount,
     string Description,
-    DateTime Date
+    DateTime Date,
+    DenominationDto? Denomination = null
 );

@@ -1,4 +1,5 @@
 using PettyCash.Domain.Enums;
+using PettyCash.Domain.ValueObjects;
 
 namespace PettyCash.Domain.Entities;
 
@@ -19,11 +20,13 @@ public class Transaction
     public CashBag? CashBag { get; private set; }
     public PrepBag? PrepBag { get; private set; }
 
+    public Denomination? Denomination { get; private set; }
+
     public bool HasBag => ChangeBagId != null || CashBagId != null || PrepBagId != null;
 
     private Transaction() { }
 
-    internal static Transaction CreateDeposit(ChangeBag bag, int amount, string description, DateTime date)
+    internal static Transaction CreateDeposit(ChangeBag bag, int amount, string description, DateTime date, Denomination? denomination = null)
     {
         return new Transaction
         {
@@ -32,6 +35,7 @@ public class Transaction
             Type = TransactionType.Deposit,
             Amount = amount,
             Description = string.IsNullOrWhiteSpace(description) ? "釣り銭バッグ入金" : description,
+            Denomination = denomination,
             CreatedAt = date
         };
     }
@@ -49,7 +53,7 @@ public class Transaction
         };
     }
 
-    internal static Transaction CreateCashBagDeposit(CashBag bag, int amount)
+    internal static Transaction CreateCashBagDeposit(CashBag bag, int amount, Denomination? denomination = null)
     {
         return new Transaction
         {
@@ -58,18 +62,20 @@ public class Transaction
             Type = TransactionType.Deposit,
             Amount = amount,
             Description = string.IsNullOrWhiteSpace(bag.Description) ? "キャッシュバッグ入金（レジから金庫へ）" : bag.Description,
+            Denomination = denomination,
             CreatedAt = DateTime.UtcNow
         };
     }
 
-    public static Transaction CreateStandalone(int safeId, TransactionType type, int amount, string description, DateTime date)
+    public static Transaction CreateStandalone(int safeId, TransactionType type, int amount, string description, DateTime date, Denomination? denomination = null)
     {
         return new Transaction
         {
             SafeId = safeId,
             Type = type,
-            Amount = amount,
+            Amount = denomination?.TotalAmount ?? amount,
             Description = description,
+            Denomination = denomination,
             CreatedAt = date
         };
     }

@@ -1,11 +1,30 @@
 import { useState } from "react";
 import { api } from "../api/client";
-import type { Transaction, DenominationCheck, ChangeBag, CashBag, PrepBag } from "../api/client";
+import type { Transaction, DenominationCheck, ChangeBag, CashBag, PrepBag, Denomination } from "../api/client";
 import { DenominationCheckForm } from "./DenominationCheckForm";
 import { DenominationCheckPage } from "./DenominationCheckPage";
 import { BagList } from "./BagList";
 import { CashBagList } from "./CashBagList";
 import { DenominationReportPage } from "./DenominationReportPage";
+
+const DENOM_ITEMS = [
+  { key: "count10000" as const, label: "1万円", value: 10000 },
+  { key: "count5000" as const, label: "5千円", value: 5000 },
+  { key: "count1000" as const, label: "千円", value: 1000 },
+  { key: "count500" as const, label: "500円", value: 500 },
+  { key: "count100" as const, label: "100円", value: 100 },
+  { key: "count50" as const, label: "50円", value: 50 },
+  { key: "count10" as const, label: "10円", value: 10 },
+  { key: "count5" as const, label: "5円", value: 5 },
+  { key: "count1" as const, label: "1円", value: 1 },
+];
+
+const emptyDenom = (): Denomination => ({
+  count10000: 0, count5000: 0, count1000: 0, count500: 0, count100: 0, count50: 0, count10: 0, count5: 0, count1: 0,
+});
+
+const denomTotal = (d: Denomination) =>
+  DENOM_ITEMS.reduce((sum, item) => sum + d[item.key] * item.value, 0);
 
 interface Props {
   safeId: number;
@@ -68,6 +87,9 @@ export function TransactionList({ safeId, transactions, denomChecks, bags, cashB
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [loading, setLoading] = useState(false);
+  const [useDenom, setUseDenom] = useState(false);
+  const [denom, setDenom] = useState<Denomination>(emptyDenom);
+  const [viewDenomTx, setViewDenomTx] = useState<Transaction | null>(null);
 
   const [period, setPeriod] = useState<Period>("thisMonth");
   const [thisMonth] = useState(() => getMonthRange(0));
@@ -87,6 +109,8 @@ export function TransactionList({ safeId, transactions, denomChecks, bags, cashB
     ...denomChecks.filter((c) => inRange(c.createdAt)).map((c) => ({ kind: "check" as const, data: c, at: c.createdAt })),
   ].sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
 
+  const denomAmount = denomTotal(denom);
+
   const handleSubmit = async () => {
     setLoading(true);
     try {
@@ -95,11 +119,17 @@ export function TransactionList({ safeId, transactions, denomChecks, bags, cashB
         ? (txType === "Deposit" ? "小口入金" : "小口出金")
         : (txType === "Deposit" ? "業者入金" : "業者出金");
       const desc = description || label;
-      await api.createTransaction({ safeId, type: txType, amount, description: desc, date });
+      const finalAmount = useDenom ? denomAmount : amount;
+      await api.createTransaction({
+        safeId, type: txType, amount: finalAmount, description: desc, date,
+        ...(useDenom ? { denomination: denom } : {}),
+      });
       setAmount(0);
       setDescription("");
       setDate(new Date().toISOString().slice(0, 10));
       setTxType("Deposit");
+      setDenom(emptyDenom());
+      setUseDenom(false);
       setView("list");
       onUpdate();
     } catch (e) {
@@ -160,15 +190,40 @@ export function TransactionList({ safeId, transactions, denomChecks, bags, cashB
             <button className={txType === "Deposit" ? "btn-period active" : "btn-period"} onClick={() => setTxType("Deposit")}>入金</button>
             <button className={txType === "Withdrawal" ? "btn-period active" : "btn-period"} onClick={() => setTxType("Withdrawal")}>出金</button>
           </div>
+          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+            <button className={!useDenom ? "btn-period active" : "btn-period"} onClick={() => setUseDenom(false)}>金額入力</button>
+            <button className={useDenom ? "btn-period active" : "btn-period"} onClick={() => setUseDenom(true)}>金種入力</button>
+          </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <div>
-              <label>金額（円）</label>
-              <input
-                type="number" min="1" value={amount || ""}
-                onChange={(e) => setAmount(Math.max(0, parseInt(e.target.value) || 0))}
-                style={{ marginLeft: 8, width: 160 }}
-              />
-            </div>
+            {useDenom ? (
+              <div>
+                <div className="denomination-grid">
+                  {DENOM_ITEMS.map((item) => (
+                    <div className="denomination-row" key={item.key}>
+                      <label>{item.label}</label>
+                      <input
+                        type="number" min="0"
+                        value={denom[item.key] || ""}
+                        onChange={(e) => setDenom({ ...denom, [item.key]: Math.max(0, parseInt(e.target.value) || 0) })}
+                      />
+                      <span>{(denom[item.key] * item.value).toLocaleString()}円</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="total-row">
+                  <strong>合計: {denomAmount.toLocaleString()}円</strong>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <label>金額（円）</label>
+                <input
+                  type="number" min="1" value={amount || ""}
+                  onChange={(e) => setAmount(Math.max(0, parseInt(e.target.value) || 0))}
+                  style={{ marginLeft: 8, width: 160 }}
+                />
+              </div>
+            )}
             <div>
               <label>備考</label>
               <input
@@ -185,7 +240,7 @@ export function TransactionList({ safeId, transactions, denomChecks, bags, cashB
               <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ marginLeft: 8 }} />
             </div>
           </div>
-          <button className="btn-primary" onClick={handleSubmit} disabled={loading || amount <= 0} style={{ marginTop: 12 }}>
+          <button className="btn-primary" onClick={handleSubmit} disabled={loading || (useDenom ? denomAmount <= 0 : amount <= 0)} style={{ marginTop: 12 }}>
             {loading ? "処理中..." : (txType === "Deposit" ? "入金する" : "出金する")}
           </button>
         </div>
@@ -231,6 +286,12 @@ export function TransactionList({ safeId, transactions, denomChecks, bags, cashB
                       <span className={`type ${row.data.type === "Deposit" ? "type-deposit" : "type-withdrawal"}`}>
                         {row.data.type === "Deposit" ? "入金" : "出金"}
                       </span>
+                      {row.data.denomination && (
+                        <button
+                          onClick={() => setViewDenomTx(row.data)}
+                          style={{ marginLeft: 4, background: "none", border: "none", color: "#2563eb", cursor: "pointer", fontSize: "0.8rem", textDecoration: "underline" }}
+                        >金種</button>
+                      )}
                     </td>
                     <td>{row.data.amount.toLocaleString()}円</td>
                     <td>{row.data.description}</td>
@@ -257,6 +318,46 @@ export function TransactionList({ safeId, transactions, denomChecks, bags, cashB
             )}
           </tbody>
         </table>
+      )}
+
+      {viewDenomTx?.denomination && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000
+        }}>
+          <div className="card" style={{ background: "white", minWidth: 400, maxWidth: 480 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <h3 style={{ margin: 0 }}>金種内訳</h3>
+              <button onClick={() => setViewDenomTx(null)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer" }}>✕</button>
+            </div>
+            <p style={{ marginBottom: 8 }}>
+              {viewDenomTx.type === "Deposit" ? "入金" : "出金"}: <strong>{viewDenomTx.amount.toLocaleString()}円</strong>
+              {viewDenomTx.description && <span style={{ marginLeft: 8, color: "#666" }}>({viewDenomTx.description})</span>}
+            </p>
+            <table style={{ width: "100%" }}>
+              <thead>
+                <tr><th>金種</th><th>枚数</th><th>小計</th></tr>
+              </thead>
+              <tbody>
+                {DENOM_ITEMS.map((item) => {
+                  const count = viewDenomTx.denomination![item.key];
+                  if (count === 0) return null;
+                  return (
+                    <tr key={item.key}>
+                      <td>{item.label}</td>
+                      <td>{count}</td>
+                      <td style={{ textAlign: "right" }}>{(count * item.value).toLocaleString()}円</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <div style={{ marginTop: 12, textAlign: "right", fontWeight: "bold" }}>
+              合計: {viewDenomTx.amount.toLocaleString()}円
+            </div>
+            <button className="btn-primary" onClick={() => setViewDenomTx(null)} style={{ marginTop: 12 }}>閉じる</button>
+          </div>
+        </div>
       )}
 
       {editCheck && (
