@@ -1,13 +1,15 @@
 using PettyCash.Application.Dtos;
 using PettyCash.Domain.Entities;
 using PettyCash.Domain.Repositories;
+using PettyCash.Domain.Services;
 using PettyCash.Domain.ValueObjects;
 
 namespace PettyCash.Application.UseCases.DenominationChecks;
 
 public class CheckChangeBagUseCase(
     IChangeBagRepository bagRepository,
-    IDenominationCheckRepository checkRepository)
+    IDenominationCheckRepository checkRepository,
+    ISequenceNumberService sequenceNumberService)
 {
     public async Task<DenominationCheckDto> ExecuteAsync(int bagId, DenominationCheckRequestDto dto)
     {
@@ -20,13 +22,14 @@ public class CheckChangeBagUseCase(
             dto.Count10, dto.Count5, dto.Count1);
 
         var check = DenominationCheck.CreateForChangeBag(bag, denomination);
+        await sequenceNumberService.AssignAsync(check);
         await checkRepository.AddAsync(check);
 
         return ToDto(check);
     }
 
     private static DenominationCheckDto ToDto(DenominationCheck c) => new(
-        c.Id, c.ChangeBagId, c.CashBagId, c.PrepBagId,
+        c.Id, c.SequenceNumber, c.ChangeBagId, c.CashBagId, c.PrepBagId,
         c.Denomination.Count10000, c.Denomination.Count5000, c.Denomination.Count1000,
         c.Denomination.Count500, c.Denomination.Count100, c.Denomination.Count50,
         c.Denomination.Count10, c.Denomination.Count5, c.Denomination.Count1,

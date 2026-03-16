@@ -1,11 +1,12 @@
 using PettyCash.Application.Dtos;
 using PettyCash.Domain.Entities;
 using PettyCash.Domain.Repositories;
+using PettyCash.Domain.Services;
 using PettyCash.Domain.ValueObjects;
 
 namespace PettyCash.Application.UseCases.CashBags;
 
-public class DepositCashBagUseCase(ICashBagRepository cashBagRepository)
+public class DepositCashBagUseCase(ICashBagRepository cashBagRepository, ISequenceNumberService sequenceNumberService)
 {
     public async Task<CashBagDto> ExecuteAsync(DepositRequestDto dto)
     {
@@ -20,6 +21,7 @@ public class DepositCashBagUseCase(ICashBagRepository cashBagRepository)
             );
         }
         var bag = CashBag.CreateDeposit(dto.SafeId, dto.Amount, dto.Description, date, denomination);
+        await sequenceNumberService.AssignAsync(bag.Transaction!);
         await cashBagRepository.AddAsync(bag);
 
         return ToDto(bag);
@@ -31,6 +33,7 @@ public class DepositCashBagUseCase(ICashBagRepository cashBagRepository)
         bag.Description,
         bag.Status.ToString(),
         bag.CreatedAt,
-        bag.MovedAt
+        bag.MovedAt,
+        bag.Transaction?.SequenceNumber
     );
 }

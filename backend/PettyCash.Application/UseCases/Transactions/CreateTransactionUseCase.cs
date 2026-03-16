@@ -2,11 +2,12 @@ using PettyCash.Application.Dtos;
 using PettyCash.Domain.Entities;
 using PettyCash.Domain.Enums;
 using PettyCash.Domain.Repositories;
+using PettyCash.Domain.Services;
 using PettyCash.Domain.ValueObjects;
 
 namespace PettyCash.Application.UseCases.Transactions;
 
-public class CreateTransactionUseCase(ITransactionRepository transactionRepository)
+public class CreateTransactionUseCase(ITransactionRepository transactionRepository, ISequenceNumberService sequenceNumberService)
 {
     public async Task<TransactionDto> ExecuteAsync(CreateTransactionRequestDto dto)
     {
@@ -27,6 +28,7 @@ public class CreateTransactionUseCase(ITransactionRepository transactionReposito
             throw new ArgumentException("金額は1以上である必要があります。");
 
         var transaction = Transaction.CreateStandalone(dto.SafeId, type, dto.Amount, dto.Description, date, denomination);
+        await sequenceNumberService.AssignAsync(transaction);
         await transactionRepository.AddAsync(transaction);
 
         return MapToDto(transaction);
@@ -39,7 +41,7 @@ public class CreateTransactionUseCase(ITransactionRepository transactionReposito
             : null;
 
         return new TransactionDto(
-            t.Id, t.ChangeBagId, t.CashBagId, t.PrepBagId,
+            t.Id, t.SequenceNumber, t.ChangeBagId, t.CashBagId, t.PrepBagId,
             t.Type.ToString(), t.Amount, t.Description, t.CreatedAt, denomDto
         );
     }

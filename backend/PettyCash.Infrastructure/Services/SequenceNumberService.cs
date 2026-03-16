@@ -1,0 +1,33 @@
+using Microsoft.EntityFrameworkCore;
+using PettyCash.Domain.Entities;
+using PettyCash.Domain.Services;
+using PettyCash.Infrastructure.Data;
+
+namespace PettyCash.Infrastructure.Services;
+
+public class SequenceNumberService(PettyCashDbContext context) : ISequenceNumberService
+{
+    public async Task AssignAsync(Transaction transaction)
+    {
+        var seq = await GetNextAsync(transaction.SafeId);
+        transaction.SetSequenceNumber(seq);
+    }
+
+    public async Task AssignAsync(DenominationCheck check)
+    {
+        var seq = await GetNextAsync(check.SafeId);
+        check.SetSequenceNumber(seq);
+    }
+
+    private async Task<int> GetNextAsync(int safeId)
+    {
+        return await context.Database
+            .SqlQueryRaw<int>(
+                @"SELECT GREATEST(
+                    COALESCE((SELECT MAX(sequence_number) FROM transactions WHERE safe_id = {0}), 0),
+                    COALESCE((SELECT MAX(sequence_number) FROM denomination_checks WHERE safe_id = {0}), 0)
+                ) + 1 AS ""Value""",
+                safeId)
+            .FirstAsync();
+    }
+}

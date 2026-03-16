@@ -7,8 +7,9 @@ public class Safe
     public string Description { get; private set; } = string.Empty;
     public DateTime CreatedAt { get; private set; }
 
-    private readonly List<Transaction> _transactions = [];
-    public IReadOnlyCollection<Transaction> Transactions => _transactions.AsReadOnly();
+    public int CurrentBalance { get; private set; }
+    public int VendorBalance { get; private set; }
+    public int PettyCashBalance { get; private set; }
 
     private Safe() { }
 
@@ -25,18 +26,11 @@ public class Safe
         };
     }
 
-    public int CurrentBalance => VendorBalance + PettyCashBalance;
-
-    public int VendorBalance => CalcBalance(t => t.HasBag);
-
-    public int PettyCashBalance => CalcBalance(t => !t.HasBag);
-
-    private int CalcBalance(Func<Transaction, bool> filter)
+    public void SetBalances(int vendorBalance, int pettyCashBalance)
     {
-        var filtered = _transactions.Where(filter);
-        var deposits = filtered.Where(t => t.Type == Enums.TransactionType.Deposit).Sum(t => t.Amount);
-        var withdrawals = filtered.Where(t => t.Type == Enums.TransactionType.Withdrawal).Sum(t => t.Amount);
-        return deposits - withdrawals;
+        VendorBalance = vendorBalance;
+        PettyCashBalance = pettyCashBalance;
+        CurrentBalance = vendorBalance + pettyCashBalance;
     }
 
     public void UpdateName(string name)

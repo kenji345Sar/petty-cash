@@ -1,9 +1,10 @@
 using PettyCash.Application.Dtos;
 using PettyCash.Domain.Repositories;
+using PettyCash.Domain.Services;
 
 namespace PettyCash.Application.UseCases.PrepBags;
 
-public class HandOverPrepBagUseCase(IPrepBagRepository prepBagRepository, ITransactionRepository transactionRepository)
+public class HandOverPrepBagUseCase(IPrepBagRepository prepBagRepository, ITransactionRepository transactionRepository, ISequenceNumberService sequenceNumberService)
 {
     public async Task<PrepBagDto> ExecuteAsync(int id)
     {
@@ -11,6 +12,7 @@ public class HandOverPrepBagUseCase(IPrepBagRepository prepBagRepository, ITrans
             ?? throw new KeyNotFoundException($"準備バッグ(ID={id})が見つかりません。");
 
         var transaction = bag.MarkHandedOver();
+        await sequenceNumberService.AssignAsync(transaction);
         await transactionRepository.AddAsync(transaction);
 
         return new PrepBagDto(

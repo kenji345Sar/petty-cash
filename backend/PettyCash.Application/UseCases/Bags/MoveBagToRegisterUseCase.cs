@@ -1,9 +1,10 @@
 using PettyCash.Application.Dtos;
 using PettyCash.Domain.Repositories;
+using PettyCash.Domain.Services;
 
 namespace PettyCash.Application.UseCases.Bags;
 
-public class MoveBagToRegisterUseCase(IChangeBagRepository bagRepository)
+public class MoveBagToRegisterUseCase(IChangeBagRepository bagRepository, ISequenceNumberService sequenceNumberService)
 {
     public async Task<TransactionDto> ExecuteAsync(int bagId)
     {
@@ -11,10 +12,12 @@ public class MoveBagToRegisterUseCase(IChangeBagRepository bagRepository)
             ?? throw new KeyNotFoundException($"バッグID {bagId} が見つかりません。");
 
         var transaction = bag.MoveToRegister();
+        await sequenceNumberService.AssignAsync(transaction);
         await bagRepository.UpdateAsync(bag);
 
         return new TransactionDto(
             transaction.Id,
+            transaction.SequenceNumber,
             transaction.ChangeBagId,
             transaction.CashBagId,
             transaction.PrepBagId,
