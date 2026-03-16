@@ -212,7 +212,7 @@ export function CashBagList({ safeId, bags, prepBags, denomChecks, onUpdate }: P
       <table>
         <thead>
           <tr>
-            <th>ID</th>
+            <th>番号</th>
             <th>合計金額</th>
             <th>備考</th>
             <th>入金日時</th>
@@ -239,7 +239,7 @@ export function CashBagList({ safeId, bags, prepBags, denomChecks, onUpdate }: P
               return (
                 <Fragment key={bag.id}>
                   <tr style={selected.has(bag.id) ? { background: "#e8f4fd" } : undefined}>
-                    <td>{bag.id}</td>
+                    <td>{bag.sequenceNumber ? `BAG-${String(bag.sequenceNumber).padStart(3, "0")}` : bag.id}</td>
                     <td>{bag.totalAmount.toLocaleString()}円</td>
                     <td>{bag.description}</td>
                     <td>{new Date(bag.createdAt).toLocaleString("ja-JP")}</td>
@@ -309,7 +309,7 @@ export function CashBagList({ safeId, bags, prepBags, denomChecks, onUpdate }: P
           <table>
             <thead>
               <tr>
-                <th>ID</th>
+                <th>番号</th>
                 <th>合計金額</th>
                 <th>含むバッグ</th>
                 <th>操作</th>

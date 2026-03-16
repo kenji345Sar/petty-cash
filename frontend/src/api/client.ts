@@ -44,6 +44,8 @@ export interface ChangeBag {
   status: "InSafe" | "MovedToRegister";
   createdAt: string;
   movedAt: string | null;
+  depositSequenceNumber: number | null;
+  withdrawalSequenceNumber: number | null;
 }
 
 export interface CashBag {
@@ -53,10 +55,12 @@ export interface CashBag {
   status: "AtRegister" | "MovedToSafe";
   createdAt: string;
   movedAt: string | null;
+  sequenceNumber: number | null;
 }
 
 export interface Transaction {
   id: number;
+  sequenceNumber: number;
   changeBagId: number | null;
   cashBagId: number | null;
   prepBagId: number | null;
@@ -69,6 +73,7 @@ export interface Transaction {
 
 export interface DenominationCheck {
   id: number;
+  sequenceNumber: number;
   changeBagId: number | null;
   cashBagId: number | null;
   prepBagId: number | null;

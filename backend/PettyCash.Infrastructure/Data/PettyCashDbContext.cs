@@ -25,10 +25,6 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
             entity.Ignore(e => e.CurrentBalance);
             entity.Ignore(e => e.VendorBalance);
             entity.Ignore(e => e.PettyCashBalance);
-
-            entity.HasMany(e => e.Transactions)
-                .WithOne(t => t.Safe)
-                .HasForeignKey(t => t.SafeId);
         });
 
         modelBuilder.Entity<ChangeBag>(entity =>
@@ -87,6 +83,7 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
             entity.ToTable("transactions");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.SequenceNumber).HasColumnName("sequence_number");
             entity.Property(e => e.SafeId).HasColumnName("safe_id");
             entity.Property(e => e.ChangeBagId).HasColumnName("change_bag_id");
             entity.Property(e => e.CashBagId).HasColumnName("cash_bag_id");
@@ -134,6 +131,7 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
             entity.ToTable("denomination_checks");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.SequenceNumber).HasColumnName("sequence_number");
             entity.Property(e => e.SafeId).HasColumnName("safe_id");
             entity.Property(e => e.ChangeBagId).HasColumnName("change_bag_id");
             entity.Property(e => e.CashBagId).HasColumnName("cash_bag_id");

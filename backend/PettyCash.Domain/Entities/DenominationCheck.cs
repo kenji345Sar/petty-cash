@@ -5,6 +5,7 @@ namespace PettyCash.Domain.Entities;
 public class DenominationCheck
 {
     public int Id { get; private set; }
+    public int SequenceNumber { get; private set; }
     public int SafeId { get; private set; }
     public Safe? Safe { get; private set; }
     public int? ChangeBagId { get; private set; }
@@ -21,6 +22,15 @@ public class DenominationCheck
     public PrepBag? PrepBag { get; private set; }
 
     private DenominationCheck() { }
+
+    internal void SetSequenceNumber(int sequenceNumber)
+    {
+        if (SequenceNumber != 0)
+            throw new InvalidOperationException("採番済みのため、番号を変更できません。");
+        if (sequenceNumber <= 0)
+            throw new ArgumentException("採番は1以上である必要があります。");
+        SequenceNumber = sequenceNumber;
+    }
 
     public static DenominationCheck CreateForChangeBag(ChangeBag bag, Denomination denomination)
     {

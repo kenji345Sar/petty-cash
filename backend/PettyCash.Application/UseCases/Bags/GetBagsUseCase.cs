@@ -15,7 +15,9 @@ public class GetBagsUseCase(IChangeBagRepository bagRepository)
             bag.Description,
             bag.Status.ToString(),
             bag.CreatedAt,
-            bag.MovedAt
+            bag.MovedAt,
+            bag.DepositTransaction?.SequenceNumber,
+            bag.WithdrawalTransaction?.SequenceNumber
         )).ToList();
     }
 }

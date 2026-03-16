@@ -6,8 +6,8 @@ namespace PettyCash.Domain.Entities;
 public class Transaction
 {
     public int Id { get; private set; }
+    public int SequenceNumber { get; private set; }
     public int SafeId { get; private set; }
-    public Safe? Safe { get; private set; }
     public int? ChangeBagId { get; private set; }
     public int? CashBagId { get; private set; }
     public int? PrepBagId { get; private set; }
@@ -25,6 +25,15 @@ public class Transaction
     public bool HasBag => ChangeBagId != null || CashBagId != null || PrepBagId != null;
 
     private Transaction() { }
+
+    internal void SetSequenceNumber(int sequenceNumber)
+    {
+        if (SequenceNumber != 0)
+            throw new InvalidOperationException("採番済みのため、番号を変更できません。");
+        if (sequenceNumber <= 0)
+            throw new ArgumentException("採番は1以上である必要があります。");
+        SequenceNumber = sequenceNumber;
+    }
 
     internal static Transaction CreateDeposit(ChangeBag bag, int amount, string description, DateTime date, Denomination? denomination = null)
     {

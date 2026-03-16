@@ -2,6 +2,7 @@ namespace PettyCash.Application.Dtos;
 
 public record DenominationCheckDto(
     int Id,
+    int SequenceNumber,
     int? ChangeBagId,
     int? CashBagId,
     int? PrepBagId,

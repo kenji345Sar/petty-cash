@@ -6,5 +6,7 @@ public record ChangeBagDto(
     string Description,
     string Status,
     DateTime CreatedAt,
-    DateTime? MovedAt
+    DateTime? MovedAt,
+    int? DepositSequenceNumber,
+    int? WithdrawalSequenceNumber
 );

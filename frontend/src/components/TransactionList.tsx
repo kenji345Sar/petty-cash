@@ -50,6 +50,9 @@ type Row =
   | { kind: "tx"; data: Transaction; at: string }
   | { kind: "check"; data: DenominationCheck; at: string };
 
+const formatBagNo = (prefix: string, seq: number | null) =>
+  seq ? `${prefix}-${String(seq).padStart(3, "0")}` : null;
+
 function formatBag(
   changeBagId: number | null,
   cashBagId: number | null,
@@ -60,15 +63,17 @@ function formatBag(
 ) {
   if (changeBagId) {
     const bag = bags.find((b) => b.id === changeBagId);
+    const no = formatBagNo("CA", bag?.depositSequenceNumber ?? null) ?? `CA-?`;
     return bag
-      ? `釣り銭#${changeBagId}${bag.description ? ` (${bag.description})` : ""} ${bag.totalAmount.toLocaleString()}円`
-      : `釣り銭#${changeBagId}`;
+      ? `${no} ${bag.totalAmount.toLocaleString()}円`
+      : no;
   }
   if (cashBagId) {
     const bag = cashBags.find((b) => b.id === cashBagId);
+    const no = formatBagNo("BAG", bag?.sequenceNumber ?? null) ?? `BAG-?`;
     return bag
-      ? `キャッシュ#${cashBagId}${bag.description ? ` (${bag.description})` : ""} ${bag.totalAmount.toLocaleString()}円`
-      : `キャッシュ#${cashBagId}`;
+      ? `${no} ${bag.totalAmount.toLocaleString()}円`
+      : no;
   }
   if (prepBagId) {
     const pb = prepBags.find((p) => p.id === prepBagId);
@@ -107,7 +112,11 @@ export function TransactionList({ safeId, transactions, denomChecks, bags, cashB
   const rows: Row[] = [
     ...transactions.filter((t) => inRange(t.createdAt)).map((t) => ({ kind: "tx" as const, data: t, at: t.createdAt })),
     ...denomChecks.filter((c) => inRange(c.createdAt)).map((c) => ({ kind: "check" as const, data: c, at: c.createdAt })),
-  ].sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
+  ].sort((a, b) => {
+    const seqA = a.data.sequenceNumber;
+    const seqB = b.data.sequenceNumber;
+    return seqB - seqA;
+  });
 
   const denomAmount = denomTotal(denom);
 
@@ -266,6 +275,7 @@ export function TransactionList({ safeId, transactions, denomChecks, bags, cashB
         <table>
           <thead>
             <tr>
+              <th>番号</th>
               <th>種別</th>
               <th>金額</th>
               <th>摘要</th>
@@ -276,12 +286,13 @@ export function TransactionList({ safeId, transactions, denomChecks, bags, cashB
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ textAlign: "center" }}>記録がありません</td>
+                <td colSpan={6} style={{ textAlign: "center" }}>記録がありません</td>
               </tr>
             ) : (
               rows.map((row) =>
                 row.kind === "tx" ? (
                   <tr key={`tx-${row.data.id}`}>
+                    <td>{row.data.sequenceNumber}</td>
                     <td>
                       <span className={`type ${row.data.type === "Deposit" ? "type-deposit" : "type-withdrawal"}`}>
                         {row.data.type === "Deposit" ? "入金" : "出金"}
@@ -300,6 +311,7 @@ export function TransactionList({ safeId, transactions, denomChecks, bags, cashB
                   </tr>
                 ) : (
                   <tr key={`chk-${row.data.id}`} style={{ background: "#f0f7ff", cursor: "pointer" }} onClick={() => setEditCheck(row.data)}>
+                    <td>{row.data.sequenceNumber}</td>
                     <td>
                       <span className="type type-check">有高</span>
                     </td>

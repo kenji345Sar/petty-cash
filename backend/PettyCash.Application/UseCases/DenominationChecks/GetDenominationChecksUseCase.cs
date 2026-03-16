@@ -10,7 +10,7 @@ public class GetDenominationChecksUseCase(IDenominationCheckRepository checkRepo
         var checks = await checkRepository.GetBySafeIdAsync(safeId);
 
         return checks.Select(c => new DenominationCheckDto(
-            c.Id, c.ChangeBagId, c.CashBagId, c.PrepBagId,
+            c.Id, c.SequenceNumber, c.ChangeBagId, c.CashBagId, c.PrepBagId,
             c.Denomination.Count10000, c.Denomination.Count5000, c.Denomination.Count1000,
             c.Denomination.Count500, c.Denomination.Count100, c.Denomination.Count50,
             c.Denomination.Count10, c.Denomination.Count5, c.Denomination.Count1,

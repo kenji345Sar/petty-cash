@@ -44,7 +44,7 @@ public class UpdateDenominationCheckUseCase(
         await checkRepository.UpdateAsync(check);
 
         return new DenominationCheckDto(
-            check.Id, check.ChangeBagId, check.CashBagId, check.PrepBagId,
+            check.Id, check.SequenceNumber, check.ChangeBagId, check.CashBagId, check.PrepBagId,
             check.Denomination.Count10000, check.Denomination.Count5000, check.Denomination.Count1000,
             check.Denomination.Count500, check.Denomination.Count100, check.Denomination.Count50,
             check.Denomination.Count10, check.Denomination.Count5, check.Denomination.Count1,

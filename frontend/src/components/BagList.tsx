@@ -139,7 +139,7 @@ export function BagList({ safeId, bags, denomChecks, onUpdate }: Props) {
       <table>
         <thead>
           <tr>
-            <th>ID</th>
+            <th>番号</th>
             <th>合計金額</th>
             <th>備考</th>
             <th>状態</th>
@@ -159,7 +159,7 @@ export function BagList({ safeId, bags, denomChecks, onUpdate }: Props) {
               return (
                 <Fragment key={bag.id}>
                   <tr>
-                    <td>{bag.id}</td>
+                    <td>{bag.depositSequenceNumber ? `CA-${String(bag.depositSequenceNumber).padStart(3, "0")}` : bag.id}</td>
                     <td>{bag.totalAmount.toLocaleString()}円</td>
                     <td>{bag.description}</td>
                     <td>

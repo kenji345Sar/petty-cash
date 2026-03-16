@@ -6,5 +6,6 @@ public record CashBagDto(
     string Description,
     string Status,
     DateTime CreatedAt,
-    DateTime? MovedAt
+    DateTime? MovedAt,
+    int? SequenceNumber
 );

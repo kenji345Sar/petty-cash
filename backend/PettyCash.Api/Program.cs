@@ -6,8 +6,10 @@ using PettyCash.Application.UseCases.PrepBags;
 using PettyCash.Application.UseCases.Safes;
 using PettyCash.Application.UseCases.Transactions;
 using PettyCash.Domain.Repositories;
+using PettyCash.Domain.Services;
 using PettyCash.Infrastructure.Data;
 using PettyCash.Infrastructure.Repositories;
+using PettyCash.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +25,7 @@ builder.Services.AddScoped<CreateSafeUseCase>();
 builder.Services.AddScoped<IChangeBagRepository, ChangeBagRepository>();
 builder.Services.AddScoped<ICashBagRepository, CashBagRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<ISequenceNumberService, SequenceNumberService>();
 builder.Services.AddScoped<DepositBagUseCase>();
 builder.Services.AddScoped<MoveBagToRegisterUseCase>();
 builder.Services.AddScoped<GetBagsUseCase>();
@@ -142,6 +145,46 @@ using (var scope = app.Services.CreateScope())
             UPDATE denomination_checks SET safe_id = 1 WHERE safe_id IS NULL;
             ALTER TABLE denomination_checks ALTER COLUMN safe_id SET NOT NULL;
             ALTER TABLE denomination_checks ADD CONSTRAINT fk_denomination_checks_safe FOREIGN KEY (safe_id) REFERENCES safes(id)
+        ");
+    }
+
+    // transactionsテーブルにsequence_numberカラムを追加
+    db.Database.ExecuteSqlRaw(@"
+        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS sequence_number INTEGER NOT NULL DEFAULT 0
+    ");
+    // denomination_checksテーブルにsequence_numberカラムを追加
+    db.Database.ExecuteSqlRaw(@"
+        ALTER TABLE denomination_checks ADD COLUMN IF NOT EXISTS sequence_number INTEGER NOT NULL DEFAULT 0
+    ");
+    // 未採番データがある場合のみ連番を再計算
+    var hasUnNumbered = db.Database.SqlQueryRaw<int>(
+        "SELECT COUNT(*) AS \"Value\" FROM (SELECT 1 FROM transactions WHERE sequence_number = 0 UNION ALL SELECT 1 FROM denomination_checks WHERE sequence_number = 0) x"
+    ).First();
+    if (hasUnNumbered > 0)
+    {
+        db.Database.ExecuteSqlRaw(@"
+            UPDATE transactions t SET sequence_number = sub.rn
+            FROM (
+                SELECT src, id, ROW_NUMBER() OVER (PARTITION BY safe_id ORDER BY created_at, src, id) AS rn
+                FROM (
+                    SELECT 'a' AS src, id, safe_id, created_at FROM transactions
+                    UNION ALL
+                    SELECT 'b' AS src, id, safe_id, created_at FROM denomination_checks
+                ) combined
+            ) sub
+            WHERE sub.src = 'a' AND sub.id = t.id
+        ");
+        db.Database.ExecuteSqlRaw(@"
+            UPDATE denomination_checks dc SET sequence_number = sub.rn
+            FROM (
+                SELECT src, id, ROW_NUMBER() OVER (PARTITION BY safe_id ORDER BY created_at, src, id) AS rn
+                FROM (
+                    SELECT 'a' AS src, id, safe_id, created_at FROM transactions
+                    UNION ALL
+                    SELECT 'b' AS src, id, safe_id, created_at FROM denomination_checks
+                ) combined
+            ) sub
+            WHERE sub.src = 'b' AND sub.id = dc.id
         ");
     }
 
