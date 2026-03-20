@@ -14,9 +14,9 @@ public class ChangeBag
     public DateTime CreatedAt { get; private set; }
     public DateTime? MovedAt { get; private set; }
 
-    private readonly List<Transaction> _transactions = [];
-    public Transaction? DepositTransaction => _transactions.FirstOrDefault(t => t.Type == Enums.TransactionType.Deposit);
-    public Transaction? WithdrawalTransaction => _transactions.FirstOrDefault(t => t.Type == Enums.TransactionType.Withdrawal);
+    private readonly List<VendorTransaction> _transactions = [];
+    public VendorTransaction? DepositTransaction => _transactions.FirstOrDefault(t => t.Type == TransactionType.Deposit);
+    public VendorTransaction? WithdrawalTransaction => _transactions.FirstOrDefault(t => t.Type == TransactionType.Withdrawal);
 
     private readonly List<DenominationCheck> _denominationChecks = [];
     public IReadOnlyCollection<DenominationCheck> DenominationChecks => _denominationChecks.AsReadOnly();
@@ -38,12 +38,12 @@ public class ChangeBag
             CreatedAt = date
         };
 
-        bag._transactions.Add(Transaction.CreateDeposit(bag, finalAmount, description, date, denomination));
+        bag._transactions.Add(VendorTransaction.CreateDeposit(bag, finalAmount, description, date, denomination));
 
         return bag;
     }
 
-    public Transaction MoveToRegister()
+    public VendorTransaction MoveToRegister(DateTime movedAt)
     {
         if (Status == BagStatus.MovedToRegister)
         {
@@ -51,9 +51,9 @@ public class ChangeBag
         }
 
         Status = BagStatus.MovedToRegister;
-        MovedAt = DateTime.UtcNow;
+        MovedAt = movedAt;
 
-        var transaction = Transaction.CreateWithdrawal(this, TotalAmount);
+        var transaction = VendorTransaction.CreateWithdrawal(this, TotalAmount, movedAt);
         _transactions.Add(transaction);
 
         return transaction;

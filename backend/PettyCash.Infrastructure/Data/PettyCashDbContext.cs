@@ -8,7 +8,8 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
     public DbSet<Safe> Safes => Set<Safe>();
     public DbSet<ChangeBag> ChangeBags => Set<ChangeBag>();
     public DbSet<CashBag> CashBags => Set<CashBag>();
-    public DbSet<Transaction> Transactions => Set<Transaction>();
+    public DbSet<VendorTransaction> VendorTransactions => Set<VendorTransaction>();
+    public DbSet<PettyCashTransaction> PettyCashTransactions => Set<PettyCashTransaction>();
     public DbSet<DenominationCheck> DenominationChecks => Set<DenominationCheck>();
     public DbSet<PrepBag> PrepBags => Set<PrepBag>();
 
@@ -41,7 +42,7 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
 
             entity.HasOne(e => e.Safe).WithMany().HasForeignKey(e => e.SafeId);
 
-            entity.HasMany<Transaction>("_transactions")
+            entity.HasMany<VendorTransaction>("_transactions")
                 .WithOne(t => t.ChangeBag)
                 .HasForeignKey(t => t.ChangeBagId);
 
@@ -71,28 +72,53 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
 
             entity.HasOne(e => e.Transaction)
                 .WithOne(t => t.CashBag)
-                .HasForeignKey<Transaction>(t => t.CashBagId);
+                .HasForeignKey<VendorTransaction>(t => t.CashBagId);
 
             entity.HasMany(e => e.DenominationChecks)
                 .WithOne(c => c.CashBag)
                 .HasForeignKey(c => c.CashBagId);
         });
 
-        modelBuilder.Entity<Transaction>(entity =>
+        modelBuilder.Entity<VendorTransaction>(entity =>
         {
-            entity.ToTable("transactions");
+            entity.ToTable("vendor_transactions");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.SequenceNumber).HasColumnName("sequence_number");
             entity.Property(e => e.SafeId).HasColumnName("safe_id");
             entity.Property(e => e.ChangeBagId).HasColumnName("change_bag_id");
             entity.Property(e => e.CashBagId).HasColumnName("cash_bag_id");
+            entity.Property(e => e.PrepBagId).HasColumnName("prep_bag_id");
             entity.Property(e => e.Type).HasColumnName("type");
             entity.Property(e => e.Amount).HasColumnName("amount");
             entity.Property(e => e.Description).HasColumnName("description").HasMaxLength(200);
-            entity.Property(e => e.PrepBagId).HasColumnName("prep_bag_id");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
-            entity.Ignore(e => e.HasBag);
+
+            entity.OwnsOne(e => e.Denomination, d =>
+            {
+                d.Property(p => p.Count10000).HasColumnName("denom_10000");
+                d.Property(p => p.Count5000).HasColumnName("denom_5000");
+                d.Property(p => p.Count1000).HasColumnName("denom_1000");
+                d.Property(p => p.Count500).HasColumnName("denom_500");
+                d.Property(p => p.Count100).HasColumnName("denom_100");
+                d.Property(p => p.Count50).HasColumnName("denom_50");
+                d.Property(p => p.Count10).HasColumnName("denom_10");
+                d.Property(p => p.Count5).HasColumnName("denom_5");
+                d.Property(p => p.Count1).HasColumnName("denom_1");
+            });
+        });
+
+        modelBuilder.Entity<PettyCashTransaction>(entity =>
+        {
+            entity.ToTable("petty_cash_transactions");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.SequenceNumber).HasColumnName("sequence_number");
+            entity.Property(e => e.SafeId).HasColumnName("safe_id");
+            entity.Property(e => e.Type).HasColumnName("type");
+            entity.Property(e => e.Amount).HasColumnName("amount");
+            entity.Property(e => e.Description).HasColumnName("description").HasMaxLength(200);
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
             entity.OwnsOne(e => e.Denomination, d =>
             {
@@ -123,7 +149,7 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
 
             entity.HasOne(e => e.Transaction)
                 .WithOne(t => t.PrepBag)
-                .HasForeignKey<Transaction>(t => t.PrepBagId);
+                .HasForeignKey<VendorTransaction>(t => t.PrepBagId);
         });
 
         modelBuilder.Entity<DenominationCheck>(entity =>

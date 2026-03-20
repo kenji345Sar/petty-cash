@@ -28,7 +28,7 @@ export interface DepositRequest {
   denomination?: Denomination;
 }
 
-export interface CreateTransactionRequest {
+export interface CreatePettyCashTransactionRequest {
   safeId: number;
   type: "Deposit" | "Withdrawal";
   amount: number;
@@ -58,12 +58,22 @@ export interface CashBag {
   sequenceNumber: number | null;
 }
 
-export interface Transaction {
+export interface VendorTransaction {
   id: number;
   sequenceNumber: number;
   changeBagId: number | null;
   cashBagId: number | null;
   prepBagId: number | null;
+  type: "Deposit" | "Withdrawal";
+  amount: number;
+  description: string;
+  createdAt: string;
+  denomination: Denomination | null;
+}
+
+export interface PettyCashTransaction {
+  id: number;
+  sequenceNumber: number;
   type: "Deposit" | "Withdrawal";
   amount: number;
   description: string;
@@ -133,7 +143,7 @@ export const api = {
     }),
 
   moveBagToRegister: (id: number) =>
-    fetchJson<Transaction>(`${API_BASE}/bags/${id}/move`, {
+    fetchJson<VendorTransaction>(`${API_BASE}/bags/${id}/move`, {
       method: "POST",
     }),
 
@@ -146,17 +156,26 @@ export const api = {
     }),
 
   moveCashBagToSafe: (id: number) =>
-    fetchJson<Transaction>(`${API_BASE}/cashbags/${id}/move`, {
+    fetchJson<VendorTransaction>(`${API_BASE}/cashbags/${id}/move`, {
       method: "POST",
     }),
 
-  getTransactions: (safeId: number) =>
-    fetchJson<Transaction[]>(`${API_BASE}/transactions?safeId=${safeId}`),
+  getVendorTransactions: (safeId: number) =>
+    fetchJson<VendorTransaction[]>(`${API_BASE}/vendor-transactions?safeId=${safeId}`),
 
-  createTransaction: (req: CreateTransactionRequest) =>
-    fetchJson<Transaction>(`${API_BASE}/transactions`, {
+  getPettyCashTransactions: (safeId: number) =>
+    fetchJson<PettyCashTransaction[]>(`${API_BASE}/petty-cash-transactions?safeId=${safeId}`),
+
+  createPettyCashTransaction: (req: CreatePettyCashTransactionRequest) =>
+    fetchJson<PettyCashTransaction>(`${API_BASE}/petty-cash-transactions`, {
       method: "POST",
       body: JSON.stringify(req),
+    }),
+
+  checkSafe: (safeId: number, denomination: Denomination) =>
+    fetchJson<DenominationCheck>(`${API_BASE}/denominationchecks/safe/${safeId}`, {
+      method: "POST",
+      body: JSON.stringify(denomination),
     }),
 
   checkChangeBag: (bagId: number, denomination: Denomination) =>

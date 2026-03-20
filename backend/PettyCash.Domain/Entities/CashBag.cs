@@ -17,7 +17,7 @@ public class CashBag
     public int? PrepBagId { get; private set; }
     public PrepBag? PrepBag { get; private set; }
 
-    public Transaction? Transaction { get; private set; }
+    public VendorTransaction? Transaction { get; private set; }
 
     private readonly List<DenominationCheck> _denominationChecks = [];
     public IReadOnlyCollection<DenominationCheck> DenominationChecks => _denominationChecks.AsReadOnly();
@@ -40,7 +40,7 @@ public class CashBag
             MovedAt = date
         };
 
-        bag.Transaction = Transaction.CreateCashBagDeposit(bag, finalAmount, denomination);
+        bag.Transaction = VendorTransaction.CreateCashBagDeposit(bag, finalAmount, date, denomination);
 
         return bag;
     }

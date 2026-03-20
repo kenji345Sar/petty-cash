@@ -6,22 +6,22 @@ using PettyCash.Domain.ValueObjects;
 
 namespace PettyCash.Application.UseCases.DenominationChecks;
 
-public class CheckPrepBagUseCase(
-    IPrepBagRepository prepBagRepository,
+public class CheckSafeUseCase(
+    ISafeRepository safeRepository,
     IDenominationCheckRepository checkRepository,
     ISequenceNumberService sequenceNumberService)
 {
-    public async Task<DenominationCheckDto> ExecuteAsync(int bagId, DenominationCheckRequestDto dto)
+    public async Task<DenominationCheckDto> ExecuteAsync(int safeId, DenominationCheckRequestDto dto)
     {
-        var bag = await prepBagRepository.GetByIdAsync(bagId)
-            ?? throw new KeyNotFoundException($"準備バッグ(ID={bagId})が見つかりません。");
+        var safe = await safeRepository.GetByIdAsync(safeId)
+            ?? throw new KeyNotFoundException($"金庫(ID={safeId})が見つかりません。");
 
         var denomination = new Denomination(
             dto.Count10000, dto.Count5000, dto.Count1000,
             dto.Count500, dto.Count100, dto.Count50,
             dto.Count10, dto.Count5, dto.Count1);
 
-        var check = DenominationCheck.CreateForPrepBag(bag, denomination, DateTime.UtcNow);
+        var check = DenominationCheck.CreateForSafe(safeId, denomination, safe.CurrentBalance, DateTime.UtcNow);
         await sequenceNumberService.AssignAsync(check);
         await checkRepository.AddAsync(check);
 

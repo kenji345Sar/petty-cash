@@ -10,6 +10,7 @@ public class DenominationChecksController(
     CheckChangeBagUseCase checkChangeBagUseCase,
     CheckCashBagUseCase checkCashBagUseCase,
     CheckPrepBagUseCase checkPrepBagUseCase,
+    CheckSafeUseCase checkSafeUseCase,
     GetDenominationChecksUseCase getDenominationChecksUseCase,
     UpdateDenominationCheckUseCase updateDenominationCheckUseCase) : ControllerBase
 {
@@ -18,6 +19,20 @@ public class DenominationChecksController(
     {
         var checks = await getDenominationChecksUseCase.ExecuteAsync(safeId);
         return Ok(checks);
+    }
+
+    [HttpPost("safe/{safeId}")]
+    public async Task<ActionResult<DenominationCheckDto>> CheckSafe(int safeId, DenominationCheckRequestDto dto)
+    {
+        try
+        {
+            var check = await checkSafeUseCase.ExecuteAsync(safeId, dto);
+            return Ok(check);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
     }
 
     [HttpPost("changebag/{bagId}")]

@@ -6,16 +6,16 @@ namespace PettyCash.Application.UseCases.Bags;
 
 public class MoveBagToRegisterUseCase(IChangeBagRepository bagRepository, ISequenceNumberService sequenceNumberService)
 {
-    public async Task<TransactionDto> ExecuteAsync(int bagId)
+    public async Task<VendorTransactionDto> ExecuteAsync(int bagId)
     {
         var bag = await bagRepository.GetByIdAsync(bagId)
             ?? throw new KeyNotFoundException($"バッグID {bagId} が見つかりません。");
 
-        var transaction = bag.MoveToRegister();
+        var transaction = bag.MoveToRegister(DateTime.UtcNow);
         await sequenceNumberService.AssignAsync(transaction);
         await bagRepository.UpdateAsync(bag);
 
-        return new TransactionDto(
+        return new VendorTransactionDto(
             transaction.Id,
             transaction.SequenceNumber,
             transaction.ChangeBagId,

@@ -3,7 +3,7 @@ import type { Denomination, DenominationCheck } from "../api/client";
 
 interface Props {
   bagId: number;
-  bagType: "change" | "cash" | "prep";
+  bagType: "change" | "cash" | "prep" | "safe";
   expectedAmount: number;
   onSubmit: (bagId: number, denomination: Denomination) => Promise<DenominationCheck>;
   onClose: () => void;
@@ -90,7 +90,7 @@ export function DenominationCheckForm({ bagId, bagType, expectedAmount, onSubmit
       <div className="card" style={{ background: "white", minWidth: 480, maxWidth: 580, maxHeight: "90vh", overflow: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <h3 style={{ margin: 0 }}>
-            {isEdit ? "有高修正" : "有高"}（{bagType === "change" ? "釣り銭" : bagType === "cash" ? "キャッシュ" : "準備"}#{bagId}）
+            {isEdit ? "有高修正" : "有高チェック"}（{bagType === "safe" ? "金庫全体" : bagType === "change" ? `釣り銭#${bagId}` : bagType === "cash" ? `キャッシュ#${bagId}` : `準備#${bagId}`}）
           </h3>
           <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer" }}>✕</button>
         </div>

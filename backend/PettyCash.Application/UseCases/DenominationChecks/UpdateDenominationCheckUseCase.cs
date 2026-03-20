@@ -8,7 +8,8 @@ public class UpdateDenominationCheckUseCase(
     IDenominationCheckRepository checkRepository,
     IChangeBagRepository changeBagRepository,
     ICashBagRepository cashBagRepository,
-    IPrepBagRepository prepBagRepository)
+    IPrepBagRepository prepBagRepository,
+    ISafeRepository safeRepository)
 {
     public async Task<DenominationCheckDto> ExecuteAsync(int id, DenominationCheckRequestDto dto)
     {
@@ -33,6 +34,12 @@ public class UpdateDenominationCheckUseCase(
             var bag = await prepBagRepository.GetByIdAsync(check.PrepBagId.Value)
                 ?? throw new KeyNotFoundException($"準備バッグ(ID={check.PrepBagId})が見つかりません。");
             expectedAmount = bag.TotalAmount;
+        }
+        else
+        {
+            var safe = await safeRepository.GetByIdAsync(check.SafeId)
+                ?? throw new KeyNotFoundException($"金庫(ID={check.SafeId})が見つかりません。");
+            expectedAmount = safe.CurrentBalance;
         }
 
         var denomination = new Denomination(

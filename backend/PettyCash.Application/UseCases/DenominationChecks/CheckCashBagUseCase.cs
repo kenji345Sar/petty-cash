@@ -21,7 +21,7 @@ public class CheckCashBagUseCase(
             dto.Count500, dto.Count100, dto.Count50,
             dto.Count10, dto.Count5, dto.Count1);
 
-        var check = DenominationCheck.CreateForCashBag(bag, denomination);
+        var check = DenominationCheck.CreateForCashBag(bag, denomination, DateTime.UtcNow);
         await sequenceNumberService.AssignAsync(check);
         await checkRepository.AddAsync(check);
 

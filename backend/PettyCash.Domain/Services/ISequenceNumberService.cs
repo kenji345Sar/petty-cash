@@ -4,6 +4,7 @@ namespace PettyCash.Domain.Services;
 
 public interface ISequenceNumberService
 {
-    Task AssignAsync(Transaction transaction);
+    Task AssignAsync(VendorTransaction transaction);
+    Task AssignAsync(PettyCashTransaction transaction);
     Task AssignAsync(DenominationCheck check);
 }

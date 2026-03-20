@@ -26,7 +26,7 @@ public class BagsController(
     }
 
     [HttpPost("{id}/move")]
-    public async Task<ActionResult<TransactionDto>> MoveToRegister(int id)
+    public async Task<ActionResult<VendorTransactionDto>> MoveToRegister(int id)
     {
         try
         {

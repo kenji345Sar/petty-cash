@@ -1,17 +1,16 @@
 import { useEffect, useState } from "react";
 import { api } from "./api/client";
-import type { Safe, ChangeBag, CashBag, Transaction, DenominationCheck, PrepBag } from "./api/client";
-import { TransactionList } from "./components/TransactionList";
+import type { Safe } from "./api/client";
+import { PettyCashTab } from "./components/PettyCashTab";
+import { VendorTab } from "./components/VendorTab";
 import "./App.css";
+
+type Tab = "petty" | "vendor";
 
 function App() {
   const [safes, setSafes] = useState<Safe[]>([]);
   const [selectedSafeId, setSelectedSafeId] = useState<number | null>(null);
-  const [bags, setBags] = useState<ChangeBag[]>([]);
-  const [cashBags, setCashBags] = useState<CashBag[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [denomChecks, setDenomChecks] = useState<DenominationCheck[]>([]);
-  const [prepBags, setPrepBags] = useState<PrepBag[]>([]);
+  const [activeTab, setActiveTab] = useState<Tab>("petty");
 
   const loadSafes = async () => {
     const data = await api.getSafes();
@@ -21,30 +20,9 @@ function App() {
     }
   };
 
-  const loadData = async (safeId: number) => {
-    const [bagsData, cashBagsData, txData, checksData, prepBagsData] = await Promise.all([
-      api.getBags(safeId),
-      api.getCashBags(safeId),
-      api.getTransactions(safeId),
-      api.getDenominationChecks(safeId),
-      api.getPrepBags(safeId),
-    ]);
-    setBags(bagsData);
-    setCashBags(cashBagsData);
-    setTransactions(txData);
-    setDenomChecks(checksData);
-    setPrepBags(prepBagsData);
-  };
-
   useEffect(() => {
     loadSafes();
   }, []);
-
-  useEffect(() => {
-    if (selectedSafeId !== null) {
-      loadData(selectedSafeId);
-    }
-  }, [selectedSafeId]);
 
   const selectedSafe = safes.find((s) => s.id === selectedSafeId);
 
@@ -77,18 +55,55 @@ function App() {
             )}
           </div>
         )}
+        {selectedSafeId && (
+          <div style={{ display: "flex", gap: 0, marginTop: 12 }}>
+            <button
+              onClick={() => setActiveTab("petty")}
+              style={{
+                padding: "10px 24px",
+                border: "1px solid #ccc",
+                borderBottom: activeTab === "petty" ? "2px solid #2563eb" : "1px solid #ccc",
+                background: activeTab === "petty" ? "#fff" : "#f5f5f5",
+                color: activeTab === "petty" ? "#2563eb" : "#666",
+                fontWeight: activeTab === "petty" ? "bold" : "normal",
+                cursor: "pointer",
+                borderRadius: "8px 8px 0 0",
+              }}
+            >
+              小口
+            </button>
+            <button
+              onClick={() => setActiveTab("vendor")}
+              style={{
+                padding: "10px 24px",
+                border: "1px solid #ccc",
+                borderBottom: activeTab === "vendor" ? "2px solid #2563eb" : "1px solid #ccc",
+                background: activeTab === "vendor" ? "#fff" : "#f5f5f5",
+                color: activeTab === "vendor" ? "#2563eb" : "#666",
+                fontWeight: activeTab === "vendor" ? "bold" : "normal",
+                cursor: "pointer",
+                borderRadius: "8px 8px 0 0",
+              }}
+            >
+              業者
+            </button>
+          </div>
+        )}
       </header>
       <main>
-        {selectedSafeId ? (
-          <TransactionList
-            safeId={selectedSafeId}
-            transactions={transactions}
-            denomChecks={denomChecks}
-            bags={bags}
-            cashBags={cashBags}
-            prepBags={prepBags}
-            onUpdate={() => { if (selectedSafeId) loadData(selectedSafeId); loadSafes(); }}
-          />
+        {selectedSafeId && selectedSafe ? (
+          activeTab === "petty" ? (
+            <PettyCashTab
+              safeId={selectedSafeId}
+              safeBalance={selectedSafe.currentBalance}
+              onUpdate={loadSafes}
+            />
+          ) : (
+            <VendorTab
+              safeId={selectedSafeId}
+              onUpdate={loadSafes}
+            />
+          )
         ) : (
           <p>金庫を選択してください</p>
         )}

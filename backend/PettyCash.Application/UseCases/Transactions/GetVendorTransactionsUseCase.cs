@@ -3,11 +3,11 @@ using PettyCash.Domain.Repositories;
 
 namespace PettyCash.Application.UseCases.Transactions;
 
-public class GetTransactionsUseCase(ITransactionRepository transactionRepository)
+public class GetVendorTransactionsUseCase(IVendorTransactionRepository repository)
 {
-    public async Task<IReadOnlyList<TransactionDto>> ExecuteAsync(int safeId)
+    public async Task<IReadOnlyList<VendorTransactionDto>> ExecuteAsync(int safeId)
     {
-        var transactions = await transactionRepository.GetBySafeIdAsync(safeId);
+        var transactions = await repository.GetBySafeIdAsync(safeId);
 
         return transactions.Select(t =>
         {
@@ -15,7 +15,7 @@ public class GetTransactionsUseCase(ITransactionRepository transactionRepository
                 ? new DenominationDto(dn.Count10000, dn.Count5000, dn.Count1000, dn.Count500, dn.Count100, dn.Count50, dn.Count10, dn.Count5, dn.Count1)
                 : null;
 
-            return new TransactionDto(
+            return new VendorTransactionDto(
                 t.Id, t.SequenceNumber, t.ChangeBagId, t.CashBagId, t.PrepBagId,
                 t.Type.ToString(), t.Amount, t.Description, t.CreatedAt, denomDto
             );

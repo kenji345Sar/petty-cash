@@ -33,6 +33,15 @@ public class Safe
         CurrentBalance = vendorBalance + pettyCashBalance;
     }
 
+    public void EnsureCanWithdraw(int amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentException("出金額は1以上である必要があります。");
+        if (amount > CurrentBalance)
+            throw new InvalidOperationException(
+                $"残高不足です。現在残高: {CurrentBalance}円、出金額: {amount}円");
+    }
+
     public void UpdateName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))

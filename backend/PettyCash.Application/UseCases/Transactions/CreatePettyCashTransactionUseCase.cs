@@ -7,9 +7,12 @@ using PettyCash.Domain.ValueObjects;
 
 namespace PettyCash.Application.UseCases.Transactions;
 
-public class CreateTransactionUseCase(ITransactionRepository transactionRepository, ISequenceNumberService sequenceNumberService)
+public class CreatePettyCashTransactionUseCase(
+    IPettyCashTransactionRepository transactionRepository,
+    ISafeRepository safeRepository,
+    ISequenceNumberService sequenceNumberService)
 {
-    public async Task<TransactionDto> ExecuteAsync(CreateTransactionRequestDto dto)
+    public async Task<PettyCashTransactionDto> ExecuteAsync(CreatePettyCashTransactionRequestDto dto)
     {
         var type = dto.Type == "Deposit" ? TransactionType.Deposit : TransactionType.Withdrawal;
         var date = DateTime.SpecifyKind(dto.Date, DateTimeKind.Utc);
@@ -24,25 +27,25 @@ public class CreateTransactionUseCase(ITransactionRepository transactionReposito
             );
         }
 
-        if (denomination == null && dto.Amount <= 0)
-            throw new ArgumentException("金額は1以上である必要があります。");
+        var transaction = PettyCashTransaction.Create(dto.SafeId, type, dto.Amount, dto.Description, date, denomination);
 
-        var transaction = Transaction.CreateStandalone(dto.SafeId, type, dto.Amount, dto.Description, date, denomination);
+        if (type == TransactionType.Withdrawal)
+        {
+            var safe = await safeRepository.GetByIdAsync(dto.SafeId)
+                ?? throw new KeyNotFoundException($"金庫(ID={dto.SafeId})が見つかりません。");
+            safe.EnsureCanWithdraw(transaction.Amount);
+        }
+
         await sequenceNumberService.AssignAsync(transaction);
         await transactionRepository.AddAsync(transaction);
 
-        return MapToDto(transaction);
-    }
-
-    private static TransactionDto MapToDto(Transaction t)
-    {
-        var denomDto = t.Denomination is { } dn
+        var denomDto = transaction.Denomination is { } dn
             ? new DenominationDto(dn.Count10000, dn.Count5000, dn.Count1000, dn.Count500, dn.Count100, dn.Count50, dn.Count10, dn.Count5, dn.Count1)
             : null;
 
-        return new TransactionDto(
-            t.Id, t.SequenceNumber, t.ChangeBagId, t.CashBagId, t.PrepBagId,
-            t.Type.ToString(), t.Amount, t.Description, t.CreatedAt, denomDto
+        return new PettyCashTransactionDto(
+            transaction.Id, transaction.SequenceNumber,
+            transaction.Type.ToString(), transaction.Amount, transaction.Description, transaction.CreatedAt, denomDto
         );
     }
 }

@@ -13,13 +13,10 @@ public class CreatePrepBagUseCase(ICashBagRepository cashBagRepository, IPrepBag
         {
             var cashBag = await cashBagRepository.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"キャッシュバッグ(ID={id})が見つかりません。");
-
-            if (cashBag.PrepBagId != null)
-                throw new InvalidOperationException($"キャッシュバッグ(ID={id})は既に準備バッグに含まれています。");
-
             cashBags.Add(cashBag);
         }
 
+        // 不変条件チェック（PrepBag割当済み等）は PrepBag.Create 内で実施
         var prepBag = PrepBag.Create(dto.SafeId, cashBags, DateTime.UtcNow);
         await prepBagRepository.AddAsync(prepBag);
 

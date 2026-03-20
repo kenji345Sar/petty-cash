@@ -32,7 +32,7 @@ public class DenominationCheck
         SequenceNumber = sequenceNumber;
     }
 
-    public static DenominationCheck CreateForChangeBag(ChangeBag bag, Denomination denomination)
+    public static DenominationCheck CreateForChangeBag(ChangeBag bag, Denomination denomination, DateTime checkedAt)
     {
         var checkedAmount = denomination.TotalAmount;
         return new DenominationCheck
@@ -44,7 +44,7 @@ public class DenominationCheck
             CheckedAmount = checkedAmount,
             ExpectedAmount = bag.TotalAmount,
             Difference = checkedAmount - bag.TotalAmount,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = checkedAt
         };
     }
 
@@ -56,7 +56,7 @@ public class DenominationCheck
         Difference = CheckedAmount - expectedAmount;
     }
 
-    public static DenominationCheck CreateForCashBag(CashBag bag, Denomination denomination)
+    public static DenominationCheck CreateForCashBag(CashBag bag, Denomination denomination, DateTime checkedAt)
     {
         var checkedAmount = denomination.TotalAmount;
         return new DenominationCheck
@@ -68,11 +68,11 @@ public class DenominationCheck
             CheckedAmount = checkedAmount,
             ExpectedAmount = bag.TotalAmount,
             Difference = checkedAmount - bag.TotalAmount,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = checkedAt
         };
     }
 
-    public static DenominationCheck CreateForPrepBag(PrepBag bag, Denomination denomination)
+    public static DenominationCheck CreateForPrepBag(PrepBag bag, Denomination denomination, DateTime checkedAt)
     {
         var checkedAmount = denomination.TotalAmount;
         return new DenominationCheck
@@ -84,7 +84,21 @@ public class DenominationCheck
             CheckedAmount = checkedAmount,
             ExpectedAmount = bag.TotalAmount,
             Difference = checkedAmount - bag.TotalAmount,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = checkedAt
+        };
+    }
+
+    public static DenominationCheck CreateForSafe(int safeId, Denomination denomination, int expectedAmount, DateTime checkedAt)
+    {
+        var checkedAmount = denomination.TotalAmount;
+        return new DenominationCheck
+        {
+            SafeId = safeId,
+            Denomination = denomination,
+            CheckedAmount = checkedAmount,
+            ExpectedAmount = expectedAmount,
+            Difference = checkedAmount - expectedAmount,
+            CreatedAt = checkedAt
         };
     }
 }

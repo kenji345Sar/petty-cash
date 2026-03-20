@@ -24,19 +24,22 @@ builder.Services.AddScoped<GetSafesUseCase>();
 builder.Services.AddScoped<CreateSafeUseCase>();
 builder.Services.AddScoped<IChangeBagRepository, ChangeBagRepository>();
 builder.Services.AddScoped<ICashBagRepository, CashBagRepository>();
-builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<IVendorTransactionRepository, VendorTransactionRepository>();
+builder.Services.AddScoped<IPettyCashTransactionRepository, PettyCashTransactionRepository>();
 builder.Services.AddScoped<ISequenceNumberService, SequenceNumberService>();
 builder.Services.AddScoped<DepositBagUseCase>();
 builder.Services.AddScoped<MoveBagToRegisterUseCase>();
 builder.Services.AddScoped<GetBagsUseCase>();
 builder.Services.AddScoped<DepositCashBagUseCase>();
 builder.Services.AddScoped<GetCashBagsUseCase>();
-builder.Services.AddScoped<GetTransactionsUseCase>();
-builder.Services.AddScoped<CreateTransactionUseCase>();
+builder.Services.AddScoped<GetVendorTransactionsUseCase>();
+builder.Services.AddScoped<GetPettyCashTransactionsUseCase>();
+builder.Services.AddScoped<CreatePettyCashTransactionUseCase>();
 builder.Services.AddScoped<IDenominationCheckRepository, DenominationCheckRepository>();
 builder.Services.AddScoped<CheckChangeBagUseCase>();
 builder.Services.AddScoped<CheckCashBagUseCase>();
 builder.Services.AddScoped<CheckPrepBagUseCase>();
+builder.Services.AddScoped<CheckSafeUseCase>();
 builder.Services.AddScoped<GetDenominationChecksUseCase>();
 builder.Services.AddScoped<UpdateDenominationCheckUseCase>();
 builder.Services.AddScoped<IPrepBagRepository, PrepBagRepository>();
@@ -200,6 +203,83 @@ using (var scope = app.Services.CreateScope())
         ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_5 INTEGER;
         ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_1 INTEGER
     ");
+
+    // transactionsテーブルを vendor_transactions / petty_cash_transactions に分割
+    var hasOldTable = db.Database.SqlQueryRaw<int>(
+        "SELECT COUNT(*) AS \"Value\" FROM information_schema.tables WHERE table_name = 'transactions'"
+    ).First();
+
+    if (hasOldTable > 0)
+    {
+        // vendor_transactions テーブル作成＆データ移行
+        db.Database.ExecuteSqlRaw(@"
+            CREATE TABLE IF NOT EXISTS vendor_transactions (
+                id SERIAL PRIMARY KEY,
+                sequence_number INTEGER NOT NULL DEFAULT 0,
+                safe_id INTEGER NOT NULL REFERENCES safes(id),
+                change_bag_id INTEGER,
+                cash_bag_id INTEGER,
+                prep_bag_id INTEGER,
+                type INTEGER NOT NULL,
+                amount INTEGER NOT NULL,
+                description VARCHAR(200) NOT NULL DEFAULT '',
+                created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+                denom_10000 INTEGER,
+                denom_5000 INTEGER,
+                denom_1000 INTEGER,
+                denom_500 INTEGER,
+                denom_100 INTEGER,
+                denom_50 INTEGER,
+                denom_10 INTEGER,
+                denom_5 INTEGER,
+                denom_1 INTEGER
+            )");
+
+        // petty_cash_transactions テーブル作成
+        db.Database.ExecuteSqlRaw(@"
+            CREATE TABLE IF NOT EXISTS petty_cash_transactions (
+                id SERIAL PRIMARY KEY,
+                sequence_number INTEGER NOT NULL DEFAULT 0,
+                safe_id INTEGER NOT NULL REFERENCES safes(id),
+                type INTEGER NOT NULL,
+                amount INTEGER NOT NULL,
+                description VARCHAR(200) NOT NULL DEFAULT '',
+                created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+                denom_10000 INTEGER,
+                denom_5000 INTEGER,
+                denom_1000 INTEGER,
+                denom_500 INTEGER,
+                denom_100 INTEGER,
+                denom_50 INTEGER,
+                denom_10 INTEGER,
+                denom_5 INTEGER,
+                denom_1 INTEGER
+            )");
+
+        // 業者取引（バッグ紐づきあり）を移行
+        db.Database.ExecuteSqlRaw(@"
+            INSERT INTO vendor_transactions (id, sequence_number, safe_id, change_bag_id, cash_bag_id, prep_bag_id, type, amount, description, created_at, denom_10000, denom_5000, denom_1000, denom_500, denom_100, denom_50, denom_10, denom_5, denom_1)
+            SELECT id, sequence_number, safe_id, change_bag_id, cash_bag_id, prep_bag_id, type, amount, description, created_at, denom_10000, denom_5000, denom_1000, denom_500, denom_100, denom_50, denom_10, denom_5, denom_1
+            FROM transactions
+            WHERE change_bag_id IS NOT NULL OR cash_bag_id IS NOT NULL OR prep_bag_id IS NOT NULL
+            ON CONFLICT (id) DO NOTHING");
+
+        // 小口取引（バッグ紐づきなし）を移行
+        db.Database.ExecuteSqlRaw(@"
+            INSERT INTO petty_cash_transactions (id, sequence_number, safe_id, type, amount, description, created_at, denom_10000, denom_5000, denom_1000, denom_500, denom_100, denom_50, denom_10, denom_5, denom_1)
+            SELECT id, sequence_number, safe_id, type, amount, description, created_at, denom_10000, denom_5000, denom_1000, denom_500, denom_100, denom_50, denom_10, denom_5, denom_1
+            FROM transactions
+            WHERE change_bag_id IS NULL AND cash_bag_id IS NULL AND prep_bag_id IS NULL
+            ON CONFLICT (id) DO NOTHING");
+
+        // シーケンスを最大IDに合わせる
+        db.Database.ExecuteSqlRaw(@"
+            SELECT setval('vendor_transactions_id_seq', GREATEST((SELECT COALESCE(MAX(id), 0) FROM vendor_transactions), 1));
+            SELECT setval('petty_cash_transactions_id_seq', GREATEST((SELECT COALESCE(MAX(id), 0) FROM petty_cash_transactions), 1))");
+
+        // 旧テーブルを削除
+        db.Database.ExecuteSqlRaw("DROP TABLE IF EXISTS transactions CASCADE");
+    }
 }
 
 app.Run();

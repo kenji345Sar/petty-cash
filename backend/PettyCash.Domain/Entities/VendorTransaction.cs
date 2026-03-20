@@ -3,7 +3,7 @@ using PettyCash.Domain.ValueObjects;
 
 namespace PettyCash.Domain.Entities;
 
-public class Transaction
+public class VendorTransaction
 {
     public int Id { get; private set; }
     public int SequenceNumber { get; private set; }
@@ -22,9 +22,7 @@ public class Transaction
 
     public Denomination? Denomination { get; private set; }
 
-    public bool HasBag => ChangeBagId != null || CashBagId != null || PrepBagId != null;
-
-    private Transaction() { }
+    private VendorTransaction() { }
 
     internal void SetSequenceNumber(int sequenceNumber)
     {
@@ -35,9 +33,9 @@ public class Transaction
         SequenceNumber = sequenceNumber;
     }
 
-    internal static Transaction CreateDeposit(ChangeBag bag, int amount, string description, DateTime date, Denomination? denomination = null)
+    internal static VendorTransaction CreateDeposit(ChangeBag bag, int amount, string description, DateTime date, Denomination? denomination = null)
     {
-        return new Transaction
+        return new VendorTransaction
         {
             SafeId = bag.SafeId,
             ChangeBag = bag,
@@ -49,22 +47,22 @@ public class Transaction
         };
     }
 
-    internal static Transaction CreateWithdrawal(ChangeBag bag, int amount)
+    internal static VendorTransaction CreateWithdrawal(ChangeBag bag, int amount, DateTime date)
     {
-        return new Transaction
+        return new VendorTransaction
         {
             SafeId = bag.SafeId,
             ChangeBag = bag,
             Type = TransactionType.Withdrawal,
             Amount = amount,
             Description = "釣り銭バッグ出金（レジへ移動）",
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = date
         };
     }
 
-    internal static Transaction CreateCashBagDeposit(CashBag bag, int amount, Denomination? denomination = null)
+    internal static VendorTransaction CreateCashBagDeposit(CashBag bag, int amount, DateTime date, Denomination? denomination = null)
     {
-        return new Transaction
+        return new VendorTransaction
         {
             SafeId = bag.SafeId,
             CashBag = bag,
@@ -72,34 +70,21 @@ public class Transaction
             Amount = amount,
             Description = string.IsNullOrWhiteSpace(bag.Description) ? "キャッシュバッグ入金（レジから金庫へ）" : bag.Description,
             Denomination = denomination,
-            CreatedAt = DateTime.UtcNow
-        };
-    }
-
-    public static Transaction CreateStandalone(int safeId, TransactionType type, int amount, string description, DateTime date, Denomination? denomination = null)
-    {
-        return new Transaction
-        {
-            SafeId = safeId,
-            Type = type,
-            Amount = denomination?.TotalAmount ?? amount,
-            Description = description,
-            Denomination = denomination,
             CreatedAt = date
         };
     }
 
-    internal static Transaction CreatePrepBagWithdrawal(PrepBag bag, int amount)
+    internal static VendorTransaction CreatePrepBagWithdrawal(PrepBag bag, int amount, DateTime date)
     {
         var ids = string.Join(", ", bag.CashBags.Select(cb => $"#{cb.Id}"));
-        return new Transaction
+        return new VendorTransaction
         {
             SafeId = bag.SafeId,
             PrepBag = bag,
             Type = TransactionType.Withdrawal,
             Amount = amount,
             Description = $"準備バッグ#{bag.Id} 引渡（{ids}）",
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = date
         };
     }
 }

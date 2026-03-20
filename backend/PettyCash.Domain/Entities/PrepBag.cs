@@ -12,7 +12,7 @@ public class PrepBag
     public DateTime CreatedAt { get; private set; }
     public DateTime? HandedOverAt { get; private set; }
 
-    public Transaction? Transaction { get; private set; }
+    public VendorTransaction? Transaction { get; private set; }
 
     private readonly List<DenominationCheck> _denominationChecks = [];
     public IReadOnlyCollection<DenominationCheck> DenominationChecks => _denominationChecks.AsReadOnly();
@@ -26,6 +26,12 @@ public class PrepBag
     {
         if (cashBags.Count == 0)
             throw new ArgumentException("キャッシュバッグを1つ以上選択してください。");
+
+        foreach (var cashBag in cashBags)
+        {
+            if (cashBag.PrepBagId != null)
+                throw new InvalidOperationException($"キャッシュバッグ(ID={cashBag.Id})は既に準備バッグに含まれています。");
+        }
 
         var bag = new PrepBag
         {
@@ -43,15 +49,15 @@ public class PrepBag
         return bag;
     }
 
-    public Transaction MarkHandedOver()
+    public VendorTransaction MarkHandedOver(DateTime handedOverAt)
     {
         if (Status == PrepBagStatus.HandedOver)
             throw new InvalidOperationException("この準備バッグは既に引渡済みです。");
 
         Status = PrepBagStatus.HandedOver;
-        HandedOverAt = DateTime.UtcNow;
+        HandedOverAt = handedOverAt;
 
-        var tx = Transaction.CreatePrepBagWithdrawal(this, TotalAmount);
+        var tx = VendorTransaction.CreatePrepBagWithdrawal(this, TotalAmount, handedOverAt);
         Transaction = tx;
         return tx;
     }

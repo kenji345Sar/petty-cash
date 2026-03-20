@@ -1,11 +1,8 @@
 namespace PettyCash.Application.Dtos;
 
-public record TransactionDto(
+public record PettyCashTransactionDto(
     int Id,
     int SequenceNumber,
-    int? ChangeBagId,
-    int? CashBagId,
-    int? PrepBagId,
     string Type,
     int Amount,
     string Description,

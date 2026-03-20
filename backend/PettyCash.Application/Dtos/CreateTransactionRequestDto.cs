@@ -1,6 +1,6 @@
 namespace PettyCash.Application.Dtos;
 
-public record CreateTransactionRequestDto(
+public record CreatePettyCashTransactionRequestDto(
     int SafeId,
     string Type,
     int Amount,

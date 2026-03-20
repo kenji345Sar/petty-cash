@@ -39,18 +39,11 @@ public class SafeRepository(PettyCashDbContext context) : ISafeRepository
 
     private async Task LoadBalances(Safe safe)
     {
-        // HasBag = change_bag_id IS NOT NULL OR cash_bag_id IS NOT NULL OR prep_bag_id IS NOT NULL
-        // Deposit = 0, Withdrawal = 1
         var balances = await context.Database
             .SqlQueryRaw<BalanceResult>(
                 @"SELECT
-                    COALESCE(SUM(CASE WHEN (change_bag_id IS NOT NULL OR cash_bag_id IS NOT NULL OR prep_bag_id IS NOT NULL) AND type = 0 THEN amount ELSE 0 END), 0)
-                    - COALESCE(SUM(CASE WHEN (change_bag_id IS NOT NULL OR cash_bag_id IS NOT NULL OR prep_bag_id IS NOT NULL) AND type = 1 THEN amount ELSE 0 END), 0)
-                    AS ""VendorBalance"",
-                    COALESCE(SUM(CASE WHEN (change_bag_id IS NULL AND cash_bag_id IS NULL AND prep_bag_id IS NULL) AND type = 0 THEN amount ELSE 0 END), 0)
-                    - COALESCE(SUM(CASE WHEN (change_bag_id IS NULL AND cash_bag_id IS NULL AND prep_bag_id IS NULL) AND type = 1 THEN amount ELSE 0 END), 0)
-                    AS ""PettyCashBalance""
-                FROM transactions WHERE safe_id = {0}",
+                    COALESCE((SELECT SUM(CASE WHEN type = 0 THEN amount ELSE -amount END) FROM vendor_transactions WHERE safe_id = {0}), 0) AS ""VendorBalance"",
+                    COALESCE((SELECT SUM(CASE WHEN type = 0 THEN amount ELSE -amount END) FROM petty_cash_transactions WHERE safe_id = {0}), 0) AS ""PettyCashBalance""",
                 safe.Id)
             .FirstAsync();
 
