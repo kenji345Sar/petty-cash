@@ -163,8 +163,8 @@ export function VendorTab({ safeId, onUpdate }: Props) {
                 <tr key={`tx-${row.data.id}`}>
                   <td>{row.data.sequenceNumber}</td>
                   <td>
-                    <span className={`type ${row.data.type === "Deposit" ? "type-deposit" : "type-withdrawal"}`}>
-                      {row.data.type === "Deposit" ? "入金" : "出金"}
+                    <span className={`type ${row.data.type === "Adjustment" ? "type-adjustment" : row.data.type === "Deposit" ? "type-deposit" : "type-withdrawal"}`}>
+                      {row.data.type === "Adjustment" ? "調整" : row.data.type === "Deposit" ? "入金" : "出金"}
                     </span>
                     {row.data.denomination && (
                       <button onClick={() => setViewDenomTx(row.data)}
@@ -205,7 +205,7 @@ export function VendorTab({ safeId, onUpdate }: Props) {
               <button onClick={() => setViewDenomTx(null)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer" }}>✕</button>
             </div>
             <p style={{ marginBottom: 8 }}>
-              {viewDenomTx.type === "Deposit" ? "入金" : "出金"}: <strong>{viewDenomTx.amount.toLocaleString()}円</strong>
+              {viewDenomTx.type === "Adjustment" ? "調整" : viewDenomTx.type === "Deposit" ? "入金" : "出金"}: <strong>{viewDenomTx.amount.toLocaleString()}円</strong>
               {viewDenomTx.description && <span style={{ marginLeft: 8, color: "#666" }}>({viewDenomTx.description})</span>}
             </p>
             <table style={{ width: "100%" }}>

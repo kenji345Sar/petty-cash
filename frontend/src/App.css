@@ -228,6 +228,11 @@ th {
   color: #1e40af;
 }
 
+.type-adjustment {
+  background: #fef3c7;
+  color: #92400e;
+}
+
 .btn-check {
   padding: 6px 14px;
   background: #6366f1;

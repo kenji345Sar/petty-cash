@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="PettyCash.Api/PettyCash.Api.csproj" />
+  <Project Path="PettyCash.Application.Tests/PettyCash.Application.Tests.csproj" />
+  <Project Path="PettyCash.Application/PettyCash.Application.csproj" />
+  <Project Path="PettyCash.Domain.Tests/PettyCash.Domain.Tests.csproj" />
+  <Project Path="PettyCash.Domain/PettyCash.Domain.csproj" />
+  <Project Path="PettyCash.Infrastructure/PettyCash.Infrastructure.csproj" />
+</Solution>

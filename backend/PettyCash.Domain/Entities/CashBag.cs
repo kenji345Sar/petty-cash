@@ -44,4 +44,14 @@ public class CashBag
 
         return bag;
     }
+
+    public VendorTransaction? AdjustByCheck(int checkedAmount, DateTime adjustedAt)
+    {
+        var difference = checkedAmount - TotalAmount;
+        if (difference == 0) return null;
+
+        TotalAmount = checkedAmount;
+        var transaction = VendorTransaction.CreateAdjustment(this, difference, adjustedAt);
+        return transaction;
+    }
 }

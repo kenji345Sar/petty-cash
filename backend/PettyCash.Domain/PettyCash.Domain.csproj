@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="PettyCash.Infrastructure" />
+    <InternalsVisibleTo Include="PettyCash.Domain.Tests" />
   </ItemGroup>
 
 </Project>

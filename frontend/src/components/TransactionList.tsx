@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { api } from "../api/client";
-import type { Transaction, DenominationCheck, ChangeBag, CashBag, PrepBag, Denomination } from "../api/client";
+import type { VendorTransaction, DenominationCheck, ChangeBag, CashBag, PrepBag, Denomination } from "../api/client";
 import { DenominationCheckForm } from "./DenominationCheckForm";
 import { DenominationCheckPage } from "./DenominationCheckPage";
 import { BagList } from "./BagList";
@@ -28,7 +28,7 @@ const denomTotal = (d: Denomination) =>
 
 interface Props {
   safeId: number;
-  transactions: Transaction[];
+  transactions: VendorTransaction[];
   denomChecks: DenominationCheck[];
   bags: ChangeBag[];
   cashBags: CashBag[];
@@ -47,7 +47,7 @@ function getMonthRange(offset: number): [string, string] {
 }
 
 type Row =
-  | { kind: "tx"; data: Transaction; at: string }
+  | { kind: "tx"; data: VendorTransaction; at: string }
   | { kind: "check"; data: DenominationCheck; at: string };
 
 const formatBagNo = (prefix: string, seq: number | null) =>
@@ -94,7 +94,7 @@ export function TransactionList({ safeId, transactions, denomChecks, bags, cashB
   const [loading, setLoading] = useState(false);
   const [useDenom, setUseDenom] = useState(false);
   const [denom, setDenom] = useState<Denomination>(emptyDenom);
-  const [viewDenomTx, setViewDenomTx] = useState<Transaction | null>(null);
+  const [viewDenomTx, setViewDenomTx] = useState<VendorTransaction | null>(null);
 
   const [period, setPeriod] = useState<Period>("thisMonth");
   const [thisMonth] = useState(() => getMonthRange(0));
@@ -294,8 +294,8 @@ export function TransactionList({ safeId, transactions, denomChecks, bags, cashB
                   <tr key={`tx-${row.data.id}`}>
                     <td>{row.data.sequenceNumber}</td>
                     <td>
-                      <span className={`type ${row.data.type === "Deposit" ? "type-deposit" : "type-withdrawal"}`}>
-                        {row.data.type === "Deposit" ? "入金" : "出金"}
+                      <span className={`type ${row.data.type === "Adjustment" ? "type-adjustment" : row.data.type === "Deposit" ? "type-deposit" : "type-withdrawal"}`}>
+                        {row.data.type === "Adjustment" ? "調整" : row.data.type === "Deposit" ? "入金" : "出金"}
                       </span>
                       {row.data.denomination && (
                         <button

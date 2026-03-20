@@ -74,6 +74,44 @@ public class VendorTransaction
         };
     }
 
+    internal static VendorTransaction CreateAdjustment(ChangeBag bag, int difference, DateTime date)
+    {
+        return new VendorTransaction
+        {
+            SafeId = bag.SafeId,
+            ChangeBag = bag,
+            Type = TransactionType.Adjustment,
+            Amount = difference,
+            Description = $"釣り銭バッグ#{bag.Id} 有高調整（{(difference > 0 ? "+" : "")}{difference:N0}円）",
+            CreatedAt = date
+        };
+    }
+
+    internal static VendorTransaction CreateAdjustment(CashBag bag, int difference, DateTime date)
+    {
+        return new VendorTransaction
+        {
+            SafeId = bag.SafeId,
+            CashBag = bag,
+            Type = TransactionType.Adjustment,
+            Amount = difference,
+            Description = $"キャッシュバッグ#{bag.Id} 有高調整（{(difference > 0 ? "+" : "")}{difference:N0}円）",
+            CreatedAt = date
+        };
+    }
+
+    public static VendorTransaction CreateSafeAdjustment(int safeId, int difference, DateTime date)
+    {
+        return new VendorTransaction
+        {
+            SafeId = safeId,
+            Type = TransactionType.Adjustment,
+            Amount = difference,
+            Description = $"金庫有高調整（{(difference > 0 ? "+" : "")}{difference:N0}円）",
+            CreatedAt = date
+        };
+    }
+
     internal static VendorTransaction CreatePrepBagWithdrawal(PrepBag bag, int amount, DateTime date)
     {
         var ids = string.Join(", ", bag.CashBags.Select(cb => $"#{cb.Id}"));

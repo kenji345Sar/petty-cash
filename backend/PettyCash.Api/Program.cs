@@ -139,11 +139,6 @@ using (var scope = app.Services.CreateScope())
             ALTER TABLE prep_bags ALTER COLUMN safe_id SET NOT NULL;
             ALTER TABLE prep_bags ADD CONSTRAINT fk_prep_bags_safe FOREIGN KEY (safe_id) REFERENCES safes(id);
 
-            ALTER TABLE transactions ADD COLUMN IF NOT EXISTS safe_id INTEGER;
-            UPDATE transactions SET safe_id = 1 WHERE safe_id IS NULL;
-            ALTER TABLE transactions ALTER COLUMN safe_id SET NOT NULL;
-            ALTER TABLE transactions ADD CONSTRAINT fk_transactions_safe FOREIGN KEY (safe_id) REFERENCES safes(id);
-
             ALTER TABLE denomination_checks ADD COLUMN IF NOT EXISTS safe_id INTEGER;
             UPDATE denomination_checks SET safe_id = 1 WHERE safe_id IS NULL;
             ALTER TABLE denomination_checks ALTER COLUMN safe_id SET NOT NULL;
@@ -151,59 +146,12 @@ using (var scope = app.Services.CreateScope())
         ");
     }
 
-    // transactionsテーブルにsequence_numberカラムを追加
-    db.Database.ExecuteSqlRaw(@"
-        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS sequence_number INTEGER NOT NULL DEFAULT 0
-    ");
     // denomination_checksテーブルにsequence_numberカラムを追加
     db.Database.ExecuteSqlRaw(@"
         ALTER TABLE denomination_checks ADD COLUMN IF NOT EXISTS sequence_number INTEGER NOT NULL DEFAULT 0
     ");
-    // 未採番データがある場合のみ連番を再計算
-    var hasUnNumbered = db.Database.SqlQueryRaw<int>(
-        "SELECT COUNT(*) AS \"Value\" FROM (SELECT 1 FROM transactions WHERE sequence_number = 0 UNION ALL SELECT 1 FROM denomination_checks WHERE sequence_number = 0) x"
-    ).First();
-    if (hasUnNumbered > 0)
-    {
-        db.Database.ExecuteSqlRaw(@"
-            UPDATE transactions t SET sequence_number = sub.rn
-            FROM (
-                SELECT src, id, ROW_NUMBER() OVER (PARTITION BY safe_id ORDER BY created_at, src, id) AS rn
-                FROM (
-                    SELECT 'a' AS src, id, safe_id, created_at FROM transactions
-                    UNION ALL
-                    SELECT 'b' AS src, id, safe_id, created_at FROM denomination_checks
-                ) combined
-            ) sub
-            WHERE sub.src = 'a' AND sub.id = t.id
-        ");
-        db.Database.ExecuteSqlRaw(@"
-            UPDATE denomination_checks dc SET sequence_number = sub.rn
-            FROM (
-                SELECT src, id, ROW_NUMBER() OVER (PARTITION BY safe_id ORDER BY created_at, src, id) AS rn
-                FROM (
-                    SELECT 'a' AS src, id, safe_id, created_at FROM transactions
-                    UNION ALL
-                    SELECT 'b' AS src, id, safe_id, created_at FROM denomination_checks
-                ) combined
-            ) sub
-            WHERE sub.src = 'b' AND sub.id = dc.id
-        ");
-    }
 
-    // transactionsテーブルに金種カラムを追加
-    db.Database.ExecuteSqlRaw(@"
-        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_10000 INTEGER;
-        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_5000 INTEGER;
-        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_1000 INTEGER;
-        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_500 INTEGER;
-        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_100 INTEGER;
-        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_50 INTEGER;
-        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_10 INTEGER;
-        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_5 INTEGER;
-        ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_1 INTEGER
-    ");
-
+    // 旧transactionsテーブルが残っている場合のみマイグレーション実行
     // transactionsテーブルを vendor_transactions / petty_cash_transactions に分割
     var hasOldTable = db.Database.SqlQueryRaw<int>(
         "SELECT COUNT(*) AS \"Value\" FROM information_schema.tables WHERE table_name = 'transactions'"
@@ -211,6 +159,23 @@ using (var scope = app.Services.CreateScope())
 
     if (hasOldTable > 0)
     {
+        // 旧テーブルにsafe_id・sequence_number・金種カラムを追加してからデータ移行
+        db.Database.ExecuteSqlRaw(@"
+            ALTER TABLE transactions ADD COLUMN IF NOT EXISTS safe_id INTEGER;
+            UPDATE transactions SET safe_id = 1 WHERE safe_id IS NULL;
+            ALTER TABLE transactions ALTER COLUMN safe_id SET NOT NULL;
+            ALTER TABLE transactions ADD COLUMN IF NOT EXISTS sequence_number INTEGER NOT NULL DEFAULT 0;
+            ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_10000 INTEGER;
+            ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_5000 INTEGER;
+            ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_1000 INTEGER;
+            ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_500 INTEGER;
+            ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_100 INTEGER;
+            ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_50 INTEGER;
+            ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_10 INTEGER;
+            ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_5 INTEGER;
+            ALTER TABLE transactions ADD COLUMN IF NOT EXISTS denom_1 INTEGER
+        ");
+
         // vendor_transactions テーブル作成＆データ移行
         db.Database.ExecuteSqlRaw(@"
             CREATE TABLE IF NOT EXISTS vendor_transactions (

@@ -64,7 +64,7 @@ export interface VendorTransaction {
   changeBagId: number | null;
   cashBagId: number | null;
   prepBagId: number | null;
-  type: "Deposit" | "Withdrawal";
+  type: "Deposit" | "Withdrawal" | "Adjustment";
   amount: number;
   description: string;
   createdAt: string;
@@ -74,7 +74,7 @@ export interface VendorTransaction {
 export interface PettyCashTransaction {
   id: number;
   sequenceNumber: number;
-  type: "Deposit" | "Withdrawal";
+  type: "Deposit" | "Withdrawal" | "Adjustment";
   amount: number;
   description: string;
   createdAt: string;
