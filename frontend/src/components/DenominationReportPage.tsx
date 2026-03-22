@@ -22,18 +22,20 @@ const DENOM_LABELS = [
   { key: "count1", label: "1" },
 ] as const;
 
+const fmtId = (prefix: string, id: number) => `${prefix}-${String(id).padStart(3, "0")}`;
+
 function bagLabel(check: DenominationCheck, bags: ChangeBag[], cashBags: CashBag[], prepBags: PrepBag[]) {
   if (check.changeBagId) {
     const b = bags.find((b) => b.id === check.changeBagId);
-    return `釣り銭#${check.changeBagId}${b ? ` (${b.totalAmount.toLocaleString()}円)` : ""}`;
+    return `${fmtId("CA", check.changeBagId)}${b ? ` (${b.totalAmount.toLocaleString()}円)` : ""}`;
   }
   if (check.cashBagId) {
     const b = cashBags.find((b) => b.id === check.cashBagId);
-    return `キャッシュ#${check.cashBagId}${b ? ` (${b.totalAmount.toLocaleString()}円)` : ""}`;
+    return `${fmtId("BAG", check.cashBagId)}${b ? ` (${b.totalAmount.toLocaleString()}円)` : ""}`;
   }
   if (check.prepBagId) {
     const p = prepBags.find((p) => p.id === check.prepBagId);
-    return `準備#${check.prepBagId}${p ? ` (${p.totalAmount.toLocaleString()}円)` : ""}`;
+    return `${fmtId("準備", check.prepBagId)}${p ? ` (${p.totalAmount.toLocaleString()}円)` : ""}`;
   }
   return "-";
 }

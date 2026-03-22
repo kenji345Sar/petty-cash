@@ -1,6 +1,6 @@
-using PettyCash.Domain.Entities;
+using PettyCash.Domain.SafeAggregate;
 
-namespace PettyCash.Domain.Repositories;
+namespace PettyCash.Domain.SafeAggregate;
 
 public interface ISafeRepository
 {

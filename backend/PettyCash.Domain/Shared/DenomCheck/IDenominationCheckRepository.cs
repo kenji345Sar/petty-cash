@@ -1,6 +1,6 @@
-using PettyCash.Domain.Entities;
+using PettyCash.Domain.Shared.DenomCheck;
 
-namespace PettyCash.Domain.Repositories;
+namespace PettyCash.Domain.Shared.DenomCheck;
 
 public interface IDenominationCheckRepository
 {

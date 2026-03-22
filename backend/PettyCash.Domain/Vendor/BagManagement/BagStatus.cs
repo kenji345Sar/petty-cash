@@ -1,4 +1,4 @@
-namespace PettyCash.Domain.Enums;
+namespace PettyCash.Domain.Vendor.BagManagement;
 
 public enum BagStatus
 {

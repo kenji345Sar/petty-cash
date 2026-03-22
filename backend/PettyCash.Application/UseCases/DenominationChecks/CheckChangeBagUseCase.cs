@@ -1,8 +1,11 @@
 using PettyCash.Application.Dtos;
-using PettyCash.Domain.Entities;
-using PettyCash.Domain.Repositories;
-using PettyCash.Domain.Services;
-using PettyCash.Domain.ValueObjects;
+using PettyCash.Domain.Vendor.Ledger;
+using PettyCash.Domain.Vendor.BagManagement;
+using PettyCash.Domain.Shared.DenomCheck;
+using PettyCash.Domain.PettyCash.Ledger;
+using PettyCash.Domain.SafeAggregate;
+using PettyCash.Domain.Shared.Services;
+using PettyCash.Domain.Shared.ValueObjects;
 
 namespace PettyCash.Application.UseCases.DenominationChecks;
 
@@ -28,11 +31,12 @@ public class CheckChangeBagUseCase(
         await checkRepository.AddAsync(check);
 
         // 差額があればバッグ金額を実数に調整し、調整取引を記録
-        var adjustment = bag.AdjustByCheck(denomination.TotalAmount, now);
-        if (adjustment != null)
+        if (check.Difference != 0)
         {
+            var adjustment = VendorTransaction.CreateAdjustment(bag, check.Difference, now);
             await sequenceNumberService.AssignAsync(adjustment);
             await transactionRepository.AddAsync(adjustment);
+            bag.UpdateAmount(denomination.TotalAmount);
         }
 
         return ToDto(check);

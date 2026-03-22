@@ -1,6 +1,6 @@
-using PettyCash.Domain.Entities;
+using PettyCash.Domain.Vendor.BagManagement;
 
-namespace PettyCash.Domain.Repositories;
+namespace PettyCash.Domain.Vendor.BagManagement;
 
 public interface IPrepBagRepository
 {

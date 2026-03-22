@@ -2,25 +2,7 @@ import { Fragment, useState } from "react";
 import { api } from "../api/client";
 import type { CashBag, PrepBag, DenominationCheck, Denomination } from "../api/client";
 import { DenominationCheckForm } from "./DenominationCheckForm";
-
-const DENOM_ITEMS = [
-  { key: "count10000" as const, label: "1万円", value: 10000 },
-  { key: "count5000" as const, label: "5千円", value: 5000 },
-  { key: "count1000" as const, label: "千円", value: 1000 },
-  { key: "count500" as const, label: "500円", value: 500 },
-  { key: "count100" as const, label: "100円", value: 100 },
-  { key: "count50" as const, label: "50円", value: 50 },
-  { key: "count10" as const, label: "10円", value: 10 },
-  { key: "count5" as const, label: "5円", value: 5 },
-  { key: "count1" as const, label: "1円", value: 1 },
-];
-
-const emptyDenom = (): Denomination => ({
-  count10000: 0, count5000: 0, count1000: 0, count500: 0, count100: 0, count50: 0, count10: 0, count5: 0, count1: 0,
-});
-
-const denomTotal = (d: Denomination) =>
-  DENOM_ITEMS.reduce((sum, item) => sum + d[item.key] * item.value, 0);
+import { DenominationInput } from "./DenominationInput";
 
 interface Props {
   safeId: number;
@@ -58,9 +40,8 @@ export function CashBagList({ safeId, bags, prepBags, denomChecks, onUpdate }: P
   const [loading, setLoading] = useState(false);
   const [checkBagId, setCheckBagId] = useState<number | null>(null);
   const checkBag = bags.find((b) => b.id === checkBagId);
-  const [useDenom, setUseDenom] = useState(false);
-  const [denom, setDenom] = useState<Denomination>(emptyDenom);
-  const denomAmount = denomTotal(denom);
+  const [showDenomInput, setShowDenomInput] = useState(false);
+  const [selectedDenom, setSelectedDenom] = useState<Denomination | null>(null);
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [creating, setCreating] = useState(false);
@@ -84,16 +65,14 @@ export function CashBagList({ safeId, bags, prepBags, denomChecks, onUpdate }: P
   const handleDeposit = async () => {
     setLoading(true);
     try {
-      const finalAmount = useDenom ? denomAmount : amount;
       await api.depositCashBag({
-        safeId, amount: finalAmount, description, date,
-        ...(useDenom ? { denomination: denom } : {}),
+        safeId, amount, description, date,
+        ...(selectedDenom ? { denomination: selectedDenom } : {}),
       });
       setAmount(0);
       setDescription("");
       setDate(todayStr());
-      setDenom(emptyDenom());
-      setUseDenom(false);
+      setSelectedDenom(null);
       setShowForm(false);
       onUpdate();
     } catch (e) {
@@ -170,30 +149,13 @@ export function CashBagList({ safeId, bags, prepBags, denomChecks, onUpdate }: P
       {showForm && (
         <div className="card" style={{ marginBottom: 20 }}>
           <h3>入金処理</h3>
-          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-            <button className={!useDenom ? "btn-period active" : "btn-period"} onClick={() => setUseDenom(false)}>金額入力</button>
-            <button className={useDenom ? "btn-period active" : "btn-period"} onClick={() => setUseDenom(true)}>金種入力</button>
-          </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {useDenom ? (
-              <div>
-                <div className="denomination-grid">
-                  {DENOM_ITEMS.map((item) => (
-                    <div className="denomination-row" key={item.key}>
-                      <label>{item.label}</label>
-                      <input type="number" min="0" value={denom[item.key] || ""} onChange={(e) => setDenom({ ...denom, [item.key]: Math.max(0, parseInt(e.target.value) || 0) })} />
-                      <span>{(denom[item.key] * item.value).toLocaleString()}円</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="total-row"><strong>合計: {denomAmount.toLocaleString()}円</strong></div>
-              </div>
-            ) : (
-              <div>
-                <label>金額（円）</label>
-                <input type="number" min="1" value={amount || ""} onChange={(e) => setAmount(Math.max(0, parseInt(e.target.value) || 0))} style={{ marginLeft: 8, width: 160 }} />
-              </div>
-            )}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <label>金額（円）</label>
+              <input type="number" min="1" value={amount || ""} onChange={(e) => { setAmount(Math.max(0, parseInt(e.target.value) || 0)); setSelectedDenom(null); }} style={{ width: 160 }} />
+              <button className="btn-action" onClick={() => setShowDenomInput(true)} style={{ padding: "6px 14px", fontSize: "0.85rem" }}>金種表</button>
+              {selectedDenom && <span style={{ fontSize: "0.85rem", color: "#2563eb" }}>（金種入力済み）</span>}
+            </div>
             <div>
               <label>備考</label>
               <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} style={{ marginLeft: 8, width: 300 }} placeholder="例: 売上入金" />
@@ -203,7 +165,7 @@ export function CashBagList({ safeId, bags, prepBags, denomChecks, onUpdate }: P
               <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ marginLeft: 8 }} />
             </div>
           </div>
-          <button className="btn-primary" onClick={handleDeposit} disabled={loading || (useDenom ? denomAmount <= 0 : amount <= 0)} style={{ marginTop: 12 }}>
+          <button className="btn-primary" onClick={handleDeposit} disabled={loading || amount <= 0} style={{ marginTop: 12 }}>
             {loading ? "処理中..." : "入金する"}
           </button>
         </div>
@@ -239,7 +201,7 @@ export function CashBagList({ safeId, bags, prepBags, denomChecks, onUpdate }: P
               return (
                 <Fragment key={bag.id}>
                   <tr style={selected.has(bag.id) ? { background: "#e8f4fd" } : undefined}>
-                    <td>{bag.sequenceNumber ? `BAG-${String(bag.sequenceNumber).padStart(3, "0")}` : bag.id}</td>
+                    <td>BAG-{String(bag.id).padStart(3, "0")}</td>
                     <td>{bag.totalAmount.toLocaleString()}円</td>
                     <td>{bag.description}</td>
                     <td>{new Date(bag.createdAt).toLocaleString("ja-JP")}</td>
@@ -381,6 +343,18 @@ export function CashBagList({ safeId, bags, prepBags, denomChecks, onUpdate }: P
             </div>
           )}
         </div>
+      )}
+
+      {showDenomInput && (
+        <DenominationInput
+          initialDenom={selectedDenom ?? undefined}
+          onComplete={(denom, total) => {
+            setSelectedDenom(denom);
+            setAmount(total);
+            setShowDenomInput(false);
+          }}
+          onCancel={() => setShowDenomInput(false)}
+        />
       )}
 
       {checkBag && (

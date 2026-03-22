@@ -1,6 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using PettyCash.Domain.Entities;
-using PettyCash.Domain.Services;
+using PettyCash.Domain.Vendor.Ledger;
+using PettyCash.Domain.Vendor.BagManagement;
+using PettyCash.Domain.Shared.DenomCheck;
+using PettyCash.Domain.PettyCash.Ledger;
+using PettyCash.Domain.SafeAggregate;
+using PettyCash.Domain.Shared.Services;
 using PettyCash.Infrastructure.Data;
 
 namespace PettyCash.Infrastructure.Services;

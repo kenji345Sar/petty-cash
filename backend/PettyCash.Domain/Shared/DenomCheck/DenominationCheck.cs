@@ -1,6 +1,8 @@
-using PettyCash.Domain.ValueObjects;
+using PettyCash.Domain.SafeAggregate;
+using PettyCash.Domain.Shared.ValueObjects;
+using PettyCash.Domain.Vendor.BagManagement;
 
-namespace PettyCash.Domain.Entities;
+namespace PettyCash.Domain.Shared.DenomCheck;
 
 public class DenominationCheck
 {

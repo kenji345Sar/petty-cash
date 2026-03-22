@@ -1,6 +1,10 @@
-using PettyCash.Domain.Entities;
-using PettyCash.Domain.Enums;
-using PettyCash.Domain.ValueObjects;
+using PettyCash.Domain.Vendor.Ledger;
+using PettyCash.Domain.Vendor.BagManagement;
+using PettyCash.Domain.Shared.DenomCheck;
+using PettyCash.Domain.PettyCash.Ledger;
+using PettyCash.Domain.SafeAggregate;
+using PettyCash.Domain.Shared;
+using PettyCash.Domain.Shared.ValueObjects;
 
 namespace PettyCash.Domain.Tests.Entities;
 
@@ -27,25 +31,12 @@ public class CashBagTests
     }
 
     [Fact]
-    public void AdjustByCheck_差額があれば金額が更新される()
+    public void UpdateAmount_金額が更新される()
     {
         var bag = CashBag.CreateDeposit(1, 8000, "テスト", DateTime.UtcNow);
 
-        var adjustment = bag.AdjustByCheck(7500, DateTime.UtcNow);
+        bag.UpdateAmount(7500);
 
         Assert.Equal(7500, bag.TotalAmount);
-        Assert.NotNull(adjustment);
-        Assert.Equal(TransactionType.Adjustment, adjustment!.Type);
-        Assert.Equal(-500, adjustment.Amount);
-    }
-
-    [Fact]
-    public void AdjustByCheck_差額ゼロならnull()
-    {
-        var bag = CashBag.CreateDeposit(1, 8000, "テスト", DateTime.UtcNow);
-
-        var adjustment = bag.AdjustByCheck(8000, DateTime.UtcNow);
-
-        Assert.Null(adjustment);
     }
 }

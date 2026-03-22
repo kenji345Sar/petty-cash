@@ -1,6 +1,6 @@
-using PettyCash.Domain.Entities;
+using PettyCash.Domain.Vendor.Ledger;
 
-namespace PettyCash.Domain.Repositories;
+namespace PettyCash.Domain.Vendor.Ledger;
 
 public interface IVendorTransactionRepository
 {

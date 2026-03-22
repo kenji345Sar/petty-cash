@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import type { PettyCashTransaction, DenominationCheck, Denomination } from "../api/client";
-import { DENOM_ITEMS, emptyDenom, denomTotal } from "../shared/denomination";
+import { DENOM_ITEMS, emptyDenom } from "../shared/denomination";
 import { DenominationCheckForm } from "./DenominationCheckForm";
+import { DenominationInput } from "./DenominationInput";
 
 interface Props {
   safeId: number;
@@ -35,8 +36,8 @@ export function PettyCashTab({ safeId, safeBalance, onUpdate }: Props) {
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [loading, setLoading] = useState(false);
-  const [useDenom, setUseDenom] = useState(false);
-  const [denom, setDenom] = useState<Denomination>(emptyDenom);
+  const [showDenomInput, setShowDenomInput] = useState(false);
+  const [selectedDenom, setSelectedDenom] = useState<Denomination | null>(null);
 
   // Period
   const [period, setPeriod] = useState<Period>("thisMonth");
@@ -74,24 +75,20 @@ export function PettyCashTab({ safeId, safeBalance, onUpdate }: Props) {
     ...denomChecks.filter(c => inRange(c.createdAt)).map(c => ({ kind: "check" as const, data: c, at: c.createdAt })),
   ].sort((a, b) => b.data.sequenceNumber - a.data.sequenceNumber);
 
-  const denomAmount = denomTotal(denom);
-
   const handleSubmit = async () => {
     setLoading(true);
     try {
       const label = txType === "Deposit" ? "小口入金" : "小口出金";
       const desc = description || label;
-      const finalAmount = useDenom ? denomAmount : amount;
       await api.createPettyCashTransaction({
-        safeId, type: txType, amount: finalAmount, description: desc, date,
-        ...(useDenom ? { denomination: denom } : {}),
+        safeId, type: txType, amount, description: desc, date,
+        ...(selectedDenom ? { denomination: selectedDenom } : {}),
       });
       setAmount(0);
       setDescription("");
       setDate(new Date().toISOString().slice(0, 10));
       setTxType("Deposit");
-      setDenom(emptyDenom());
-      setUseDenom(false);
+      setSelectedDenom(null);
       setView("list");
       handleUpdate();
     } catch (e) {
@@ -134,30 +131,25 @@ export function PettyCashTab({ safeId, safeBalance, onUpdate }: Props) {
             <button className={txType === "Deposit" ? "btn-period active" : "btn-period"} onClick={() => setTxType("Deposit")}>入金</button>
             <button className={txType === "Withdrawal" ? "btn-period active" : "btn-period"} onClick={() => setTxType("Withdrawal")}>出金</button>
           </div>
-          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-            <button className={!useDenom ? "btn-period active" : "btn-period"} onClick={() => setUseDenom(false)}>金額入力</button>
-            <button className={useDenom ? "btn-period active" : "btn-period"} onClick={() => setUseDenom(true)}>金種入力</button>
-          </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {useDenom ? (
-              <div>
-                <div className="denomination-grid">
-                  {DENOM_ITEMS.map(item => (
-                    <div className="denomination-row" key={item.key}>
-                      <label>{item.label}</label>
-                      <input type="number" min="0" value={denom[item.key] || ""} onChange={e => setDenom({ ...denom, [item.key]: Math.max(0, parseInt(e.target.value) || 0) })} />
-                      <span>{(denom[item.key] * item.value).toLocaleString()}円</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="total-row"><strong>合計: {denomAmount.toLocaleString()}円</strong></div>
-              </div>
-            ) : (
-              <div>
-                <label>金額（円）</label>
-                <input type="number" min="1" value={amount || ""} onChange={e => setAmount(Math.max(0, parseInt(e.target.value) || 0))} style={{ marginLeft: 8, width: 160 }} />
-              </div>
-            )}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <label>金額（円）</label>
+              <input
+                type="number" min="1" value={amount || ""}
+                onChange={e => { setAmount(Math.max(0, parseInt(e.target.value) || 0)); setSelectedDenom(null); }}
+                style={{ width: 160 }}
+              />
+              <button
+                className="btn-action"
+                onClick={() => setShowDenomInput(true)}
+                style={{ padding: "6px 14px", fontSize: "0.85rem" }}
+              >
+                金種表
+              </button>
+              {selectedDenom && (
+                <span style={{ fontSize: "0.85rem", color: "#2563eb" }}>（金種入力済み）</span>
+              )}
+            </div>
             <div>
               <label>備考</label>
               <input type="text" value={description} onChange={e => setDescription(e.target.value)} style={{ marginLeft: 8, width: 300 }}
@@ -168,7 +160,7 @@ export function PettyCashTab({ safeId, safeBalance, onUpdate }: Props) {
               <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ marginLeft: 8 }} />
             </div>
           </div>
-          <button className="btn-primary" onClick={handleSubmit} disabled={loading || (useDenom ? denomAmount <= 0 : amount <= 0)} style={{ marginTop: 12 }}>
+          <button className="btn-primary" onClick={handleSubmit} disabled={loading || amount <= 0} style={{ marginTop: 12 }}>
             {loading ? "処理中..." : (txType === "Deposit" ? "入金する" : "出金する")}
           </button>
         </div>
@@ -266,6 +258,19 @@ export function PettyCashTab({ safeId, safeBalance, onUpdate }: Props) {
           onSubmit={(id, denom) => api.checkSafe(id, denom)}
           onClose={() => setShowDenomCheck(false)}
           onDone={handleUpdate}
+        />
+      )}
+
+      {/* Denomination input modal (金種表→金額セット) */}
+      {showDenomInput && (
+        <DenominationInput
+          initialDenom={selectedDenom ?? undefined}
+          onComplete={(denom, total) => {
+            setSelectedDenom(denom);
+            setAmount(total);
+            setShowDenomInput(false);
+          }}
+          onCancel={() => setShowDenomInput(false)}
         />
       )}
 

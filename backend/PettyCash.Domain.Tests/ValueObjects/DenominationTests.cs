@@ -1,4 +1,4 @@
-using PettyCash.Domain.ValueObjects;
+using PettyCash.Domain.Shared.ValueObjects;
 
 namespace PettyCash.Domain.Tests.ValueObjects;
 

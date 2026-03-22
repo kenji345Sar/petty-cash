@@ -1,7 +1,7 @@
-using PettyCash.Domain.Enums;
-using PettyCash.Domain.ValueObjects;
+using PettyCash.Domain.Shared;
+using PettyCash.Domain.Shared.ValueObjects;
 
-namespace PettyCash.Domain.Entities;
+namespace PettyCash.Domain.PettyCash.Ledger;
 
 public class PettyCashTransaction
 {

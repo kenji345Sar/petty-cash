@@ -1,7 +1,10 @@
-using PettyCash.Domain.Enums;
-using PettyCash.Domain.ValueObjects;
+using PettyCash.Domain.Shared.DenomCheck;
+using PettyCash.Domain.SafeAggregate;
+using PettyCash.Domain.Shared;
+using PettyCash.Domain.Shared.ValueObjects;
+using PettyCash.Domain.Vendor.Ledger;
 
-namespace PettyCash.Domain.Entities;
+namespace PettyCash.Domain.Vendor.BagManagement;
 
 public class ChangeBag
 {
@@ -59,14 +62,8 @@ public class ChangeBag
         return transaction;
     }
 
-    public VendorTransaction? AdjustByCheck(int checkedAmount, DateTime adjustedAt)
+    public void UpdateAmount(int newAmount)
     {
-        var difference = checkedAmount - TotalAmount;
-        if (difference == 0) return null;
-
-        TotalAmount = checkedAmount;
-        var transaction = VendorTransaction.CreateAdjustment(this, difference, adjustedAt);
-        _transactions.Add(transaction);
-        return transaction;
+        TotalAmount = newAmount;
     }
 }

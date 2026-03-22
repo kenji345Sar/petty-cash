@@ -20,8 +20,7 @@ function getMonthRange(offset: number): [string, string] {
   return [start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)];
 }
 
-const formatBagNo = (prefix: string, seq: number | null) =>
-  seq ? `${prefix}-${String(seq).padStart(3, "0")}` : null;
+const fmtId = (prefix: string, id: number) => `${prefix}-${String(id).padStart(3, "0")}`;
 
 function formatBag(
   changeBagId: number | null,
@@ -33,19 +32,20 @@ function formatBag(
 ) {
   if (changeBagId) {
     const bag = bags.find(b => b.id === changeBagId);
-    const no = formatBagNo("CA", bag?.depositSequenceNumber ?? null) ?? `CA-?`;
+    const no = fmtId("CA", changeBagId);
     return bag ? `${no} ${bag.totalAmount.toLocaleString()}円` : no;
   }
   if (cashBagId) {
     const bag = cashBags.find(b => b.id === cashBagId);
-    const no = formatBagNo("BAG", bag?.sequenceNumber ?? null) ?? `BAG-?`;
+    const no = fmtId("BAG", cashBagId);
     return bag ? `${no} ${bag.totalAmount.toLocaleString()}円` : no;
   }
   if (prepBagId) {
     const pb = prepBags.find(p => p.id === prepBagId);
+    const no = fmtId("準備", prepBagId);
     return pb
-      ? `準備#${prepBagId} (${pb.cashBagIds.map(id => `CB#${id}`).join(",")} / ${pb.totalAmount.toLocaleString()}円)`
-      : `準備#${prepBagId}`;
+      ? `${no} (${pb.cashBagIds.map(id => fmtId("BAG", id)).join(",")} / ${pb.totalAmount.toLocaleString()}円)`
+      : no;
   }
   return "-";
 }

@@ -1,9 +1,12 @@
 using PettyCash.Application.Dtos;
-using PettyCash.Domain.Entities;
-using PettyCash.Domain.Enums;
-using PettyCash.Domain.Repositories;
-using PettyCash.Domain.Services;
-using PettyCash.Domain.ValueObjects;
+using PettyCash.Domain.Vendor.Ledger;
+using PettyCash.Domain.Vendor.BagManagement;
+using PettyCash.Domain.Shared.DenomCheck;
+using PettyCash.Domain.PettyCash.Ledger;
+using PettyCash.Domain.SafeAggregate;
+using PettyCash.Domain.Shared;
+using PettyCash.Domain.Shared.Services;
+using PettyCash.Domain.Shared.ValueObjects;
 
 namespace PettyCash.Application.UseCases.Transactions;
 

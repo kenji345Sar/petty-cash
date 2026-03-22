@@ -1,7 +1,8 @@
-using PettyCash.Domain.Enums;
-using PettyCash.Domain.ValueObjects;
+using PettyCash.Domain.Shared;
+using PettyCash.Domain.Shared.ValueObjects;
+using PettyCash.Domain.Vendor.BagManagement;
 
-namespace PettyCash.Domain.Entities;
+namespace PettyCash.Domain.Vendor.Ledger;
 
 public class VendorTransaction
 {
@@ -74,7 +75,7 @@ public class VendorTransaction
         };
     }
 
-    internal static VendorTransaction CreateAdjustment(ChangeBag bag, int difference, DateTime date)
+    public static VendorTransaction CreateAdjustment(ChangeBag bag, int difference, DateTime date)
     {
         return new VendorTransaction
         {
@@ -87,7 +88,7 @@ public class VendorTransaction
         };
     }
 
-    internal static VendorTransaction CreateAdjustment(CashBag bag, int difference, DateTime date)
+    public static VendorTransaction CreateAdjustment(CashBag bag, int difference, DateTime date)
     {
         return new VendorTransaction
         {

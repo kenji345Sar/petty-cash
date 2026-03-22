@@ -1,4 +1,4 @@
-namespace PettyCash.Domain.Enums;
+namespace PettyCash.Domain.Shared;
 
 public enum TransactionType
 {

@@ -36,11 +36,12 @@ export function DenominationCheckPage({ bags, cashBags, prepBags, onDone }: Prop
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<DenominationCheck | null>(null);
 
+  const fmtId = (prefix: string, id: number) => `${prefix}-${String(id).padStart(3, "0")}`;
   const bagOptions = bagType === "change"
-    ? bags.map((b) => ({ id: b.id, label: `釣り銭#${b.id} ${b.description || ""} (${b.totalAmount.toLocaleString()}円)`, amount: b.totalAmount }))
+    ? bags.map((b) => ({ id: b.id, label: `${fmtId("CA", b.id)} ${b.description || ""} (${b.totalAmount.toLocaleString()}円)`, amount: b.totalAmount }))
     : bagType === "cash"
-    ? cashBags.map((b) => ({ id: b.id, label: `キャッシュ#${b.id} ${b.description || ""} (${b.totalAmount.toLocaleString()}円)`, amount: b.totalAmount }))
-    : prepBags.filter((p) => p.status === "Preparing").map((p) => ({ id: p.id, label: `準備#${p.id} (${p.totalAmount.toLocaleString()}円)`, amount: p.totalAmount }));
+    ? cashBags.map((b) => ({ id: b.id, label: `${fmtId("BAG", b.id)} ${b.description || ""} (${b.totalAmount.toLocaleString()}円)`, amount: b.totalAmount }))
+    : prepBags.filter((p) => p.status === "Preparing").map((p) => ({ id: p.id, label: `${fmtId("準備", p.id)} (${p.totalAmount.toLocaleString()}円)`, amount: p.totalAmount }));
 
   const selectedBag = bagOptions.find((b) => b.id === selectedBagId);
   const expectedAmount = selectedBag?.amount ?? 0;

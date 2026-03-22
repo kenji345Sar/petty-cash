@@ -1,6 +1,9 @@
-using PettyCash.Domain.Enums;
+using PettyCash.Domain.Shared.DenomCheck;
+using PettyCash.Domain.SafeAggregate;
+using PettyCash.Domain.Shared;
+using PettyCash.Domain.Vendor.Ledger;
 
-namespace PettyCash.Domain.Entities;
+namespace PettyCash.Domain.Vendor.BagManagement;
 
 public class PrepBag
 {

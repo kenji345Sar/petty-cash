@@ -1,6 +1,6 @@
-using PettyCash.Domain.Entities;
+using PettyCash.Domain.PettyCash.Ledger;
 
-namespace PettyCash.Domain.Repositories;
+namespace PettyCash.Domain.PettyCash.Ledger;
 
 public interface IPettyCashTransactionRepository
 {

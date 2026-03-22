@@ -1,4 +1,4 @@
-namespace PettyCash.Domain.ValueObjects;
+namespace PettyCash.Domain.Shared.ValueObjects;
 
 public record Denomination
 {

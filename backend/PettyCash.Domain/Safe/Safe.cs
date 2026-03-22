@@ -1,4 +1,4 @@
-namespace PettyCash.Domain.Entities;
+namespace PettyCash.Domain.SafeAggregate;
 
 public class Safe
 {
