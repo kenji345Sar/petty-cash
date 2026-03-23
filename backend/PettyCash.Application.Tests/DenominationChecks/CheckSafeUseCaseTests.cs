@@ -2,9 +2,7 @@ using Moq;
 using PettyCash.Application.Dtos;
 using PettyCash.Application.UseCases.DenominationChecks;
 using PettyCash.Domain.Vendor.Ledger;
-using PettyCash.Domain.Vendor.BagManagement;
-using PettyCash.Domain.Shared.DenomCheck;
-using PettyCash.Domain.PettyCash.Ledger;
+using PettyCash.Domain.PettyCash.DenomCheck;
 using PettyCash.Domain.SafeAggregate;
 using PettyCash.Domain.Shared.Services;
 
@@ -13,7 +11,7 @@ namespace PettyCash.Application.Tests.DenominationChecks;
 public class CheckSafeUseCaseTests
 {
     private readonly Mock<ISafeRepository> _safeRepo = new();
-    private readonly Mock<IDenominationCheckRepository> _checkRepo = new();
+    private readonly Mock<IPettyCashDenominationCheckRepository> _checkRepo = new();
     private readonly Mock<IVendorTransactionRepository> _txRepo = new();
     private readonly Mock<ISequenceNumberService> _seqService = new();
 

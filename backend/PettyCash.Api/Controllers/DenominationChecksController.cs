@@ -11,13 +11,22 @@ public class DenominationChecksController(
     CheckCashBagUseCase checkCashBagUseCase,
     CheckPrepBagUseCase checkPrepBagUseCase,
     CheckSafeUseCase checkSafeUseCase,
-    GetDenominationChecksUseCase getDenominationChecksUseCase,
-    UpdateDenominationCheckUseCase updateDenominationCheckUseCase) : ControllerBase
+    GetVendorDenominationChecksUseCase getVendorDenominationChecksUseCase,
+    GetPettyCashDenominationChecksUseCase getPettyCashDenominationChecksUseCase,
+    UpdateVendorDenominationCheckUseCase updateVendorDenominationCheckUseCase,
+    UpdatePettyCashDenominationCheckUseCase updatePettyCashDenominationCheckUseCase) : ControllerBase
 {
-    [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<DenominationCheckDto>>> GetAll([FromQuery] int safeId)
+    [HttpGet("vendor")]
+    public async Task<ActionResult<IReadOnlyList<DenominationCheckDto>>> GetVendorChecks([FromQuery] int safeId)
     {
-        var checks = await getDenominationChecksUseCase.ExecuteAsync(safeId);
+        var checks = await getVendorDenominationChecksUseCase.ExecuteAsync(safeId);
+        return Ok(checks);
+    }
+
+    [HttpGet("safe")]
+    public async Task<ActionResult<IReadOnlyList<DenominationCheckDto>>> GetSafeChecks([FromQuery] int safeId)
+    {
+        var checks = await getPettyCashDenominationChecksUseCase.ExecuteAsync(safeId);
         return Ok(checks);
     }
 
@@ -49,12 +58,26 @@ public class DenominationChecksController(
         }
     }
 
-    [HttpPut("{id}")]
-    public async Task<ActionResult<DenominationCheckDto>> Update(int id, DenominationCheckRequestDto dto)
+    [HttpPut("vendor/{id}")]
+    public async Task<ActionResult<DenominationCheckDto>> UpdateVendor(int id, DenominationCheckRequestDto dto)
     {
         try
         {
-            var check = await updateDenominationCheckUseCase.ExecuteAsync(id, dto);
+            var check = await updateVendorDenominationCheckUseCase.ExecuteAsync(id, dto);
+            return Ok(check);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+
+    [HttpPut("safe/{id}")]
+    public async Task<ActionResult<DenominationCheckDto>> UpdateSafe(int id, DenominationCheckRequestDto dto)
+    {
+        try
+        {
+            var check = await updatePettyCashDenominationCheckUseCase.ExecuteAsync(id, dto);
             return Ok(check);
         }
         catch (KeyNotFoundException ex)

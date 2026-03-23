@@ -1,4 +1,4 @@
-using PettyCash.Domain.Shared.DenomCheck;
+using PettyCash.Domain.Vendor.DenomCheck;
 using PettyCash.Domain.SafeAggregate;
 using PettyCash.Domain.Shared;
 using PettyCash.Domain.Vendor.Ledger;
@@ -17,8 +17,8 @@ public class PrepBag
 
     public VendorTransaction? Transaction { get; private set; }
 
-    private readonly List<DenominationCheck> _denominationChecks = [];
-    public IReadOnlyCollection<DenominationCheck> DenominationChecks => _denominationChecks.AsReadOnly();
+    private readonly List<VendorDenominationCheck> _denominationChecks = [];
+    public IReadOnlyCollection<VendorDenominationCheck> DenominationChecks => _denominationChecks.AsReadOnly();
 
     private readonly List<CashBag> _cashBags = [];
     public IReadOnlyCollection<CashBag> CashBags => _cashBags.AsReadOnly();
@@ -50,6 +50,17 @@ public class PrepBag
         }
 
         return bag;
+    }
+
+    public void Cancel()
+    {
+        if (Status == PrepBagStatus.HandedOver)
+            throw new InvalidOperationException("引渡済みの準備バッグは戻せません。");
+        if (Status == PrepBagStatus.Cancelled)
+            throw new InvalidOperationException("この準備バッグは既に取消済みです。");
+
+        _cashBags.Clear();
+        Status = PrepBagStatus.Cancelled;
     }
 
     public VendorTransaction MarkHandedOver(DateTime handedOverAt)

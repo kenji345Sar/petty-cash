@@ -7,8 +7,9 @@ using PettyCash.Application.UseCases.Safes;
 using PettyCash.Application.UseCases.Transactions;
 using PettyCash.Domain.Vendor.Ledger;
 using PettyCash.Domain.Vendor.BagManagement;
-using PettyCash.Domain.Shared.DenomCheck;
+using PettyCash.Domain.Vendor.DenomCheck;
 using PettyCash.Domain.PettyCash.Ledger;
+using PettyCash.Domain.PettyCash.DenomCheck;
 using PettyCash.Domain.SafeAggregate;
 using PettyCash.Domain.Shared.Services;
 using PettyCash.Infrastructure.Data;
@@ -39,17 +40,21 @@ builder.Services.AddScoped<GetCashBagsUseCase>();
 builder.Services.AddScoped<GetVendorTransactionsUseCase>();
 builder.Services.AddScoped<GetPettyCashTransactionsUseCase>();
 builder.Services.AddScoped<CreatePettyCashTransactionUseCase>();
-builder.Services.AddScoped<IDenominationCheckRepository, DenominationCheckRepository>();
+builder.Services.AddScoped<IVendorDenominationCheckRepository, VendorDenominationCheckRepository>();
+builder.Services.AddScoped<IPettyCashDenominationCheckRepository, PettyCashDenominationCheckRepository>();
 builder.Services.AddScoped<CheckChangeBagUseCase>();
 builder.Services.AddScoped<CheckCashBagUseCase>();
 builder.Services.AddScoped<CheckPrepBagUseCase>();
 builder.Services.AddScoped<CheckSafeUseCase>();
-builder.Services.AddScoped<GetDenominationChecksUseCase>();
-builder.Services.AddScoped<UpdateDenominationCheckUseCase>();
+builder.Services.AddScoped<GetVendorDenominationChecksUseCase>();
+builder.Services.AddScoped<GetPettyCashDenominationChecksUseCase>();
+builder.Services.AddScoped<UpdateVendorDenominationCheckUseCase>();
+builder.Services.AddScoped<UpdatePettyCashDenominationCheckUseCase>();
 builder.Services.AddScoped<IPrepBagRepository, PrepBagRepository>();
 builder.Services.AddScoped<CreatePrepBagUseCase>();
 builder.Services.AddScoped<GetPrepBagsUseCase>();
 builder.Services.AddScoped<HandOverPrepBagUseCase>();
+builder.Services.AddScoped<CancelPrepBagUseCase>();
 
 builder.Services.AddCors(options =>
 {
@@ -248,6 +253,72 @@ using (var scope = app.Services.CreateScope())
 
         // 旧テーブルを削除
         db.Database.ExecuteSqlRaw("DROP TABLE IF EXISTS transactions CASCADE");
+    }
+
+    // Split denomination_checks into vendor/safe tables
+    db.Database.ExecuteSqlRaw(@"
+        CREATE TABLE IF NOT EXISTS vendor_denomination_checks (
+            id SERIAL PRIMARY KEY,
+            sequence_number INTEGER NOT NULL DEFAULT 0,
+            safe_id INTEGER NOT NULL REFERENCES safes(id),
+            change_bag_id INTEGER,
+            cash_bag_id INTEGER,
+            prep_bag_id INTEGER,
+            checked_amount INTEGER NOT NULL,
+            expected_amount INTEGER NOT NULL,
+            difference INTEGER NOT NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            count_10000 INTEGER NOT NULL DEFAULT 0,
+            count_5000 INTEGER NOT NULL DEFAULT 0,
+            count_1000 INTEGER NOT NULL DEFAULT 0,
+            count_500 INTEGER NOT NULL DEFAULT 0,
+            count_100 INTEGER NOT NULL DEFAULT 0,
+            count_50 INTEGER NOT NULL DEFAULT 0,
+            count_10 INTEGER NOT NULL DEFAULT 0,
+            count_5 INTEGER NOT NULL DEFAULT 0,
+            count_1 INTEGER NOT NULL DEFAULT 0
+        )");
+    db.Database.ExecuteSqlRaw(@"
+        CREATE TABLE IF NOT EXISTS safe_denomination_checks (
+            id SERIAL PRIMARY KEY,
+            sequence_number INTEGER NOT NULL DEFAULT 0,
+            safe_id INTEGER NOT NULL REFERENCES safes(id),
+            checked_amount INTEGER NOT NULL,
+            expected_amount INTEGER NOT NULL,
+            difference INTEGER NOT NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            count_10000 INTEGER NOT NULL DEFAULT 0,
+            count_5000 INTEGER NOT NULL DEFAULT 0,
+            count_1000 INTEGER NOT NULL DEFAULT 0,
+            count_500 INTEGER NOT NULL DEFAULT 0,
+            count_100 INTEGER NOT NULL DEFAULT 0,
+            count_50 INTEGER NOT NULL DEFAULT 0,
+            count_10 INTEGER NOT NULL DEFAULT 0,
+            count_5 INTEGER NOT NULL DEFAULT 0,
+            count_1 INTEGER NOT NULL DEFAULT 0
+        )");
+    // Migrate existing data
+    var hasOldDenomTable = db.Database.SqlQueryRaw<int>(
+        "SELECT COUNT(*) AS \"Value\" FROM information_schema.tables WHERE table_name = 'denomination_checks'"
+    ).First();
+    if (hasOldDenomTable > 0)
+    {
+        db.Database.ExecuteSqlRaw(@"
+            INSERT INTO vendor_denomination_checks (id, sequence_number, safe_id, change_bag_id, cash_bag_id, prep_bag_id, checked_amount, expected_amount, difference, created_at, count_10000, count_5000, count_1000, count_500, count_100, count_50, count_10, count_5, count_1)
+            SELECT id, sequence_number, safe_id, change_bag_id, cash_bag_id, prep_bag_id, checked_amount, expected_amount, difference, created_at, count_10000, count_5000, count_1000, count_500, count_100, count_50, count_10, count_5, count_1
+            FROM denomination_checks
+            WHERE change_bag_id IS NOT NULL OR cash_bag_id IS NOT NULL OR prep_bag_id IS NOT NULL
+            ON CONFLICT (id) DO NOTHING");
+        db.Database.ExecuteSqlRaw(@"
+            INSERT INTO safe_denomination_checks (id, sequence_number, safe_id, checked_amount, expected_amount, difference, created_at, count_10000, count_5000, count_1000, count_500, count_100, count_50, count_10, count_5, count_1)
+            SELECT id, sequence_number, safe_id, checked_amount, expected_amount, difference, created_at, count_10000, count_5000, count_1000, count_500, count_100, count_50, count_10, count_5, count_1
+            FROM denomination_checks
+            WHERE change_bag_id IS NULL AND cash_bag_id IS NULL AND prep_bag_id IS NULL
+            ON CONFLICT (id) DO NOTHING");
+        // Set sequences
+        db.Database.ExecuteSqlRaw(@"
+            SELECT setval('vendor_denomination_checks_id_seq', GREATEST((SELECT COALESCE(MAX(id), 0) FROM vendor_denomination_checks), 1));
+            SELECT setval('safe_denomination_checks_id_seq', GREATEST((SELECT COALESCE(MAX(id), 0) FROM safe_denomination_checks), 1))");
     }
 }
 

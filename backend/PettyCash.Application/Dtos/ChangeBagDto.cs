@@ -8,5 +8,6 @@ public record ChangeBagDto(
     DateTime CreatedAt,
     DateTime? MovedAt,
     int? DepositSequenceNumber,
-    int? WithdrawalSequenceNumber
+    int? WithdrawalSequenceNumber,
+    DenominationDto? Denomination
 );

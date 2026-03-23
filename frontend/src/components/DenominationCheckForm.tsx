@@ -10,6 +10,7 @@ interface Props {
   onDone: () => void;
   editCheck?: DenominationCheck;
   onUpdate?: (id: number, denomination: Denomination) => Promise<DenominationCheck>;
+  initialDenom?: Denomination;
 }
 
 const DENOMINATIONS = [
@@ -24,26 +25,29 @@ const DENOMINATIONS = [
   { key: "count1", label: "1円", value: 1, perSet: 50 },
 ] as const;
 
-const initialCounts = (check?: DenominationCheck): Denomination =>
-  check
-    ? {
-        count10000: check.count10000,
-        count5000: check.count5000,
-        count1000: check.count1000,
-        count500: check.count500,
-        count100: check.count100,
-        count50: check.count50,
-        count10: check.count10,
-        count5: check.count5,
-        count1: check.count1,
-      }
-    : { count10000: 0, count5000: 0, count1000: 0, count500: 0, count100: 0, count50: 0, count10: 0, count5: 0, count1: 0 };
+const zeroDenom = (): Denomination =>
+  ({ count10000: 0, count5000: 0, count1000: 0, count500: 0, count100: 0, count50: 0, count10: 0, count5: 0, count1: 0 });
+
+const denomFromCheck = (check: DenominationCheck): Denomination => ({
+  count10000: check.count10000,
+  count5000: check.count5000,
+  count1000: check.count1000,
+  count500: check.count500,
+  count100: check.count100,
+  count50: check.count50,
+  count10: check.count10,
+  count5: check.count5,
+  count1: check.count1,
+});
+
+const initialCounts = (check?: DenominationCheck, denom?: Denomination): Denomination =>
+  check ? denomFromCheck(check) : denom ? { ...denom } : zeroDenom();
 
 const initialSets = () =>
   ({ count10000: 0, count5000: 0, count1000: 0, count500: 0, count100: 0, count50: 0, count10: 0, count5: 0, count1: 0 });
 
-export function DenominationCheckForm({ bagId, bagType, expectedAmount, onSubmit, onClose, onDone, editCheck, onUpdate }: Props) {
-  const [counts, setCounts] = useState(() => initialCounts(editCheck));
+export function DenominationCheckForm({ bagId, bagType, expectedAmount, onSubmit, onClose, onDone, editCheck, onUpdate, initialDenom }: Props) {
+  const [counts, setCounts] = useState(() => initialCounts(editCheck, initialDenom));
   const [sets, setSets] = useState(initialSets);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<DenominationCheck | null>(null);

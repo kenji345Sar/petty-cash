@@ -42,9 +42,6 @@ function App() {
             </select>
             {selectedSafe && (
               <div className="safe-balance-group">
-                <span className="safe-balance">
-                  合計: {selectedSafe.currentBalance.toLocaleString()}円
-                </span>
                 <span className="safe-balance vendor">
                   業者: {selectedSafe.vendorBalance.toLocaleString()}円
                 </span>
@@ -95,7 +92,7 @@ function App() {
           activeTab === "petty" ? (
             <PettyCashTab
               safeId={selectedSafeId}
-              safeBalance={selectedSafe.currentBalance}
+              safeBalance={selectedSafe.pettyCashBalance}
               onUpdate={loadSafes}
             />
           ) : (

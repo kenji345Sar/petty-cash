@@ -1,8 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using PettyCash.Domain.Vendor.Ledger;
 using PettyCash.Domain.Vendor.BagManagement;
-using PettyCash.Domain.Shared.DenomCheck;
+using PettyCash.Domain.Vendor.DenomCheck;
 using PettyCash.Domain.PettyCash.Ledger;
+using PettyCash.Domain.PettyCash.DenomCheck;
 using PettyCash.Domain.SafeAggregate;
 
 namespace PettyCash.Infrastructure.Data;
@@ -14,7 +15,8 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
     public DbSet<CashBag> CashBags => Set<CashBag>();
     public DbSet<VendorTransaction> VendorTransactions => Set<VendorTransaction>();
     public DbSet<PettyCashTransaction> PettyCashTransactions => Set<PettyCashTransaction>();
-    public DbSet<DenominationCheck> DenominationChecks => Set<DenominationCheck>();
+    public DbSet<VendorDenominationCheck> VendorDenominationChecks => Set<VendorDenominationCheck>();
+    public DbSet<PettyCashDenominationCheck> PettyCashDenominationChecks => Set<PettyCashDenominationCheck>();
     public DbSet<PrepBag> PrepBags => Set<PrepBag>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -156,9 +158,9 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
                 .HasForeignKey<VendorTransaction>(t => t.PrepBagId);
         });
 
-        modelBuilder.Entity<DenominationCheck>(entity =>
+        modelBuilder.Entity<VendorDenominationCheck>(entity =>
         {
-            entity.ToTable("denomination_checks");
+            entity.ToTable("vendor_denomination_checks");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.SequenceNumber).HasColumnName("sequence_number");
@@ -195,6 +197,32 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
             entity.HasOne(e => e.PrepBag)
                 .WithMany(b => b.DenominationChecks)
                 .HasForeignKey(e => e.PrepBagId);
+        });
+
+        modelBuilder.Entity<PettyCashDenominationCheck>(entity =>
+        {
+            entity.ToTable("safe_denomination_checks");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.SequenceNumber).HasColumnName("sequence_number");
+            entity.Property(e => e.SafeId).HasColumnName("safe_id");
+            entity.Property(e => e.CheckedAmount).HasColumnName("checked_amount");
+            entity.Property(e => e.ExpectedAmount).HasColumnName("expected_amount");
+            entity.Property(e => e.Difference).HasColumnName("difference");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+
+            entity.OwnsOne(e => e.Denomination, d =>
+            {
+                d.Property(p => p.Count10000).HasColumnName("count_10000");
+                d.Property(p => p.Count5000).HasColumnName("count_5000");
+                d.Property(p => p.Count1000).HasColumnName("count_1000");
+                d.Property(p => p.Count500).HasColumnName("count_500");
+                d.Property(p => p.Count100).HasColumnName("count_100");
+                d.Property(p => p.Count50).HasColumnName("count_50");
+                d.Property(p => p.Count10).HasColumnName("count_10");
+                d.Property(p => p.Count5).HasColumnName("count_5");
+                d.Property(p => p.Count1).HasColumnName("count_1");
+            });
         });
     }
 }

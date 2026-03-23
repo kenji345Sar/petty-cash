@@ -1,6 +1,5 @@
 using PettyCash.Domain.Vendor.Ledger;
 using PettyCash.Domain.Vendor.BagManagement;
-using PettyCash.Domain.Shared.DenomCheck;
 using PettyCash.Domain.PettyCash.Ledger;
 using PettyCash.Domain.SafeAggregate;
 using PettyCash.Domain.Shared;
@@ -10,10 +9,14 @@ namespace PettyCash.Domain.Tests.Entities;
 
 public class ChangeBagTests
 {
+    private static Denomination MakeDenom(int yen10000 = 0, int yen5000 = 0, int yen1000 = 0) =>
+        new(yen10000, yen5000, yen1000, 0, 0, 0, 0, 0, 0);
+
     [Fact]
-    public void CreateDeposit_金額指定で作成できる()
+    public void CreateDeposit_金種指定で作成できる()
     {
-        var bag = ChangeBag.CreateDeposit(1, 10000, "テスト", DateTime.UtcNow);
+        var denom = MakeDenom(1); // 10000
+        var bag = ChangeBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, denom);
 
         Assert.Equal(10000, bag.TotalAmount);
         Assert.Equal(BagStatus.InSafe, bag.Status);
@@ -22,25 +25,25 @@ public class ChangeBagTests
     }
 
     [Fact]
-    public void CreateDeposit_金種指定なら金種合計が金額になる()
+    public void CreateDeposit_金種なしは例外()
     {
-        var denom = new Denomination(1, 0, 0, 0, 0, 0, 0, 0, 0); // 1万円
-        var bag = ChangeBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, denom);
-
-        Assert.Equal(10000, bag.TotalAmount);
+        Assert.Throws<ArgumentException>(() =>
+            ChangeBag.CreateDeposit(1, 10000, "テスト", DateTime.UtcNow));
     }
 
     [Fact]
     public void CreateDeposit_金額ゼロは例外()
     {
+        var denom = new Denomination(0, 0, 0, 0, 0, 0, 0, 0, 0);
         Assert.Throws<ArgumentException>(() =>
-            ChangeBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow));
+            ChangeBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, denom));
     }
 
     [Fact]
     public void MoveToRegister_ステータスが変わり出金取引が生成される()
     {
-        var bag = ChangeBag.CreateDeposit(1, 5000, "テスト", DateTime.UtcNow);
+        var denom = MakeDenom(0, 1); // 5000
+        var bag = ChangeBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, denom);
 
         var tx = bag.MoveToRegister(DateTime.UtcNow);
 
@@ -52,7 +55,8 @@ public class ChangeBagTests
     [Fact]
     public void MoveToRegister_二重移動は例外()
     {
-        var bag = ChangeBag.CreateDeposit(1, 5000, "テスト", DateTime.UtcNow);
+        var denom = MakeDenom(0, 1); // 5000
+        var bag = ChangeBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, denom);
         bag.MoveToRegister(DateTime.UtcNow);
 
         Assert.Throws<InvalidOperationException>(() =>
@@ -62,7 +66,8 @@ public class ChangeBagTests
     [Fact]
     public void UpdateAmount_金額が更新される()
     {
-        var bag = ChangeBag.CreateDeposit(1, 10000, "テスト", DateTime.UtcNow);
+        var denom = MakeDenom(1); // 10000
+        var bag = ChangeBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, denom);
 
         bag.UpdateAmount(9500);
 

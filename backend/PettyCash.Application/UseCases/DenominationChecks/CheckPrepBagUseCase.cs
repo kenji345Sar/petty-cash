@@ -1,9 +1,6 @@
 using PettyCash.Application.Dtos;
-using PettyCash.Domain.Vendor.Ledger;
 using PettyCash.Domain.Vendor.BagManagement;
-using PettyCash.Domain.Shared.DenomCheck;
-using PettyCash.Domain.PettyCash.Ledger;
-using PettyCash.Domain.SafeAggregate;
+using PettyCash.Domain.Vendor.DenomCheck;
 using PettyCash.Domain.Shared.Services;
 using PettyCash.Domain.Shared.ValueObjects;
 
@@ -11,7 +8,7 @@ namespace PettyCash.Application.UseCases.DenominationChecks;
 
 public class CheckPrepBagUseCase(
     IPrepBagRepository prepBagRepository,
-    IDenominationCheckRepository checkRepository,
+    IVendorDenominationCheckRepository checkRepository,
     ISequenceNumberService sequenceNumberService)
 {
     public async Task<DenominationCheckDto> ExecuteAsync(int bagId, DenominationCheckRequestDto dto)
@@ -24,7 +21,7 @@ public class CheckPrepBagUseCase(
             dto.Count500, dto.Count100, dto.Count50,
             dto.Count10, dto.Count5, dto.Count1);
 
-        var check = DenominationCheck.CreateForPrepBag(bag, denomination, DateTime.UtcNow);
+        var check = VendorDenominationCheck.CreateForPrepBag(bag, denomination, DateTime.UtcNow);
         await sequenceNumberService.AssignAsync(check);
         await checkRepository.AddAsync(check);
 

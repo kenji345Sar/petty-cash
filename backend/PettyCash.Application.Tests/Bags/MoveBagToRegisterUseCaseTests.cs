@@ -2,10 +2,10 @@ using Moq;
 using PettyCash.Application.UseCases.Bags;
 using PettyCash.Domain.Vendor.Ledger;
 using PettyCash.Domain.Vendor.BagManagement;
-using PettyCash.Domain.Shared.DenomCheck;
 using PettyCash.Domain.PettyCash.Ledger;
 using PettyCash.Domain.SafeAggregate;
 using PettyCash.Domain.Shared.Services;
+using PettyCash.Domain.Shared.ValueObjects;
 
 namespace PettyCash.Application.Tests.Bags;
 
@@ -14,13 +14,15 @@ public class MoveBagToRegisterUseCaseTests
     private readonly Mock<IChangeBagRepository> _bagRepo = new();
     private readonly Mock<ISequenceNumberService> _seqService = new();
 
+    private static Denomination Denom10000 => new(1, 0, 0, 0, 0, 0, 0, 0, 0);
+
     private MoveBagToRegisterUseCase CreateUseCase() =>
         new(_bagRepo.Object, _seqService.Object);
 
     [Fact]
     public async Task レジ移動で出金取引が生成される()
     {
-        var bag = ChangeBag.CreateDeposit(1, 10000, "テスト", DateTime.UtcNow);
+        var bag = ChangeBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, Denom10000);
         _bagRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(bag);
 
         var result = await CreateUseCase().ExecuteAsync(1);
@@ -42,7 +44,7 @@ public class MoveBagToRegisterUseCaseTests
     [Fact]
     public async Task 既にレジ移動済みなら例外()
     {
-        var bag = ChangeBag.CreateDeposit(1, 10000, "テスト", DateTime.UtcNow);
+        var bag = ChangeBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, Denom10000);
         bag.MoveToRegister(DateTime.UtcNow);
         _bagRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(bag);
 

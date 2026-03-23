@@ -1,7 +1,6 @@
 using PettyCash.Application.Dtos;
 using PettyCash.Domain.Vendor.Ledger;
 using PettyCash.Domain.Vendor.BagManagement;
-using PettyCash.Domain.Shared.DenomCheck;
 using PettyCash.Domain.PettyCash.Ledger;
 using PettyCash.Domain.SafeAggregate;
 using PettyCash.Domain.Shared.Services;

@@ -1,4 +1,4 @@
-using PettyCash.Domain.Shared.DenomCheck;
+using PettyCash.Domain.Vendor.DenomCheck;
 using PettyCash.Domain.SafeAggregate;
 using PettyCash.Domain.Shared;
 using PettyCash.Domain.Shared.ValueObjects;
@@ -21,14 +21,17 @@ public class ChangeBag
     public VendorTransaction? DepositTransaction => _transactions.FirstOrDefault(t => t.Type == TransactionType.Deposit);
     public VendorTransaction? WithdrawalTransaction => _transactions.FirstOrDefault(t => t.Type == TransactionType.Withdrawal);
 
-    private readonly List<DenominationCheck> _denominationChecks = [];
-    public IReadOnlyCollection<DenominationCheck> DenominationChecks => _denominationChecks.AsReadOnly();
+    private readonly List<VendorDenominationCheck> _denominationChecks = [];
+    public IReadOnlyCollection<VendorDenominationCheck> DenominationChecks => _denominationChecks.AsReadOnly();
 
     private ChangeBag() { }
 
     public static ChangeBag CreateDeposit(int safeId, int amount, string description, DateTime date, Denomination? denomination = null)
     {
-        var finalAmount = denomination?.TotalAmount ?? amount;
+        if (denomination == null)
+            throw new ArgumentException("金種表の入力が必須です。");
+
+        var finalAmount = denomination.TotalAmount;
         if (finalAmount <= 0)
             throw new ArgumentException("金額は1以上である必要があります。");
 

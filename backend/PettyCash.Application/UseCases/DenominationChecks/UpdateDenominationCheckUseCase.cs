@@ -1,19 +1,17 @@
 using PettyCash.Application.Dtos;
-using PettyCash.Domain.Vendor.Ledger;
 using PettyCash.Domain.Vendor.BagManagement;
-using PettyCash.Domain.Shared.DenomCheck;
-using PettyCash.Domain.PettyCash.Ledger;
+using PettyCash.Domain.Vendor.DenomCheck;
+using PettyCash.Domain.PettyCash.DenomCheck;
 using PettyCash.Domain.SafeAggregate;
 using PettyCash.Domain.Shared.ValueObjects;
 
 namespace PettyCash.Application.UseCases.DenominationChecks;
 
-public class UpdateDenominationCheckUseCase(
-    IDenominationCheckRepository checkRepository,
+public class UpdateVendorDenominationCheckUseCase(
+    IVendorDenominationCheckRepository checkRepository,
     IChangeBagRepository changeBagRepository,
     ICashBagRepository cashBagRepository,
-    IPrepBagRepository prepBagRepository,
-    ISafeRepository safeRepository)
+    IPrepBagRepository prepBagRepository)
 {
     public async Task<DenominationCheckDto> ExecuteAsync(int id, DenominationCheckRequestDto dto)
     {
@@ -39,12 +37,6 @@ public class UpdateDenominationCheckUseCase(
                 ?? throw new KeyNotFoundException($"準備バッグ(ID={check.PrepBagId})が見つかりません。");
             expectedAmount = bag.TotalAmount;
         }
-        else
-        {
-            var safe = await safeRepository.GetByIdAsync(check.SafeId)
-                ?? throw new KeyNotFoundException($"金庫(ID={check.SafeId})が見つかりません。");
-            expectedAmount = safe.CurrentBalance;
-        }
 
         var denomination = new Denomination(
             dto.Count10000, dto.Count5000, dto.Count1000,
@@ -56,6 +48,35 @@ public class UpdateDenominationCheckUseCase(
 
         return new DenominationCheckDto(
             check.Id, check.SequenceNumber, check.ChangeBagId, check.CashBagId, check.PrepBagId,
+            check.Denomination.Count10000, check.Denomination.Count5000, check.Denomination.Count1000,
+            check.Denomination.Count500, check.Denomination.Count100, check.Denomination.Count50,
+            check.Denomination.Count10, check.Denomination.Count5, check.Denomination.Count1,
+            check.CheckedAmount, check.ExpectedAmount, check.Difference, check.CreatedAt);
+    }
+}
+
+public class UpdatePettyCashDenominationCheckUseCase(
+    IPettyCashDenominationCheckRepository checkRepository,
+    ISafeRepository safeRepository)
+{
+    public async Task<DenominationCheckDto> ExecuteAsync(int id, DenominationCheckRequestDto dto)
+    {
+        var check = await checkRepository.GetByIdAsync(id)
+            ?? throw new KeyNotFoundException($"有高(ID={id})が見つかりません。");
+
+        var safe = await safeRepository.GetByIdAsync(check.SafeId)
+            ?? throw new KeyNotFoundException($"金庫(ID={check.SafeId})が見つかりません。");
+
+        var denomination = new Denomination(
+            dto.Count10000, dto.Count5000, dto.Count1000,
+            dto.Count500, dto.Count100, dto.Count50,
+            dto.Count10, dto.Count5, dto.Count1);
+
+        check.Update(denomination, safe.CurrentBalance);
+        await checkRepository.UpdateAsync(check);
+
+        return new DenominationCheckDto(
+            check.Id, check.SequenceNumber, null, null, null,
             check.Denomination.Count10000, check.Denomination.Count5000, check.Denomination.Count1000,
             check.Denomination.Count500, check.Denomination.Count100, check.Denomination.Count50,
             check.Denomination.Count10, check.Denomination.Count5, check.Denomination.Count1,

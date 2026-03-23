@@ -2,14 +2,13 @@ using PettyCash.Domain.SafeAggregate;
 using PettyCash.Domain.Shared.ValueObjects;
 using PettyCash.Domain.Vendor.BagManagement;
 
-namespace PettyCash.Domain.Shared.DenomCheck;
+namespace PettyCash.Domain.Vendor.DenomCheck;
 
-public class DenominationCheck
+public class VendorDenominationCheck
 {
     public int Id { get; private set; }
     public int SequenceNumber { get; private set; }
     public int SafeId { get; private set; }
-    public Safe? Safe { get; private set; }
     public int? ChangeBagId { get; private set; }
     public int? CashBagId { get; private set; }
     public int? PrepBagId { get; private set; }
@@ -23,7 +22,7 @@ public class DenominationCheck
     public CashBag? CashBag { get; private set; }
     public PrepBag? PrepBag { get; private set; }
 
-    private DenominationCheck() { }
+    private VendorDenominationCheck() { }
 
     internal void SetSequenceNumber(int sequenceNumber)
     {
@@ -34,10 +33,10 @@ public class DenominationCheck
         SequenceNumber = sequenceNumber;
     }
 
-    public static DenominationCheck CreateForChangeBag(ChangeBag bag, Denomination denomination, DateTime checkedAt)
+    public static VendorDenominationCheck CreateForChangeBag(ChangeBag bag, Denomination denomination, DateTime checkedAt)
     {
         var checkedAmount = denomination.TotalAmount;
-        return new DenominationCheck
+        return new VendorDenominationCheck
         {
             SafeId = bag.SafeId,
             ChangeBagId = bag.Id,
@@ -58,10 +57,10 @@ public class DenominationCheck
         Difference = CheckedAmount - expectedAmount;
     }
 
-    public static DenominationCheck CreateForCashBag(CashBag bag, Denomination denomination, DateTime checkedAt)
+    public static VendorDenominationCheck CreateForCashBag(CashBag bag, Denomination denomination, DateTime checkedAt)
     {
         var checkedAmount = denomination.TotalAmount;
-        return new DenominationCheck
+        return new VendorDenominationCheck
         {
             SafeId = bag.SafeId,
             CashBagId = bag.Id,
@@ -74,10 +73,10 @@ public class DenominationCheck
         };
     }
 
-    public static DenominationCheck CreateForPrepBag(PrepBag bag, Denomination denomination, DateTime checkedAt)
+    public static VendorDenominationCheck CreateForPrepBag(PrepBag bag, Denomination denomination, DateTime checkedAt)
     {
         var checkedAmount = denomination.TotalAmount;
-        return new DenominationCheck
+        return new VendorDenominationCheck
         {
             SafeId = bag.SafeId,
             PrepBagId = bag.Id,
@@ -86,20 +85,6 @@ public class DenominationCheck
             CheckedAmount = checkedAmount,
             ExpectedAmount = bag.TotalAmount,
             Difference = checkedAmount - bag.TotalAmount,
-            CreatedAt = checkedAt
-        };
-    }
-
-    public static DenominationCheck CreateForSafe(int safeId, Denomination denomination, int expectedAmount, DateTime checkedAt)
-    {
-        var checkedAmount = denomination.TotalAmount;
-        return new DenominationCheck
-        {
-            SafeId = safeId,
-            Denomination = denomination,
-            CheckedAmount = checkedAmount,
-            ExpectedAmount = expectedAmount,
-            Difference = checkedAmount - expectedAmount,
             CreatedAt = checkedAt
         };
     }

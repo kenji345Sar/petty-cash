@@ -1,9 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using PettyCash.Domain.Vendor.Ledger;
-using PettyCash.Domain.Vendor.BagManagement;
-using PettyCash.Domain.Shared.DenomCheck;
+using PettyCash.Domain.Vendor.DenomCheck;
 using PettyCash.Domain.PettyCash.Ledger;
-using PettyCash.Domain.SafeAggregate;
+using PettyCash.Domain.PettyCash.DenomCheck;
 using PettyCash.Domain.Shared.Services;
 using PettyCash.Infrastructure.Data;
 
@@ -23,7 +22,13 @@ public class SequenceNumberService(PettyCashDbContext context) : ISequenceNumber
         transaction.SetSequenceNumber(seq);
     }
 
-    public async Task AssignAsync(DenominationCheck check)
+    public async Task AssignAsync(VendorDenominationCheck check)
+    {
+        var seq = await GetNextAsync(check.SafeId);
+        check.SetSequenceNumber(seq);
+    }
+
+    public async Task AssignAsync(PettyCashDenominationCheck check)
     {
         var seq = await GetNextAsync(check.SafeId);
         check.SetSequenceNumber(seq);
@@ -36,7 +41,8 @@ public class SequenceNumberService(PettyCashDbContext context) : ISequenceNumber
                 @"SELECT GREATEST(
                     COALESCE((SELECT MAX(sequence_number) FROM vendor_transactions WHERE safe_id = {0}), 0),
                     COALESCE((SELECT MAX(sequence_number) FROM petty_cash_transactions WHERE safe_id = {0}), 0),
-                    COALESCE((SELECT MAX(sequence_number) FROM denomination_checks WHERE safe_id = {0}), 0)
+                    COALESCE((SELECT MAX(sequence_number) FROM vendor_denomination_checks WHERE safe_id = {0}), 0),
+                    COALESCE((SELECT MAX(sequence_number) FROM safe_denomination_checks WHERE safe_id = {0}), 0)
                 ) + 1 AS ""Value""",
                 safeId)
             .FirstAsync();

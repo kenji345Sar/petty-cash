@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import type { PettyCashTransaction, DenominationCheck, Denomination } from "../api/client";
-import { DENOM_ITEMS, emptyDenom } from "../shared/denomination";
+import { DENOM_ITEMS } from "../shared/denomination";
 import { DenominationCheckForm } from "./DenominationCheckForm";
 import { DenominationInput } from "./DenominationInput";
 
@@ -54,10 +54,10 @@ export function PettyCashTab({ safeId, safeBalance, onUpdate }: Props) {
   const loadData = async () => {
     const [txData, checksData] = await Promise.all([
       api.getPettyCashTransactions(safeId),
-      api.getDenominationChecks(safeId),
+      api.getPettyCashDenominationChecks(safeId),
     ]);
     setTransactions(txData);
-    setDenomChecks(checksData.filter(c => !c.changeBagId && !c.cashBagId && !c.prepBagId));
+    setDenomChecks(checksData);
   };
 
   useEffect(() => { loadData(); }, [safeId]);
@@ -250,16 +250,24 @@ export function PettyCashTab({ safeId, safeBalance, onUpdate }: Props) {
       )}
 
       {/* Safe denomination check modal */}
-      {showDenomCheck && (
-        <DenominationCheckForm
-          bagId={safeId}
-          bagType="safe"
-          expectedAmount={safeBalance}
-          onSubmit={(id, denom) => api.checkSafe(id, denom)}
-          onClose={() => setShowDenomCheck(false)}
-          onDone={handleUpdate}
-        />
-      )}
+      {showDenomCheck && (() => {
+        const safeChecks = [...denomChecks].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        const lastCheck = safeChecks.length > 0 ? safeChecks[0] : null;
+        const initDenom = lastCheck
+          ? { count10000: lastCheck.count10000, count5000: lastCheck.count5000, count1000: lastCheck.count1000, count500: lastCheck.count500, count100: lastCheck.count100, count50: lastCheck.count50, count10: lastCheck.count10, count5: lastCheck.count5, count1: lastCheck.count1 }
+          : undefined;
+        return (
+          <DenominationCheckForm
+            bagId={safeId}
+            bagType="safe"
+            expectedAmount={safeBalance}
+            onSubmit={(id, denom) => api.checkSafe(id, denom)}
+            onClose={() => setShowDenomCheck(false)}
+            onDone={handleUpdate}
+            initialDenom={initDenom}
+          />
+        );
+      })()}
 
       {/* Denomination input modal (金種表→金額セット) */}
       {showDenomInput && (
@@ -284,7 +292,7 @@ export function PettyCashTab({ safeId, safeBalance, onUpdate }: Props) {
           onClose={() => setEditCheck(null)}
           onDone={handleUpdate}
           editCheck={editCheck}
-          onUpdate={(id, denom) => api.updateDenominationCheck(id, denom)}
+          onUpdate={(id, denom) => api.updatePettyCashDenominationCheck(id, denom)}
         />
       )}
     </div>

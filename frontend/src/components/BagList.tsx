@@ -78,10 +78,9 @@ export function BagList({ safeId, bags, denomChecks, onUpdate }: Props) {
           <h3>入金処理</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <label>金額（円）</label>
-              <input type="number" min="1" value={amount || ""} onChange={(e) => { setAmount(Math.max(0, parseInt(e.target.value) || 0)); setSelectedDenom(null); }} style={{ width: 160 }} />
-              <button className="btn-action" onClick={() => setShowDenomInput(true)} style={{ padding: "6px 14px", fontSize: "0.85rem" }}>金種表</button>
-              {selectedDenom && <span style={{ fontSize: "0.85rem", color: "#2563eb" }}>（金種入力済み）</span>}
+              <label>金額</label>
+              <span style={{ fontWeight: "bold", fontSize: "1.1rem" }}>{amount > 0 ? `${amount.toLocaleString()}円` : "未入力"}</span>
+              <button className="btn-action" onClick={() => setShowDenomInput(true)} style={{ padding: "6px 14px", fontSize: "0.85rem" }}>金種表で入力</button>
             </div>
             <div>
               <label>備考</label>
@@ -191,16 +190,24 @@ export function BagList({ safeId, bags, denomChecks, onUpdate }: Props) {
         />
       )}
 
-      {checkBag && (
-        <DenominationCheckForm
-          bagId={checkBag.id}
-          bagType="change"
-          expectedAmount={checkBag.totalAmount}
-          onSubmit={(id, denom) => api.checkChangeBag(id, denom)}
-          onClose={() => setCheckBagId(null)}
-          onDone={onUpdate}
-        />
-      )}
+      {checkBag && (() => {
+        const checks = checksByBag(checkBag.id);
+        const lastCheck = checks.length > 0 ? checks[0] : null;
+        const initDenom = lastCheck
+          ? { count10000: lastCheck.count10000, count5000: lastCheck.count5000, count1000: lastCheck.count1000, count500: lastCheck.count500, count100: lastCheck.count100, count50: lastCheck.count50, count10: lastCheck.count10, count5: lastCheck.count5, count1: lastCheck.count1 }
+          : checkBag.denomination ?? undefined;
+        return (
+          <DenominationCheckForm
+            bagId={checkBag.id}
+            bagType="change"
+            expectedAmount={checkBag.totalAmount}
+            onSubmit={(id, denom) => api.checkChangeBag(id, denom)}
+            onClose={() => setCheckBagId(null)}
+            onDone={onUpdate}
+            initialDenom={initDenom}
+          />
+        );
+      })()}
 
       {editBag && editCheck && (
         <DenominationCheckForm

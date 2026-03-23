@@ -77,13 +77,13 @@ export function VendorTab({ safeId, onUpdate }: Props) {
       api.getBags(safeId),
       api.getCashBags(safeId),
       api.getVendorTransactions(safeId),
-      api.getDenominationChecks(safeId),
+      api.getVendorDenominationChecks(safeId),
       api.getPrepBags(safeId),
     ]);
     setBags(bagsData);
     setCashBags(cashBagsData);
     setVendorTransactions(txData);
-    setDenomChecks(checksData.filter(c => c.changeBagId || c.cashBagId || c.prepBagId));
+    setDenomChecks(checksData);
     setPrepBags(prepBagsData);
   };
 
@@ -139,7 +139,7 @@ export function VendorTab({ safeId, onUpdate }: Props) {
       {/* ===== バッグ管理 ===== */}
       <BagList safeId={safeId} bags={filteredBags} denomChecks={denomChecks} onUpdate={handleUpdate} />
       <hr style={{ margin: "32px 0" }} />
-      <CashBagList safeId={safeId} bags={filteredCashBags} prepBags={filteredPrepBags} denomChecks={denomChecks} onUpdate={handleUpdate} />
+      <CashBagList safeId={safeId} bags={filteredCashBags} allBags={cashBags} prepBags={filteredPrepBags} denomChecks={denomChecks} onUpdate={handleUpdate} />
 
       {/* ===== 業者出納帳 ===== */}
       <div style={{ marginTop: 40 }}>
@@ -242,7 +242,7 @@ export function VendorTab({ safeId, onUpdate }: Props) {
           onClose={() => setEditCheck(null)}
           onDone={handleUpdate}
           editCheck={editCheck}
-          onUpdate={(id, denom) => api.updateDenominationCheck(id, denom)}
+          onUpdate={(id, denom) => api.updateVendorDenominationCheck(id, denom)}
         />
       )}
     </div>

@@ -2,10 +2,10 @@ using Moq;
 using PettyCash.Application.UseCases.PrepBags;
 using PettyCash.Domain.Vendor.Ledger;
 using PettyCash.Domain.Vendor.BagManagement;
-using PettyCash.Domain.Shared.DenomCheck;
 using PettyCash.Domain.PettyCash.Ledger;
 using PettyCash.Domain.SafeAggregate;
 using PettyCash.Domain.Shared.Services;
+using PettyCash.Domain.Shared.ValueObjects;
 
 namespace PettyCash.Application.Tests.PrepBags;
 
@@ -15,13 +15,15 @@ public class HandOverPrepBagUseCaseTests
     private readonly Mock<IVendorTransactionRepository> _txRepo = new();
     private readonly Mock<ISequenceNumberService> _seqService = new();
 
+    private static Denomination Denom5000 => new(0, 1, 0, 0, 0, 0, 0, 0, 0);
+
     private HandOverPrepBagUseCase CreateUseCase() =>
         new(_prepRepo.Object, _txRepo.Object, _seqService.Object);
 
     [Fact]
     public async Task 引渡で出金取引が保存される()
     {
-        var cb = CashBag.CreateDeposit(1, 5000, "テスト", DateTime.UtcNow);
+        var cb = CashBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, Denom5000);
         var prep = PrepBag.Create(1, [cb], DateTime.UtcNow);
         _prepRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(prep);
 
@@ -44,7 +46,7 @@ public class HandOverPrepBagUseCaseTests
     [Fact]
     public async Task 二重引渡は例外()
     {
-        var cb = CashBag.CreateDeposit(1, 5000, "テスト", DateTime.UtcNow);
+        var cb = CashBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, Denom5000);
         var prep = PrepBag.Create(1, [cb], DateTime.UtcNow);
         prep.MarkHandedOver(DateTime.UtcNow);
         _prepRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(prep);

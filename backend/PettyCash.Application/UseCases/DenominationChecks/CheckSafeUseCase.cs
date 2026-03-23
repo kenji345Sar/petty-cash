@@ -1,8 +1,6 @@
 using PettyCash.Application.Dtos;
 using PettyCash.Domain.Vendor.Ledger;
-using PettyCash.Domain.Vendor.BagManagement;
-using PettyCash.Domain.Shared.DenomCheck;
-using PettyCash.Domain.PettyCash.Ledger;
+using PettyCash.Domain.PettyCash.DenomCheck;
 using PettyCash.Domain.SafeAggregate;
 using PettyCash.Domain.Shared.Services;
 using PettyCash.Domain.Shared.ValueObjects;
@@ -11,7 +9,7 @@ namespace PettyCash.Application.UseCases.DenominationChecks;
 
 public class CheckSafeUseCase(
     ISafeRepository safeRepository,
-    IDenominationCheckRepository checkRepository,
+    IPettyCashDenominationCheckRepository checkRepository,
     IVendorTransactionRepository transactionRepository,
     ISequenceNumberService sequenceNumberService)
 {
@@ -26,7 +24,7 @@ public class CheckSafeUseCase(
             dto.Count500, dto.Count100, dto.Count50,
             dto.Count10, dto.Count5, dto.Count1);
 
-        var check = DenominationCheck.CreateForSafe(safeId, denomination, safe.CurrentBalance, now);
+        var check = PettyCashDenominationCheck.CreateForSafe(safeId, denomination, safe.CurrentBalance, now);
         await sequenceNumberService.AssignAsync(check);
         await checkRepository.AddAsync(check);
 
@@ -39,7 +37,7 @@ public class CheckSafeUseCase(
         }
 
         return new DenominationCheckDto(
-            check.Id, check.SequenceNumber, check.ChangeBagId, check.CashBagId, check.PrepBagId,
+            check.Id, check.SequenceNumber, null, null, null,
             check.Denomination.Count10000, check.Denomination.Count5000, check.Denomination.Count1000,
             check.Denomination.Count500, check.Denomination.Count100, check.Denomination.Count50,
             check.Denomination.Count10, check.Denomination.Count5, check.Denomination.Count1,

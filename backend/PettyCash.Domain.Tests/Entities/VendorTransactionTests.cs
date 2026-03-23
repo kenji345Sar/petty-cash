@@ -1,14 +1,17 @@
 using PettyCash.Domain.Vendor.Ledger;
 using PettyCash.Domain.Vendor.BagManagement;
-using PettyCash.Domain.Shared.DenomCheck;
 using PettyCash.Domain.PettyCash.Ledger;
 using PettyCash.Domain.SafeAggregate;
 using PettyCash.Domain.Shared;
+using PettyCash.Domain.Shared.ValueObjects;
 
 namespace PettyCash.Domain.Tests.Entities;
 
 public class VendorTransactionTests
 {
+    private static Denomination MakeDenom(int yen10000 = 0, int yen5000 = 0, int yen1000 = 0) =>
+        new(yen10000, yen5000, yen1000, 0, 0, 0, 0, 0, 0);
+
     [Fact]
     public void CreateSafeAdjustment_プラス差額()
     {
@@ -32,7 +35,7 @@ public class VendorTransactionTests
     [Fact]
     public void SetSequenceNumber_採番できる()
     {
-        var bag = ChangeBag.CreateDeposit(1, 10000, "テスト", DateTime.UtcNow);
+        var bag = ChangeBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, MakeDenom(1));
         var tx = bag.DepositTransaction!;
 
         tx.SetSequenceNumber(1);
@@ -43,7 +46,7 @@ public class VendorTransactionTests
     [Fact]
     public void SetSequenceNumber_二重採番は例外()
     {
-        var bag = ChangeBag.CreateDeposit(1, 10000, "テスト", DateTime.UtcNow);
+        var bag = ChangeBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, MakeDenom(1));
         var tx = bag.DepositTransaction!;
         tx.SetSequenceNumber(1);
 

@@ -46,6 +46,7 @@ export interface ChangeBag {
   movedAt: string | null;
   depositSequenceNumber: number | null;
   withdrawalSequenceNumber: number | null;
+  denomination: Denomination | null;
 }
 
 export interface CashBag {
@@ -56,6 +57,7 @@ export interface CashBag {
   createdAt: string;
   movedAt: string | null;
   sequenceNumber: number | null;
+  denomination: Denomination | null;
 }
 
 export interface VendorTransaction {
@@ -196,11 +198,20 @@ export const api = {
       body: JSON.stringify(denomination),
     }),
 
-  getDenominationChecks: (safeId: number) =>
-    fetchJson<DenominationCheck[]>(`${API_BASE}/denominationchecks?safeId=${safeId}`),
+  getVendorDenominationChecks: (safeId: number) =>
+    fetchJson<DenominationCheck[]>(`${API_BASE}/denominationchecks/vendor?safeId=${safeId}`),
 
-  updateDenominationCheck: (id: number, denomination: Denomination) =>
-    fetchJson<DenominationCheck>(`${API_BASE}/denominationchecks/${id}`, {
+  getPettyCashDenominationChecks: (safeId: number) =>
+    fetchJson<DenominationCheck[]>(`${API_BASE}/denominationchecks/safe?safeId=${safeId}`),
+
+  updateVendorDenominationCheck: (id: number, denomination: Denomination) =>
+    fetchJson<DenominationCheck>(`${API_BASE}/denominationchecks/vendor/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(denomination),
+    }),
+
+  updatePettyCashDenominationCheck: (id: number, denomination: Denomination) =>
+    fetchJson<DenominationCheck>(`${API_BASE}/denominationchecks/safe/${id}`, {
       method: "PUT",
       body: JSON.stringify(denomination),
     }),
@@ -215,6 +226,11 @@ export const api = {
 
   handOverPrepBag: (id: number) =>
     fetchJson<PrepBag>(`${API_BASE}/prepbags/${id}/handover`, {
+      method: "POST",
+    }),
+
+  cancelPrepBag: (id: number) =>
+    fetchJson<PrepBag>(`${API_BASE}/prepbags/${id}/cancel`, {
       method: "POST",
     }),
 };
