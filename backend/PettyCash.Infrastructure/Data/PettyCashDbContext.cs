@@ -5,11 +5,17 @@ using PettyCash.Domain.Vendor.DenomCheck;
 using PettyCash.Domain.PettyCash.Ledger;
 using PettyCash.Domain.PettyCash.DenomCheck;
 using PettyCash.Domain.SafeAggregate;
+using PettyCash.Domain.Shared.Services;
 
 namespace PettyCash.Infrastructure.Data;
 
-public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : DbContext(options)
+public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : DbContext(options), IUnitOfWork
 {
+    async Task IUnitOfWork.SaveChangesAsync()
+    {
+        await base.SaveChangesAsync();
+    }
+
     public DbSet<Safe> Safes => Set<Safe>();
     public DbSet<ChangeBag> ChangeBags => Set<ChangeBag>();
     public DbSet<CashBag> CashBags => Set<CashBag>();

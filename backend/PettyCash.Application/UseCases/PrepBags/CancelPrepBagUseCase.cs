@@ -1,9 +1,10 @@
 using PettyCash.Application.Dtos;
 using PettyCash.Domain.Vendor.BagManagement;
+using PettyCash.Domain.Shared.Services;
 
 namespace PettyCash.Application.UseCases.PrepBags;
 
-public class CancelPrepBagUseCase(IPrepBagRepository prepBagRepository)
+public class CancelPrepBagUseCase(IPrepBagRepository prepBagRepository, IUnitOfWork unitOfWork)
 {
     public async Task<PrepBagDto> ExecuteAsync(int id)
     {
@@ -12,6 +13,7 @@ public class CancelPrepBagUseCase(IPrepBagRepository prepBagRepository)
 
         bag.Cancel();
         await prepBagRepository.UpdateAsync(bag);
+        await unitOfWork.SaveChangesAsync();
 
         return new PrepBagDto(
             bag.Id,

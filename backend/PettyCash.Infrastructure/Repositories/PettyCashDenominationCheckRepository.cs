@@ -19,14 +19,15 @@ public class PettyCashDenominationCheckRepository(PettyCashDbContext context) : 
             .ToListAsync();
     }
 
-    public async Task AddAsync(PettyCashDenominationCheck check)
+    public Task AddAsync(PettyCashDenominationCheck check)
     {
         context.PettyCashDenominationChecks.Add(check);
-        await context.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 
-    public async Task UpdateAsync(PettyCashDenominationCheck check)
+    public Task UpdateAsync(PettyCashDenominationCheck check)
     {
-        await context.SaveChangesAsync();
+        // EF Core tracks changes automatically
+        return Task.CompletedTask;
     }
 }

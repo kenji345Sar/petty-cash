@@ -24,6 +24,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<PettyCashDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<PettyCashDbContext>());
 builder.Services.AddScoped<ISafeRepository, SafeRepository>();
 builder.Services.AddScoped<GetSafesUseCase>();
 builder.Services.AddScoped<CreateSafeUseCase>();

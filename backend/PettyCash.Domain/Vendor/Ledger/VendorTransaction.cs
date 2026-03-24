@@ -4,6 +4,19 @@ using PettyCash.Domain.Vendor.BagManagement;
 
 namespace PettyCash.Domain.Vendor.Ledger;
 
+/// <summary>
+/// 業者取引。業者との間で発生する入出金・調整の記録（業者出納帳の1行）。
+///
+/// 【取引種別】
+///   - 入金（Deposit）: 釣り銭バッグ/キャッシュバッグの金庫への入金
+///   - 出金（Withdrawal）: 釣り銭バッグのレジ移動、準備バッグの業者引渡
+///   - 調整（Adjustment）: 有高チェックで差額が出た場合の自動調整
+///
+/// 【業務ルール】
+///   - 採番（SequenceNumber）は金庫単位で一意、1回のみ設定可能
+///   - 金種情報を保持可能（入金時に金種表が入力された場合）
+///   - バッグ操作から自動生成される（直接作成は調整のみ）
+/// </summary>
 public class VendorTransaction
 {
     public int Id { get; private set; }

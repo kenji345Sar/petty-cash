@@ -4,6 +4,16 @@ using PettyCash.Domain.Vendor.BagManagement;
 
 namespace PettyCash.Domain.Vendor.DenomCheck;
 
+/// <summary>
+/// 業者側の有高チェック。釣り銭バッグ・キャッシュバッグ・準備バッグの実際の金種を数えて帳簿と照合する。
+///
+/// 【業務ルール】
+///   - チェック対象はChangeBag / CashBag / PrepBagのいずれか1つ
+///   - 帳簿金額（ExpectedAmount）はバッグのTotalAmount
+///   - 実際の金額（CheckedAmount）は入力された金種の合計
+///   - 差額（Difference）= 実際 - 帳簿（プラスなら過剰、マイナスなら不足）
+///   - 差額がある場合、UseCaseで調整取引が自動生成されバッグ金額が更新される
+/// </summary>
 public class VendorDenominationCheck
 {
     public int Id { get; private set; }

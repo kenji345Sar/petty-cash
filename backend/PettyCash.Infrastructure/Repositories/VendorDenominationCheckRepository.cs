@@ -19,14 +19,15 @@ public class VendorDenominationCheckRepository(PettyCashDbContext context) : IVe
             .ToListAsync();
     }
 
-    public async Task AddAsync(VendorDenominationCheck check)
+    public Task AddAsync(VendorDenominationCheck check)
     {
         context.VendorDenominationChecks.Add(check);
-        await context.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 
-    public async Task UpdateAsync(VendorDenominationCheck check)
+    public Task UpdateAsync(VendorDenominationCheck check)
     {
-        await context.SaveChangesAsync();
+        // EF Core tracks changes automatically
+        return Task.CompletedTask;
     }
 }

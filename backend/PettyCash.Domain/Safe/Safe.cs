@@ -1,5 +1,14 @@
 namespace PettyCash.Domain.SafeAggregate;
 
+/// <summary>
+/// 金庫。店舗ごとに1つ存在し、業者残高と小口残高を管理する。
+///
+/// 【業務ルール】
+///   - 金庫名は必須
+///   - 残高は業者残高（VendorBalance）と小口残高（PettyCashBalance）に分かれる
+///   - 合計残高（CurrentBalance）は両者の合算
+///   - 残高を超える出金はできない
+/// </summary>
 public class Safe
 {
     public int Id { get; private set; }

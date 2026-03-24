@@ -6,6 +6,18 @@ using PettyCash.Domain.Vendor.Ledger;
 
 namespace PettyCash.Domain.Vendor.BagManagement;
 
+/// <summary>
+/// キャッシュバッグ。レジの売上金を金庫へ入金するための袋。
+///
+/// 【ライフサイクル】
+///   レジから金庫へ入金 → 準備バッグにまとめられる → 業者へ引渡
+///
+/// 【業務ルール】
+///   - 入金時は金種表の入力が必須（金額直接入力は不可）
+///   - 金額は金種の合計から自動算出される
+///   - 1つのキャッシュバッグは1つの準備バッグにしか含められない
+///   - 入金時に業者取引（VendorTransaction）が自動生成される
+/// </summary>
 public class CashBag
 {
     public int Id { get; private set; }

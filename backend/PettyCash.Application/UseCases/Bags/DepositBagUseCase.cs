@@ -8,7 +8,7 @@ using PettyCash.Domain.Shared.ValueObjects;
 
 namespace PettyCash.Application.UseCases.Bags;
 
-public class DepositBagUseCase(IChangeBagRepository bagRepository, ISequenceNumberService sequenceNumberService)
+public class DepositBagUseCase(IChangeBagRepository bagRepository, ISequenceNumberService sequenceNumberService, IUnitOfWork unitOfWork)
 {
     public async Task<ChangeBagDto> ExecuteAsync(DepositRequestDto dto)
     {
@@ -25,6 +25,7 @@ public class DepositBagUseCase(IChangeBagRepository bagRepository, ISequenceNumb
         var bag = ChangeBag.CreateDeposit(dto.SafeId, dto.Amount, dto.Description, date, denomination);
         await sequenceNumberService.AssignAsync(bag.DepositTransaction!);
         await bagRepository.AddAsync(bag);
+        await unitOfWork.SaveChangesAsync();
 
         return ToDto(bag);
     }

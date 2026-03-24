@@ -16,11 +16,12 @@ public class CheckCashBagUseCaseTests
     private readonly Mock<IVendorDenominationCheckRepository> _checkRepo = new();
     private readonly Mock<IVendorTransactionRepository> _txRepo = new();
     private readonly Mock<ISequenceNumberService> _seqService = new();
+    private readonly Mock<IUnitOfWork> _unitOfWork = new();
 
     private static Denomination Denom5000 => new(0, 1, 0, 0, 0, 0, 0, 0, 0);
 
     private CheckCashBagUseCase CreateUseCase() =>
-        new(_bagRepo.Object, _checkRepo.Object, _txRepo.Object, _seqService.Object);
+        new(_bagRepo.Object, _checkRepo.Object, _txRepo.Object, _seqService.Object, _unitOfWork.Object);
 
     [Fact]
     public async Task 差額ありなら調整取引が保存される()

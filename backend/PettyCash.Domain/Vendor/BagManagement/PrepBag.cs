@@ -5,6 +5,20 @@ using PettyCash.Domain.Vendor.Ledger;
 
 namespace PettyCash.Domain.Vendor.BagManagement;
 
+/// <summary>
+/// 準備バッグ。複数のキャッシュバッグをまとめて業者へ引き渡すための単位。
+///
+/// 【ライフサイクル】
+///   作成（複数CashBagをまとめる）→ 引渡 or 取消
+///
+/// 【業務ルール】
+///   - 1つ以上のキャッシュバッグが必要
+///   - 既に別の準備バッグに含まれているキャッシュバッグは追加できない
+///   - 合計金額は含まれるキャッシュバッグの合計から自動算出される
+///   - 引渡時に出金取引（VendorTransaction）が自動生成される
+///   - 引渡済みの準備バッグは取消できない
+///   - 取消するとキャッシュバッグとの紐づけが解除され、再割り当て可能になる
+/// </summary>
 public class PrepBag
 {
     public int Id { get; private set; }

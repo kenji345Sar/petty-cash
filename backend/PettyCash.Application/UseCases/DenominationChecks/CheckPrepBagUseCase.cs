@@ -9,7 +9,8 @@ namespace PettyCash.Application.UseCases.DenominationChecks;
 public class CheckPrepBagUseCase(
     IPrepBagRepository prepBagRepository,
     IVendorDenominationCheckRepository checkRepository,
-    ISequenceNumberService sequenceNumberService)
+    ISequenceNumberService sequenceNumberService,
+    IUnitOfWork unitOfWork)
 {
     public async Task<DenominationCheckDto> ExecuteAsync(int bagId, DenominationCheckRequestDto dto)
     {
@@ -24,6 +25,7 @@ public class CheckPrepBagUseCase(
         var check = VendorDenominationCheck.CreateForPrepBag(bag, denomination, DateTime.UtcNow);
         await sequenceNumberService.AssignAsync(check);
         await checkRepository.AddAsync(check);
+        await unitOfWork.SaveChangesAsync();
 
         return new DenominationCheckDto(
             check.Id, check.SequenceNumber, check.ChangeBagId, check.CashBagId, check.PrepBagId,

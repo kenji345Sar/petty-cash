@@ -16,11 +16,12 @@ public class CheckChangeBagUseCaseTests
     private readonly Mock<IVendorDenominationCheckRepository> _checkRepo = new();
     private readonly Mock<IVendorTransactionRepository> _txRepo = new();
     private readonly Mock<ISequenceNumberService> _seqService = new();
+    private readonly Mock<IUnitOfWork> _unitOfWork = new();
 
     private static Denomination Denom10000 => new(1, 0, 0, 0, 0, 0, 0, 0, 0);
 
     private CheckChangeBagUseCase CreateUseCase() =>
-        new(_bagRepo.Object, _checkRepo.Object, _txRepo.Object, _seqService.Object);
+        new(_bagRepo.Object, _checkRepo.Object, _txRepo.Object, _seqService.Object, _unitOfWork.Object);
 
     private static DenominationCheckRequestDto MakeDenomDto(int count10000 = 0, int count1000 = 0) =>
         new(count10000, 0, count1000, 0, 0, 0, 0, 0, 0);

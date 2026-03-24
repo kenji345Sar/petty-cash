@@ -12,7 +12,8 @@ namespace PettyCash.Application.UseCases.Transactions;
 public class CreatePettyCashTransactionUseCase(
     IPettyCashTransactionRepository transactionRepository,
     ISafeRepository safeRepository,
-    ISequenceNumberService sequenceNumberService)
+    ISequenceNumberService sequenceNumberService,
+    IUnitOfWork unitOfWork)
 {
     public async Task<PettyCashTransactionDto> ExecuteAsync(CreatePettyCashTransactionRequestDto dto)
     {
@@ -40,6 +41,7 @@ public class CreatePettyCashTransactionUseCase(
 
         await sequenceNumberService.AssignAsync(transaction);
         await transactionRepository.AddAsync(transaction);
+        await unitOfWork.SaveChangesAsync();
 
         var denomDto = transaction.Denomination is { } dn
             ? new DenominationDto(dn.Count10000, dn.Count5000, dn.Count1000, dn.Count500, dn.Count100, dn.Count50, dn.Count10, dn.Count5, dn.Count1)

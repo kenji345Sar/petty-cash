@@ -17,9 +17,9 @@ public class PettyCashTransactionRepository(PettyCashDbContext context) : IPetty
             .ToListAsync();
     }
 
-    public async Task AddAsync(PettyCashTransaction transaction)
+    public Task AddAsync(PettyCashTransaction transaction)
     {
         context.PettyCashTransactions.Add(transaction);
-        await context.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 }

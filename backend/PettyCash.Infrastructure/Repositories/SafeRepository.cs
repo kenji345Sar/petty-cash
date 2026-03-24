@@ -28,15 +28,16 @@ public class SafeRepository(PettyCashDbContext context) : ISafeRepository
         return safes;
     }
 
-    public async Task AddAsync(Safe safe)
+    public Task AddAsync(Safe safe)
     {
         context.Safes.Add(safe);
-        await context.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 
-    public async Task UpdateAsync(Safe safe)
+    public Task UpdateAsync(Safe safe)
     {
-        await context.SaveChangesAsync();
+        // EF Core tracks changes automatically
+        return Task.CompletedTask;
     }
 
     private async Task LoadBalances(Safe safe)

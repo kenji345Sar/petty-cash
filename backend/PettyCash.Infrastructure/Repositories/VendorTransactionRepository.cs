@@ -17,9 +17,9 @@ public class VendorTransactionRepository(PettyCashDbContext context) : IVendorTr
             .ToListAsync();
     }
 
-    public async Task AddAsync(VendorTransaction transaction)
+    public Task AddAsync(VendorTransaction transaction)
     {
         context.VendorTransactions.Add(transaction);
-        await context.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 }

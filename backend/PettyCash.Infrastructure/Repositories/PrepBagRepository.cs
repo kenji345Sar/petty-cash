@@ -33,14 +33,15 @@ public class PrepBagRepository(PettyCashDbContext context) : IPrepBagRepository
             .ToListAsync();
     }
 
-    public async Task AddAsync(PrepBag bag)
+    public Task AddAsync(PrepBag bag)
     {
         context.PrepBags.Add(bag);
-        await context.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 
-    public async Task UpdateAsync(PrepBag bag)
+    public Task UpdateAsync(PrepBag bag)
     {
-        await context.SaveChangesAsync();
+        // EF Core tracks changes automatically
+        return Task.CompletedTask;
     }
 }

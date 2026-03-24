@@ -1,5 +1,13 @@
 namespace PettyCash.Domain.Shared.ValueObjects;
 
+/// <summary>
+/// 金種（値オブジェクト）。各額面の枚数を保持し、合計金額を算出する。
+///
+/// 【業務ルール】
+///   - 各金種の枚数は0以上
+///   - 合計金額（TotalAmount）は各金種 × 額面の合算
+///   - 不変（immutable）— 一度作成したら変更できない
+/// </summary>
 public record Denomination
 {
     public int Count10000 { get; }

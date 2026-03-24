@@ -3,6 +3,7 @@ using PettyCash.Domain.Vendor.BagManagement;
 using PettyCash.Domain.Vendor.DenomCheck;
 using PettyCash.Domain.PettyCash.DenomCheck;
 using PettyCash.Domain.SafeAggregate;
+using PettyCash.Domain.Shared.Services;
 using PettyCash.Domain.Shared.ValueObjects;
 
 namespace PettyCash.Application.UseCases.DenominationChecks;
@@ -11,7 +12,8 @@ public class UpdateVendorDenominationCheckUseCase(
     IVendorDenominationCheckRepository checkRepository,
     IChangeBagRepository changeBagRepository,
     ICashBagRepository cashBagRepository,
-    IPrepBagRepository prepBagRepository)
+    IPrepBagRepository prepBagRepository,
+    IUnitOfWork unitOfWork)
 {
     public async Task<DenominationCheckDto> ExecuteAsync(int id, DenominationCheckRequestDto dto)
     {
@@ -45,6 +47,7 @@ public class UpdateVendorDenominationCheckUseCase(
 
         check.Update(denomination, expectedAmount);
         await checkRepository.UpdateAsync(check);
+        await unitOfWork.SaveChangesAsync();
 
         return new DenominationCheckDto(
             check.Id, check.SequenceNumber, check.ChangeBagId, check.CashBagId, check.PrepBagId,
@@ -57,7 +60,8 @@ public class UpdateVendorDenominationCheckUseCase(
 
 public class UpdatePettyCashDenominationCheckUseCase(
     IPettyCashDenominationCheckRepository checkRepository,
-    ISafeRepository safeRepository)
+    ISafeRepository safeRepository,
+    IUnitOfWork unitOfWork)
 {
     public async Task<DenominationCheckDto> ExecuteAsync(int id, DenominationCheckRequestDto dto)
     {
@@ -74,6 +78,7 @@ public class UpdatePettyCashDenominationCheckUseCase(
 
         check.Update(denomination, safe.CurrentBalance);
         await checkRepository.UpdateAsync(check);
+        await unitOfWork.SaveChangesAsync();
 
         return new DenominationCheckDto(
             check.Id, check.SequenceNumber, null, null, null,

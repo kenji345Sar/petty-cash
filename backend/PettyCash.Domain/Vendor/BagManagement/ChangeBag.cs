@@ -6,6 +6,18 @@ using PettyCash.Domain.Vendor.Ledger;
 
 namespace PettyCash.Domain.Vendor.BagManagement;
 
+/// <summary>
+/// 釣り銭バッグ。業者から受け取った釣り銭を金庫で保管し、必要に応じてレジへ移動する。
+///
+/// 【ライフサイクル】
+///   入金（金庫に保管）→ レジへ移動
+///
+/// 【業務ルール】
+///   - 入金時は金種表の入力が必須（金額直接入力は不可）
+///   - 金額は金種の合計から自動算出される
+///   - レジへの移動は1回のみ（二重移動は不可）
+///   - 入金時・移動時にそれぞれ業者取引（VendorTransaction）が自動生成される
+/// </summary>
 public class ChangeBag
 {
     public int Id { get; private set; }

@@ -3,10 +3,11 @@ using PettyCash.Domain.Vendor.Ledger;
 using PettyCash.Domain.Vendor.BagManagement;
 using PettyCash.Domain.PettyCash.Ledger;
 using PettyCash.Domain.SafeAggregate;
+using PettyCash.Domain.Shared.Services;
 
 namespace PettyCash.Application.UseCases.PrepBags;
 
-public class CreatePrepBagUseCase(ICashBagRepository cashBagRepository, IPrepBagRepository prepBagRepository)
+public class CreatePrepBagUseCase(ICashBagRepository cashBagRepository, IPrepBagRepository prepBagRepository, IUnitOfWork unitOfWork)
 {
     public async Task<PrepBagDto> ExecuteAsync(CreatePrepBagRequestDto dto)
     {
@@ -21,6 +22,7 @@ public class CreatePrepBagUseCase(ICashBagRepository cashBagRepository, IPrepBag
         // 不変条件チェック（PrepBag割当済み等）は PrepBag.Create 内で実施
         var prepBag = PrepBag.Create(dto.SafeId, cashBags, DateTime.UtcNow);
         await prepBagRepository.AddAsync(prepBag);
+        await unitOfWork.SaveChangesAsync();
 
         return ToDto(prepBag);
     }

@@ -7,7 +7,7 @@ using PettyCash.Domain.Shared.Services;
 
 namespace PettyCash.Application.UseCases.Bags;
 
-public class MoveBagToRegisterUseCase(IChangeBagRepository bagRepository, ISequenceNumberService sequenceNumberService)
+public class MoveBagToRegisterUseCase(IChangeBagRepository bagRepository, ISequenceNumberService sequenceNumberService, IUnitOfWork unitOfWork)
 {
     public async Task<VendorTransactionDto> ExecuteAsync(int bagId)
     {
@@ -17,6 +17,7 @@ public class MoveBagToRegisterUseCase(IChangeBagRepository bagRepository, ISeque
         var transaction = bag.MoveToRegister(DateTime.UtcNow);
         await sequenceNumberService.AssignAsync(transaction);
         await bagRepository.UpdateAsync(bag);
+        await unitOfWork.SaveChangesAsync();
 
         return new VendorTransactionDto(
             transaction.Id,

@@ -11,7 +11,8 @@ public class CheckSafeUseCase(
     ISafeRepository safeRepository,
     IPettyCashDenominationCheckRepository checkRepository,
     IVendorTransactionRepository transactionRepository,
-    ISequenceNumberService sequenceNumberService)
+    ISequenceNumberService sequenceNumberService,
+    IUnitOfWork unitOfWork)
 {
     public async Task<DenominationCheckDto> ExecuteAsync(int safeId, DenominationCheckRequestDto dto)
     {
@@ -35,6 +36,8 @@ public class CheckSafeUseCase(
             await sequenceNumberService.AssignAsync(adjustment);
             await transactionRepository.AddAsync(adjustment);
         }
+
+        await unitOfWork.SaveChangesAsync();
 
         return new DenominationCheckDto(
             check.Id, check.SequenceNumber, null, null, null,

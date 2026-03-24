@@ -14,9 +14,10 @@ public class CheckSafeUseCaseTests
     private readonly Mock<IPettyCashDenominationCheckRepository> _checkRepo = new();
     private readonly Mock<IVendorTransactionRepository> _txRepo = new();
     private readonly Mock<ISequenceNumberService> _seqService = new();
+    private readonly Mock<IUnitOfWork> _unitOfWork = new();
 
     private CheckSafeUseCase CreateUseCase() =>
-        new(_safeRepo.Object, _checkRepo.Object, _txRepo.Object, _seqService.Object);
+        new(_safeRepo.Object, _checkRepo.Object, _txRepo.Object, _seqService.Object, _unitOfWork.Object);
 
     private static Safe CreateSafe(int vendorBalance, int pettyCashBalance)
     {

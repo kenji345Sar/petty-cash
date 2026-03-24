@@ -14,9 +14,10 @@ public class CreatePettyCashTransactionUseCaseTests
     private readonly Mock<IPettyCashTransactionRepository> _txRepo = new();
     private readonly Mock<ISafeRepository> _safeRepo = new();
     private readonly Mock<ISequenceNumberService> _seqService = new();
+    private readonly Mock<IUnitOfWork> _unitOfWork = new();
 
     private CreatePettyCashTransactionUseCase CreateUseCase() =>
-        new(_txRepo.Object, _safeRepo.Object, _seqService.Object);
+        new(_txRepo.Object, _safeRepo.Object, _seqService.Object, _unitOfWork.Object);
 
     [Fact]
     public async Task 入金が正常に作成される()
