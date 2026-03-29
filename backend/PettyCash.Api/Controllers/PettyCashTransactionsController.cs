@@ -20,14 +20,7 @@ public class PettyCashTransactionsController(
     [HttpPost]
     public async Task<ActionResult<PettyCashTransactionDto>> Create(CreatePettyCashTransactionRequestDto dto)
     {
-        try
-        {
-            var transaction = await createPettyCashTransactionUseCase.ExecuteAsync(dto);
-            return CreatedAtAction(nameof(GetAll), new { id = transaction.Id }, transaction);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        var transaction = await createPettyCashTransactionUseCase.ExecuteAsync(dto);
+        return CreatedAtAction(nameof(GetAll), new { id = transaction.Id }, transaction);
     }
 }

@@ -22,54 +22,21 @@ public class PrepBagsController(
     [HttpPost]
     public async Task<ActionResult<PrepBagDto>> Create(CreatePrepBagRequestDto dto)
     {
-        try
-        {
-            var bag = await createPrepBagUseCase.ExecuteAsync(dto);
-            return CreatedAtAction(nameof(GetAll), new { id = bag.Id }, bag);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        var bag = await createPrepBagUseCase.ExecuteAsync(dto);
+        return CreatedAtAction(nameof(GetAll), new { id = bag.Id }, bag);
     }
 
     [HttpPost("{id}/cancel")]
     public async Task<ActionResult<PrepBagDto>> Cancel(int id)
     {
-        try
-        {
-            var bag = await cancelPrepBagUseCase.ExecuteAsync(id);
-            return Ok(bag);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        var bag = await cancelPrepBagUseCase.ExecuteAsync(id);
+        return Ok(bag);
     }
 
     [HttpPost("{id}/handover")]
     public async Task<ActionResult<PrepBagDto>> HandOver(int id)
     {
-        try
-        {
-            var bag = await handOverPrepBagUseCase.ExecuteAsync(id);
-            return Ok(bag);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        var bag = await handOverPrepBagUseCase.ExecuteAsync(id);
+        return Ok(bag);
     }
 }

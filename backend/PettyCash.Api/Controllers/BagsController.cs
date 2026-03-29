@@ -28,18 +28,7 @@ public class BagsController(
     [HttpPost("{id}/move")]
     public async Task<ActionResult<VendorTransactionDto>> MoveToRegister(int id)
     {
-        try
-        {
-            var transaction = await moveBagToRegisterUseCase.ExecuteAsync(id);
-            return Ok(transaction);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        var transaction = await moveBagToRegisterUseCase.ExecuteAsync(id);
+        return Ok(transaction);
     }
 }

@@ -125,7 +125,7 @@ export function TransactionList({ safeId, transactions, denomChecks, bags, cashB
         : (txType === "Deposit" ? "業者入金" : "業者出金");
       const desc = description || label;
       const finalAmount = useDenom ? denomAmount : amount;
-      await api.createTransaction({
+      await api.createPettyCashTransaction({
         safeId, type: txType, amount: finalAmount, description: desc, date,
         ...(useDenom ? { denomination: denom } : {}),
       });
@@ -263,7 +263,7 @@ export function TransactionList({ safeId, transactions, denomChecks, bags, cashB
         <>
           <BagList safeId={safeId} bags={bags} denomChecks={denomChecks} onUpdate={onUpdate} />
           <hr style={{ margin: "32px 0" }} />
-          <CashBagList safeId={safeId} bags={cashBags} prepBags={prepBags} denomChecks={denomChecks} onUpdate={onUpdate} />
+          <CashBagList safeId={safeId} bags={cashBags} allBags={cashBags} prepBags={prepBags} denomChecks={denomChecks} onUpdate={onUpdate} />
         </>
       )}
 
@@ -379,7 +379,7 @@ export function TransactionList({ safeId, transactions, denomChecks, bags, cashB
           onClose={() => setEditCheck(null)}
           onDone={onUpdate}
           editCheck={editCheck}
-          onUpdate={(id, denom) => api.updateDenominationCheck(id, denom)}
+          onUpdate={(id, denom) => api.updateVendorDenominationCheck(id, denom)}
         />
       )}
     </div>

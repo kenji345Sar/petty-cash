@@ -57,11 +57,13 @@ builder.Services.AddScoped<GetPrepBagsUseCase>();
 builder.Services.AddScoped<HandOverPrepBagUseCase>();
 builder.Services.AddScoped<CancelPrepBagUseCase>();
 
+var corsOrigins = builder.Configuration.GetSection("CorsOrigins").Get<string[]>()
+    ?? new[] { "http://localhost:5173" };
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins(corsOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -74,6 +76,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseMiddleware<PettyCash.Api.Middleware.ExceptionHandlingMiddleware>();
 app.UseCors();
 app.UseAuthorization();
 app.MapControllers();
@@ -155,11 +158,6 @@ using (var scope = app.Services.CreateScope())
             ALTER TABLE denomination_checks ADD CONSTRAINT fk_denomination_checks_safe FOREIGN KEY (safe_id) REFERENCES safes(id)
         ");
     }
-
-    // denomination_checksテーブルにsequence_numberカラムを追加
-    db.Database.ExecuteSqlRaw(@"
-        ALTER TABLE denomination_checks ADD COLUMN IF NOT EXISTS sequence_number INTEGER NOT NULL DEFAULT 0
-    ");
 
     // 旧transactionsテーブルが残っている場合のみマイグレーション実行
     // transactionsテーブルを vendor_transactions / petty_cash_transactions に分割
@@ -304,6 +302,9 @@ using (var scope = app.Services.CreateScope())
     ).First();
     if (hasOldDenomTable > 0)
     {
+        db.Database.ExecuteSqlRaw(@"
+            ALTER TABLE denomination_checks ADD COLUMN IF NOT EXISTS sequence_number INTEGER NOT NULL DEFAULT 0
+        ");
         db.Database.ExecuteSqlRaw(@"
             INSERT INTO vendor_denomination_checks (id, sequence_number, safe_id, change_bag_id, cash_bag_id, prep_bag_id, checked_amount, expected_amount, difference, created_at, count_10000, count_5000, count_1000, count_500, count_100, count_50, count_10, count_5, count_1)
             SELECT id, sequence_number, safe_id, change_bag_id, cash_bag_id, prep_bag_id, checked_amount, expected_amount, difference, created_at, count_10000, count_5000, count_1000, count_500, count_100, count_50, count_10, count_5, count_1

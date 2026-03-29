@@ -218,7 +218,7 @@ export function BagList({ safeId, bags, denomChecks, onUpdate }: Props) {
           onClose={() => setEditCheck(null)}
           onDone={onUpdate}
           editCheck={editCheck}
-          onUpdate={(id, denom) => api.updateDenominationCheck(id, denom)}
+          onUpdate={(id, denom) => api.updateVendorDenominationCheck(id, denom)}
         />
       )}
     </div>

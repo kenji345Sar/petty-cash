@@ -400,7 +400,7 @@ export function CashBagList({ safeId, bags, allBags, prepBags, denomChecks, onUp
           onClose={() => setEditCheck(null)}
           onDone={onUpdate}
           editCheck={editCheck}
-          onUpdate={(id, denom) => api.updateDenominationCheck(id, denom)}
+          onUpdate={(id, denom) => api.updateVendorDenominationCheck(id, denom)}
         />
       )}
 
@@ -451,7 +451,7 @@ export function CashBagList({ safeId, bags, allBags, prepBags, denomChecks, onUp
           onClose={() => setEditCheck(null)}
           onDone={onUpdate}
           editCheck={editCheck}
-          onUpdate={(id, denom) => api.updateDenominationCheck(id, denom)}
+          onUpdate={(id, denom) => api.updateVendorDenominationCheck(id, denom)}
         />
       )}
     </div>

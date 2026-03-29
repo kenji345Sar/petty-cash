@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { api } from "../api/client";
-import type { Denomination, DenominationCheck, ChangeBag, CashBag, PrepBag } from "../api/client";
+import type { DenominationCheck, ChangeBag, CashBag, PrepBag } from "../api/client";
 
 interface Props {
   denomChecks: DenominationCheck[];
@@ -48,7 +47,7 @@ function denomSummary(check: DenominationCheck) {
     .join(" ");
 }
 
-export function DenominationReportPage({ denomChecks, bags, cashBags, prepBags, onUpdate }: Props) {
+export function DenominationReportPage({ denomChecks, bags, cashBags, prepBags }: Props) {
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const sorted = [...denomChecks].sort(
