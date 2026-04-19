@@ -45,6 +45,45 @@ open -a "pgAdmin 4"
 
 4. **Save** をクリック
 
+## Docker DB のサーバー登録
+
+Docker環境で起動したDBに接続する場合は、別のサーバーとして登録します。
+
+1. 左パネルの「Servers」を右クリック → **Register** → **Server...**
+
+2. **General タブ:**
+
+   | 項目 | 入力値 |
+   |------|--------|
+   | Name | `petty-cash-docker`（表示名。自由に設定可） |
+
+3. **Connection タブ:**
+
+   | 項目 | 入力値 |
+   |------|--------|
+   | Host name/address | `localhost` |
+   | Port | `5434` |
+   | Maintenance database | `petty_cash` |
+   | Username | `postgres` |
+   | Password | `postgres` |
+   | Save password? | ON にする |
+
+   **ローカルDBとの違いはポート番号のみ**（5432 → 5434）。
+
+4. **Save** をクリック
+
+> **前提**: `docker compose up -d` でコンテナが起動している必要があります。
+> コンテナが停止していると接続エラーになります。
+
+### ローカル DB と Docker DB の見分け方
+
+| サーバー名 | ポート | データ |
+|-----------|--------|--------|
+| `petty-cash-local` | 5432 | ローカル開発で蓄積したデータ |
+| `petty-cash-docker` | 5434 | Docker初回起動時にシードされたデータ（名古屋・梅田・銀座） |
+
+両方のDBは独立しているため、片方でデータを変更してももう片方には影響しません。
+
 ## テーブルの確認方法
 
 接続後、左のツリーを以下の順で展開する：

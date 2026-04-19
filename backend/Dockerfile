@@ -1,8 +1,6 @@
 # ===== Development stage =====
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS dev
 WORKDIR /app
-COPY . .
-RUN dotnet restore PettyCash.Api/PettyCash.Api.csproj
 EXPOSE 5141
 ENV ASPNETCORE_URLS=http://+:5141
 ENV ASPNETCORE_ENVIRONMENT=Development

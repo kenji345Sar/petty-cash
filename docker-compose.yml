@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -27,6 +27,14 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
     volumes:
       - ./backend:/app
+      - /app/PettyCash.Api/bin
+      - /app/PettyCash.Api/obj
+      - /app/PettyCash.Application/bin
+      - /app/PettyCash.Application/obj
+      - /app/PettyCash.Domain/bin
+      - /app/PettyCash.Domain/obj
+      - /app/PettyCash.Infrastructure/bin
+      - /app/PettyCash.Infrastructure/obj
     depends_on:
       db:
         condition: service_healthy
@@ -37,7 +45,7 @@ services:
       dockerfile: Dockerfile
       target: dev
     ports:
-      - "5173:5173"
+      - "5174:5173"
     environment:
       VITE_API_BASE: "http://localhost:5141/api"
     volumes:
