@@ -21,7 +21,7 @@ public class CheckCashBagUseCaseTests
     private static Denomination Denom5000 => new(0, 1, 0, 0, 0, 0, 0, 0, 0);
 
     private CheckCashBagUseCase CreateUseCase() =>
-        new(_bagRepo.Object, _checkRepo.Object, _txRepo.Object, _seqService.Object, _unitOfWork.Object);
+        new(_bagRepo.Object, _checkRepo.Object, _txRepo.Object, _seqService.Object, Mock.Of<IBalanceService>(), _unitOfWork.Object);
 
     [Fact]
     public async Task 差額ありなら調整取引が保存される()

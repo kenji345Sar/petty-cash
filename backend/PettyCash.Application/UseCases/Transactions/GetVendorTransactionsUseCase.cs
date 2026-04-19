@@ -20,7 +20,7 @@ public class GetVendorTransactionsUseCase(IVendorTransactionRepository repositor
 
             return new VendorTransactionDto(
                 t.Id, t.SequenceNumber, t.ChangeBagId, t.CashBagId, t.PrepBagId,
-                t.Type.ToString(), t.Amount, t.Description, t.CreatedAt, denomDto
+                t.Type.ToString(), t.Amount, t.Balance, t.Description, t.CreatedAt, denomDto
             );
         }).ToList();
     }

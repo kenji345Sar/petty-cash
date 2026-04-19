@@ -5,6 +5,7 @@ public record PettyCashTransactionDto(
     int SequenceNumber,
     string Type,
     int Amount,
+    int Balance,
     string Description,
     DateTime CreatedAt,
     DenominationDto? Denomination

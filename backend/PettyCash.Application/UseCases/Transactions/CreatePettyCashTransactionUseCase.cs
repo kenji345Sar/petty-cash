@@ -13,12 +13,13 @@ public class CreatePettyCashTransactionUseCase(
     IPettyCashTransactionRepository transactionRepository,
     ISafeRepository safeRepository,
     ISequenceNumberService sequenceNumberService,
+    IBalanceService balanceService,
     IUnitOfWork unitOfWork)
 {
     public async Task<PettyCashTransactionDto> ExecuteAsync(CreatePettyCashTransactionRequestDto dto)
     {
         var type = dto.Type == "Deposit" ? TransactionType.Deposit : TransactionType.Withdrawal;
-        var date = DateTime.SpecifyKind(dto.Date, DateTimeKind.Utc);
+        var date = DateTime.UtcNow;
 
         Denomination? denomination = null;
         if (dto.Denomination is { } d)
@@ -40,6 +41,7 @@ public class CreatePettyCashTransactionUseCase(
         }
 
         await sequenceNumberService.AssignAsync(transaction);
+        await balanceService.AssignBalanceAsync(transaction);
         await transactionRepository.AddAsync(transaction);
         await unitOfWork.SaveChangesAsync();
 
@@ -49,7 +51,7 @@ public class CreatePettyCashTransactionUseCase(
 
         return new PettyCashTransactionDto(
             transaction.Id, transaction.SequenceNumber,
-            transaction.Type.ToString(), transaction.Amount, transaction.Description, transaction.CreatedAt, denomDto
+            transaction.Type.ToString(), transaction.Amount, transaction.Balance, transaction.Description, transaction.CreatedAt, denomDto
         );
     }
 }

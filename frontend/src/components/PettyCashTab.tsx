@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
-import type { PettyCashTransaction, DenominationCheck, Denomination } from "../api/client";
+import type { PettyCashTransaction, DenominationCheck, Denomination, Safe } from "../api/client";
 import { DENOM_ITEMS } from "../shared/denomination";
 import { DenominationCheckForm } from "./DenominationCheckForm";
 import { DenominationInput } from "./DenominationInput";
 
 interface Props {
   safeId: number;
-  safeBalance: number;
-  onUpdate: () => void;
+  onSafeUpdate: (safe: Safe) => void;
 }
 
 type View = "list" | "input";
@@ -25,7 +24,7 @@ type Row =
   | { kind: "tx"; data: PettyCashTransaction; at: string }
   | { kind: "check"; data: DenominationCheck; at: string };
 
-export function PettyCashTab({ safeId, safeBalance, onUpdate }: Props) {
+export function PettyCashTab({ safeId, onSafeUpdate }: Props) {
   const [view, setView] = useState<View>("list");
   const [transactions, setTransactions] = useState<PettyCashTransaction[]>([]);
   const [denomChecks, setDenomChecks] = useState<DenominationCheck[]>([]);
@@ -34,7 +33,7 @@ export function PettyCashTab({ safeId, safeBalance, onUpdate }: Props) {
   const [txType, setTxType] = useState<"Deposit" | "Withdrawal">("Deposit");
   const [amount, setAmount] = useState(0);
   const [description, setDescription] = useState("");
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const date = new Date().toISOString().slice(0, 10);
   const [loading, setLoading] = useState(false);
   const [showDenomInput, setShowDenomInput] = useState(false);
   const [selectedDenom, setSelectedDenom] = useState<Denomination | null>(null);
@@ -51,18 +50,19 @@ export function PettyCashTab({ safeId, safeBalance, onUpdate }: Props) {
   const [editCheck, setEditCheck] = useState<DenominationCheck | null>(null);
   const [viewDenomTx, setViewDenomTx] = useState<PettyCashTransaction | null>(null);
 
+  const [safeBalance, setSafeBalance] = useState(0);
+
   const loadData = async () => {
-    const [txData, checksData] = await Promise.all([
-      api.getPettyCashTransactions(safeId),
-      api.getPettyCashDenominationChecks(safeId),
-    ]);
-    setTransactions(txData);
-    setDenomChecks(checksData);
+    const dashboard = await api.getPettyCashDashboard(safeId);
+    setTransactions(dashboard.transactions);
+    setDenomChecks(dashboard.denominationChecks);
+    setSafeBalance(dashboard.safe.pettyCashBalance);
+    onSafeUpdate(dashboard.safe);
   };
 
   useEffect(() => { loadData(); }, [safeId]);
 
-  const handleUpdate = () => { loadData(); onUpdate(); };
+  const handleUpdate = () => { loadData(); };
 
   const [from, to] = period === "thisMonth" ? thisMonth : period === "lastMonth" ? lastMonth : [customFrom, customTo];
   const inRange = (dateStr: string) => {
@@ -73,7 +73,7 @@ export function PettyCashTab({ safeId, safeBalance, onUpdate }: Props) {
   const rows: Row[] = [
     ...transactions.filter(t => inRange(t.createdAt)).map(t => ({ kind: "tx" as const, data: t, at: t.createdAt })),
     ...denomChecks.filter(c => inRange(c.createdAt)).map(c => ({ kind: "check" as const, data: c, at: c.createdAt })),
-  ].sort((a, b) => b.data.sequenceNumber - a.data.sequenceNumber);
+  ].sort((a, b) => a.data.sequenceNumber - b.data.sequenceNumber);
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -86,7 +86,6 @@ export function PettyCashTab({ safeId, safeBalance, onUpdate }: Props) {
       });
       setAmount(0);
       setDescription("");
-      setDate(new Date().toISOString().slice(0, 10));
       setTxType("Deposit");
       setSelectedDenom(null);
       setView("list");
@@ -155,10 +154,6 @@ export function PettyCashTab({ safeId, safeBalance, onUpdate }: Props) {
               <input type="text" value={description} onChange={e => setDescription(e.target.value)} style={{ marginLeft: 8, width: 300 }}
                 placeholder={txType === "Deposit" ? "例: レジから金庫へ" : "例: 金庫からレジへ"} />
             </div>
-            <div>
-              <label>日付</label>
-              <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ marginLeft: 8 }} />
-            </div>
           </div>
           <button className="btn-primary" onClick={handleSubmit} disabled={loading || amount <= 0} style={{ marginTop: 12 }}>
             {loading ? "処理中..." : (txType === "Deposit" ? "入金する" : "出金する")}
@@ -173,13 +168,14 @@ export function PettyCashTab({ safeId, safeBalance, onUpdate }: Props) {
             <th>番号</th>
             <th>種別</th>
             <th>金額</th>
+            <th>残高</th>
             <th>摘要</th>
             <th>日時</th>
           </tr>
         </thead>
         <tbody>
           {rows.length === 0 ? (
-            <tr><td colSpan={5} style={{ textAlign: "center" }}>記録がありません</td></tr>
+            <tr><td colSpan={6} style={{ textAlign: "center" }}>記録がありません</td></tr>
           ) : rows.map(row =>
             row.kind === "tx" ? (
               <tr key={`tx-${row.data.id}`}>
@@ -194,6 +190,7 @@ export function PettyCashTab({ safeId, safeBalance, onUpdate }: Props) {
                   )}
                 </td>
                 <td>{row.data.amount.toLocaleString()}円</td>
+                <td>{row.data.balance.toLocaleString()}円</td>
                 <td>{row.data.description}</td>
                 <td>{new Date(row.data.createdAt).toLocaleString("ja-JP")}</td>
               </tr>
@@ -202,6 +199,7 @@ export function PettyCashTab({ safeId, safeBalance, onUpdate }: Props) {
                 <td>{row.data.sequenceNumber}</td>
                 <td><span className="type type-check">有高</span></td>
                 <td>{row.data.checkedAmount.toLocaleString()}円</td>
+                <td></td>
                 <td>
                   有高: {row.data.checkedAmount.toLocaleString()}円 / 帳簿: {row.data.expectedAmount.toLocaleString()}円
                   <span style={{ color: row.data.difference === 0 ? "green" : "red", marginLeft: 8 }}>

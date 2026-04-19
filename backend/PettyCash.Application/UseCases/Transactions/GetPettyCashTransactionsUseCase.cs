@@ -20,7 +20,7 @@ public class GetPettyCashTransactionsUseCase(IPettyCashTransactionRepository rep
 
             return new PettyCashTransactionDto(
                 t.Id, t.SequenceNumber,
-                t.Type.ToString(), t.Amount, t.Description, t.CreatedAt, denomDto
+                t.Type.ToString(), t.Amount, t.Balance, t.Description, t.CreatedAt, denomDto
             );
         }).ToList();
     }

@@ -36,7 +36,15 @@ public class VendorTransaction
 
     public Denomination? Denomination { get; private set; }
 
+    /// <summary>この取引後の業者残高（ランニングバランス）</summary>
+    public int Balance { get; private set; }
+
     private VendorTransaction() { }
+
+    internal void SetBalance(int balance)
+    {
+        Balance = balance;
+    }
 
     internal void SetSequenceNumber(int sequenceNumber)
     {

@@ -19,7 +19,7 @@ public class HandOverPrepBagUseCaseTests
     private static Denomination Denom5000 => new(0, 1, 0, 0, 0, 0, 0, 0, 0);
 
     private HandOverPrepBagUseCase CreateUseCase() =>
-        new(_prepRepo.Object, _txRepo.Object, _seqService.Object, _unitOfWork.Object);
+        new(_prepRepo.Object, _txRepo.Object, _seqService.Object, Mock.Of<IBalanceService>(), _unitOfWork.Object);
 
     [Fact]
     public async Task 引渡で出金取引が保存される()

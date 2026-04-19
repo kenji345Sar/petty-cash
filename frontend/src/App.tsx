@@ -20,6 +20,10 @@ function App() {
     }
   };
 
+  const handleSafeUpdate = (updatedSafe: Safe) => {
+    setSafes(prev => prev.map(s => s.id === updatedSafe.id ? updatedSafe : s));
+  };
+
   useEffect(() => {
     loadSafes();
   }, []);
@@ -92,13 +96,12 @@ function App() {
           activeTab === "petty" ? (
             <PettyCashTab
               safeId={selectedSafeId}
-              safeBalance={selectedSafe.pettyCashBalance}
-              onUpdate={loadSafes}
+              onSafeUpdate={handleSafeUpdate}
             />
           ) : (
             <VendorTab
               safeId={selectedSafeId}
-              onUpdate={loadSafes}
+              onSafeUpdate={handleSafeUpdate}
             />
           )
         ) : (

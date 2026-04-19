@@ -12,6 +12,7 @@ public class CheckSafeUseCase(
     IPettyCashDenominationCheckRepository checkRepository,
     IVendorTransactionRepository transactionRepository,
     ISequenceNumberService sequenceNumberService,
+    IBalanceService balanceService,
     IUnitOfWork unitOfWork)
 {
     public async Task<DenominationCheckDto> ExecuteAsync(int safeId, DenominationCheckRequestDto dto)
@@ -34,6 +35,7 @@ public class CheckSafeUseCase(
         {
             var adjustment = VendorTransaction.CreateSafeAdjustment(safeId, check.Difference, now);
             await sequenceNumberService.AssignAsync(adjustment);
+            await balanceService.AssignBalanceAsync(adjustment);
             await transactionRepository.AddAsync(adjustment);
         }
 

@@ -27,7 +27,15 @@ public class PettyCashTransaction
 
     public Denomination? Denomination { get; private set; }
 
+    /// <summary>この取引後の小口残高（ランニングバランス）</summary>
+    public int Balance { get; private set; }
+
     private PettyCashTransaction() { }
+
+    internal void SetBalance(int balance)
+    {
+        Balance = balance;
+    }
 
     internal void SetSequenceNumber(int sequenceNumber)
     {

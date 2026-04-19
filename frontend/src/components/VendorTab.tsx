@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
-import type { VendorTransaction, DenominationCheck, ChangeBag, CashBag, PrepBag } from "../api/client";
+import type { VendorTransaction, DenominationCheck, ChangeBag, CashBag, PrepBag, Safe } from "../api/client";
 import { DENOM_ITEMS } from "../shared/denomination";
 import { BagList } from "./BagList";
 import { CashBagList } from "./CashBagList";
@@ -8,7 +8,7 @@ import { DenominationCheckForm } from "./DenominationCheckForm";
 
 interface Props {
   safeId: number;
-  onUpdate: () => void;
+  onSafeUpdate: (safe: Safe) => void;
 }
 
 type Period = "thisMonth" | "lastMonth" | "custom";
@@ -54,7 +54,7 @@ type Row =
   | { kind: "tx"; data: VendorTransaction; at: string }
   | { kind: "check"; data: DenominationCheck; at: string };
 
-export function VendorTab({ safeId, onUpdate }: Props) {
+export function VendorTab({ safeId, onSafeUpdate }: Props) {
   const [bags, setBags] = useState<ChangeBag[]>([]);
   const [cashBags, setCashBags] = useState<CashBag[]>([]);
   const [prepBags, setPrepBags] = useState<PrepBag[]>([]);
@@ -73,23 +73,18 @@ export function VendorTab({ safeId, onUpdate }: Props) {
   const [viewDenomTx, setViewDenomTx] = useState<VendorTransaction | null>(null);
 
   const loadData = async () => {
-    const [bagsData, cashBagsData, txData, checksData, prepBagsData] = await Promise.all([
-      api.getBags(safeId),
-      api.getCashBags(safeId),
-      api.getVendorTransactions(safeId),
-      api.getVendorDenominationChecks(safeId),
-      api.getPrepBags(safeId),
-    ]);
-    setBags(bagsData);
-    setCashBags(cashBagsData);
-    setVendorTransactions(txData);
-    setDenomChecks(checksData);
-    setPrepBags(prepBagsData);
+    const dashboard = await api.getVendorDashboard(safeId);
+    setBags(dashboard.bags);
+    setCashBags(dashboard.cashBags);
+    setVendorTransactions(dashboard.transactions);
+    setDenomChecks(dashboard.denominationChecks);
+    setPrepBags(dashboard.prepBags);
+    onSafeUpdate(dashboard.safe);
   };
 
   useEffect(() => { loadData(); }, [safeId]);
 
-  const handleUpdate = () => { loadData(); onUpdate(); };
+  const handleUpdate = () => { loadData(); };
 
   // Ledger filtering
   const [from, to] = period === "thisMonth" ? thisMonth : period === "lastMonth" ? lastMonth : [customFrom, customTo];
@@ -101,7 +96,7 @@ export function VendorTab({ safeId, onUpdate }: Props) {
   const rows: Row[] = [
     ...transactions.filter(t => inRange(t.createdAt)).map(t => ({ kind: "tx" as const, data: t, at: t.createdAt })),
     ...denomChecks.filter(c => inRange(c.createdAt)).map(c => ({ kind: "check" as const, data: c, at: c.createdAt })),
-  ].sort((a, b) => b.data.sequenceNumber - a.data.sequenceNumber);
+  ].sort((a, b) => a.data.sequenceNumber - b.data.sequenceNumber);
 
   // Edit check helpers
   const editBagType = editCheck?.changeBagId ? "change" as const : editCheck?.prepBagId ? "prep" as const : "cash" as const;
@@ -150,6 +145,7 @@ export function VendorTab({ safeId, onUpdate }: Props) {
               <th>番号</th>
               <th>種別</th>
               <th>金額</th>
+              <th>残高</th>
               <th>摘要</th>
               <th>バッグ</th>
               <th>日時</th>
@@ -157,7 +153,7 @@ export function VendorTab({ safeId, onUpdate }: Props) {
           </thead>
           <tbody>
             {rows.length === 0 ? (
-              <tr><td colSpan={6} style={{ textAlign: "center" }}>記録がありません</td></tr>
+              <tr><td colSpan={7} style={{ textAlign: "center" }}>記録がありません</td></tr>
             ) : rows.map(row =>
               row.kind === "tx" ? (
                 <tr key={`tx-${row.data.id}`}>
@@ -172,6 +168,7 @@ export function VendorTab({ safeId, onUpdate }: Props) {
                     )}
                   </td>
                   <td>{row.data.amount.toLocaleString()}円</td>
+                  <td>{row.data.balance.toLocaleString()}円</td>
                   <td>{row.data.description}</td>
                   <td>{formatBag(row.data.changeBagId, row.data.cashBagId, row.data.prepBagId, bags, cashBags, prepBags)}</td>
                   <td>{new Date(row.data.createdAt).toLocaleString("ja-JP")}</td>
@@ -181,6 +178,7 @@ export function VendorTab({ safeId, onUpdate }: Props) {
                   <td>{row.data.sequenceNumber}</td>
                   <td><span className="type type-check">有高</span></td>
                   <td>{row.data.checkedAmount.toLocaleString()}円</td>
+                  <td></td>
                   <td>
                     有高: {row.data.checkedAmount.toLocaleString()}円 / 帳簿: {row.data.expectedAmount.toLocaleString()}円
                     <span style={{ color: row.data.difference === 0 ? "green" : "red", marginLeft: 8 }}>

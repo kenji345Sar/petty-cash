@@ -8,6 +8,7 @@ public record VendorTransactionDto(
     int? PrepBagId,
     string Type,
     int Amount,
+    int Balance,
     string Description,
     DateTime CreatedAt,
     DenominationDto? Denomination

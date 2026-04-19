@@ -68,6 +68,7 @@ export interface VendorTransaction {
   prepBagId: number | null;
   type: "Deposit" | "Withdrawal" | "Adjustment";
   amount: number;
+  balance: number;
   description: string;
   createdAt: string;
   denomination: Denomination | null;
@@ -78,6 +79,7 @@ export interface PettyCashTransaction {
   sequenceNumber: number;
   type: "Deposit" | "Withdrawal" | "Adjustment";
   amount: number;
+  balance: number;
   description: string;
   createdAt: string;
   denomination: Denomination | null;
@@ -111,6 +113,21 @@ export interface PrepBag {
   createdAt: string;
   handedOverAt: string | null;
   cashBagIds: number[];
+}
+
+export interface VendorDashboard {
+  safe: Safe;
+  bags: ChangeBag[];
+  cashBags: CashBag[];
+  transactions: VendorTransaction[];
+  denominationChecks: DenominationCheck[];
+  prepBags: PrepBag[];
+}
+
+export interface PettyCashDashboard {
+  safe: Safe;
+  transactions: PettyCashTransaction[];
+  denominationChecks: DenominationCheck[];
 }
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5141/api";
@@ -233,4 +250,10 @@ export const api = {
     fetchJson<PrepBag>(`${API_BASE}/prepbags/${id}/cancel`, {
       method: "POST",
     }),
+
+  getVendorDashboard: (safeId: number) =>
+    fetchJson<VendorDashboard>(`${API_BASE}/vendor-dashboard?safeId=${safeId}`),
+
+  getPettyCashDashboard: (safeId: number) =>
+    fetchJson<PettyCashDashboard>(`${API_BASE}/pettycash-dashboard?safeId=${safeId}`),
 };

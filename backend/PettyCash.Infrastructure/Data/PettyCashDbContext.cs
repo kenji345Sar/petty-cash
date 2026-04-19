@@ -103,6 +103,7 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
             entity.Property(e => e.PrepBagId).HasColumnName("prep_bag_id");
             entity.Property(e => e.Type).HasColumnName("type");
             entity.Property(e => e.Amount).HasColumnName("amount");
+            entity.Property(e => e.Balance).HasColumnName("balance");
             entity.Property(e => e.Description).HasColumnName("description").HasMaxLength(200);
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
@@ -129,6 +130,7 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
             entity.Property(e => e.SafeId).HasColumnName("safe_id");
             entity.Property(e => e.Type).HasColumnName("type");
             entity.Property(e => e.Amount).HasColumnName("amount");
+            entity.Property(e => e.Balance).HasColumnName("balance");
             entity.Property(e => e.Description).HasColumnName("description").HasMaxLength(200);
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 

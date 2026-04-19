@@ -5,6 +5,7 @@ using PettyCash.Application.UseCases.DenominationChecks;
 using PettyCash.Application.UseCases.PrepBags;
 using PettyCash.Application.UseCases.Safes;
 using PettyCash.Application.UseCases.Transactions;
+using PettyCash.Application.UseCases.Dashboard;
 using PettyCash.Domain.Vendor.Ledger;
 using PettyCash.Domain.Vendor.BagManagement;
 using PettyCash.Domain.Vendor.DenomCheck;
@@ -33,6 +34,7 @@ builder.Services.AddScoped<ICashBagRepository, CashBagRepository>();
 builder.Services.AddScoped<IVendorTransactionRepository, VendorTransactionRepository>();
 builder.Services.AddScoped<IPettyCashTransactionRepository, PettyCashTransactionRepository>();
 builder.Services.AddScoped<ISequenceNumberService, SequenceNumberService>();
+builder.Services.AddScoped<IBalanceService, BalanceService>();
 builder.Services.AddScoped<DepositBagUseCase>();
 builder.Services.AddScoped<MoveBagToRegisterUseCase>();
 builder.Services.AddScoped<GetBagsUseCase>();
@@ -56,9 +58,11 @@ builder.Services.AddScoped<CreatePrepBagUseCase>();
 builder.Services.AddScoped<GetPrepBagsUseCase>();
 builder.Services.AddScoped<HandOverPrepBagUseCase>();
 builder.Services.AddScoped<CancelPrepBagUseCase>();
+builder.Services.AddScoped<GetVendorDashboardUseCase>();
+builder.Services.AddScoped<GetPettyCashDashboardUseCase>();
 
 var corsOrigins = builder.Configuration.GetSection("CorsOrigins").Get<string[]>()
-    ?? new[] { "http://localhost:5173" };
+    ?? new[] { "http://localhost:5173", "http://localhost:5174" };
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -321,6 +325,39 @@ using (var scope = app.Services.CreateScope())
         db.Database.ExecuteSqlRaw(@"
             SELECT setval('vendor_denomination_checks_id_seq', GREATEST((SELECT COALESCE(MAX(id), 0) FROM vendor_denomination_checks), 1));
             SELECT setval('safe_denomination_checks_id_seq', GREATEST((SELECT COALESCE(MAX(id), 0) FROM safe_denomination_checks), 1))");
+    }
+    // ランニングバランス（balance列）の追加マイグレーション
+    var hasVendorBalanceCol = db.Database.SqlQueryRaw<int>(
+        "SELECT COUNT(*) AS \"Value\" FROM information_schema.columns WHERE table_name = 'vendor_transactions' AND column_name = 'balance'"
+    ).First();
+
+    if (hasVendorBalanceCol == 0)
+    {
+        // カラム追加
+        db.Database.ExecuteSqlRaw(@"
+            ALTER TABLE vendor_transactions ADD COLUMN balance INTEGER NOT NULL DEFAULT 0;
+            ALTER TABLE petty_cash_transactions ADD COLUMN balance INTEGER NOT NULL DEFAULT 0");
+
+        // 既存データの遡及計算（時系列順にランニングバランスを算出）
+        db.Database.ExecuteSqlRaw(@"
+            WITH running AS (
+                SELECT id,
+                       SUM(CASE WHEN type IN (0, 2) THEN amount ELSE -amount END)
+                           OVER (PARTITION BY safe_id ORDER BY created_at, id) AS bal
+                FROM vendor_transactions
+            )
+            UPDATE vendor_transactions SET balance = running.bal
+            FROM running WHERE vendor_transactions.id = running.id");
+
+        db.Database.ExecuteSqlRaw(@"
+            WITH running AS (
+                SELECT id,
+                       SUM(CASE WHEN type IN (0, 2) THEN amount ELSE -amount END)
+                           OVER (PARTITION BY safe_id ORDER BY created_at, id) AS bal
+                FROM petty_cash_transactions
+            )
+            UPDATE petty_cash_transactions SET balance = running.bal
+            FROM running WHERE petty_cash_transactions.id = running.id");
     }
 }
 

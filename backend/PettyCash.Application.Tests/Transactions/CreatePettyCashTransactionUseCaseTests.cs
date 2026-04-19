@@ -17,7 +17,7 @@ public class CreatePettyCashTransactionUseCaseTests
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
 
     private CreatePettyCashTransactionUseCase CreateUseCase() =>
-        new(_txRepo.Object, _safeRepo.Object, _seqService.Object, _unitOfWork.Object);
+        new(_txRepo.Object, _safeRepo.Object, _seqService.Object, Mock.Of<IBalanceService>(), _unitOfWork.Object);
 
     [Fact]
     public async Task 入金が正常に作成される()

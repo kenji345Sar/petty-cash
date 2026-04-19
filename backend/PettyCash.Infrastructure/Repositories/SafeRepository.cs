@@ -45,8 +45,8 @@ public class SafeRepository(PettyCashDbContext context) : ISafeRepository
         var balances = await context.Database
             .SqlQueryRaw<BalanceResult>(
                 @"SELECT
-                    COALESCE((SELECT SUM(CASE WHEN type = 2 THEN amount WHEN type = 0 THEN amount ELSE -amount END) FROM vendor_transactions WHERE safe_id = {0}), 0) AS ""VendorBalance"",
-                    COALESCE((SELECT SUM(CASE WHEN type = 2 THEN amount WHEN type = 0 THEN amount ELSE -amount END) FROM petty_cash_transactions WHERE safe_id = {0}), 0) AS ""PettyCashBalance""",
+                    COALESCE((SELECT balance FROM vendor_transactions WHERE safe_id = {0} ORDER BY created_at DESC, id DESC LIMIT 1), 0) AS ""VendorBalance"",
+                    COALESCE((SELECT balance FROM petty_cash_transactions WHERE safe_id = {0} ORDER BY created_at DESC, id DESC LIMIT 1), 0) AS ""PettyCashBalance""",
                 safe.Id)
             .FirstAsync();
 
