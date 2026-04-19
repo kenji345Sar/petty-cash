@@ -21,7 +21,7 @@ public class CheckChangeBagUseCaseTests
     private static Denomination Denom10000 => new(1, 0, 0, 0, 0, 0, 0, 0, 0);
 
     private CheckChangeBagUseCase CreateUseCase() =>
-        new(_bagRepo.Object, _checkRepo.Object, _txRepo.Object, _seqService.Object, Mock.Of<IBalanceService>(), _unitOfWork.Object);
+        new(_bagRepo.Object, _checkRepo.Object, _txRepo.Object, _seqService.Object, Mock.Of<IBalanceService>(), Mock.Of<IProjectionService>(), Mock.Of<IEventStore>(), _unitOfWork.Object);
 
     private static DenominationCheckRequestDto MakeDenomDto(int count10000 = 0, int count1000 = 0) =>
         new(count10000, 0, count1000, 0, 0, 0, 0, 0, 0);

@@ -18,7 +18,7 @@ public class MoveBagToRegisterUseCaseTests
     private static Denomination Denom10000 => new(1, 0, 0, 0, 0, 0, 0, 0, 0);
 
     private MoveBagToRegisterUseCase CreateUseCase() =>
-        new(_bagRepo.Object, _seqService.Object, Mock.Of<IBalanceService>(), _unitOfWork.Object);
+        new(_bagRepo.Object, _seqService.Object, Mock.Of<IBalanceService>(), Mock.Of<IProjectionService>(), Mock.Of<IEventStore>(), _unitOfWork.Object);
 
     [Fact]
     public async Task レジ移動で出金取引が生成される()

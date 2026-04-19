@@ -1,5 +1,5 @@
 using PettyCash.Application.Dtos;
-using PettyCash.Application.UseCases.Transactions;
+using PettyCash.Application.UseCases.Queries;
 using PettyCash.Application.UseCases.DenominationChecks;
 using PettyCash.Domain.SafeAggregate;
 
@@ -7,7 +7,7 @@ namespace PettyCash.Application.UseCases.Dashboard;
 
 public class GetPettyCashDashboardUseCase(
     ISafeRepository safeRepository,
-    GetPettyCashTransactionsUseCase getTransactions,
+    IPettyCashLedgerQueryService ledgerQuery,
     GetPettyCashDenominationChecksUseCase getDenomChecks)
 {
     public async Task<PettyCashDashboardDto> ExecuteAsync(int safeId)
@@ -15,7 +15,7 @@ public class GetPettyCashDashboardUseCase(
         var safe = await safeRepository.GetByIdAsync(safeId)
             ?? throw new KeyNotFoundException($"金庫ID {safeId} が見つかりません。");
 
-        var transactions = await getTransactions.ExecuteAsync(safeId);
+        var transactions = await ledgerQuery.GetBySafeIdAsync(safeId);
         var denomChecks = await getDenomChecks.ExecuteAsync(safeId);
 
         var safeDto = new SafeDto(

@@ -6,6 +6,7 @@ using PettyCash.Domain.PettyCash.Ledger;
 using PettyCash.Domain.PettyCash.DenomCheck;
 using PettyCash.Domain.SafeAggregate;
 using PettyCash.Domain.Shared.Services;
+using PettyCash.Infrastructure.ReadModels;
 
 namespace PettyCash.Infrastructure.Data;
 
@@ -24,6 +25,12 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
     public DbSet<VendorDenominationCheck> VendorDenominationChecks => Set<VendorDenominationCheck>();
     public DbSet<PettyCashDenominationCheck> PettyCashDenominationChecks => Set<PettyCashDenominationCheck>();
     public DbSet<PrepBag> PrepBags => Set<PrepBag>();
+
+    // Read Model
+    public DbSet<SafeBalance> SafeBalances => Set<SafeBalance>();
+    public DbSet<VendorLedgerEntry> VendorLedgerEntries => Set<VendorLedgerEntry>();
+    public DbSet<PettyCashLedgerEntry> PettyCashLedgerEntries => Set<PettyCashLedgerEntry>();
+    public DbSet<DomainEvent> DomainEvents => Set<DomainEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -231,6 +238,60 @@ public class PettyCashDbContext(DbContextOptions<PettyCashDbContext> options) : 
                 d.Property(p => p.Count5).HasColumnName("count_5");
                 d.Property(p => p.Count1).HasColumnName("count_1");
             });
+        });
+
+        // ===== Read Model =====
+        modelBuilder.Entity<SafeBalance>(entity =>
+        {
+            entity.ToTable("safe_balances");
+            entity.HasKey(e => e.SafeId);
+            entity.Property(e => e.SafeId).HasColumnName("safe_id");
+            entity.Property(e => e.VendorBalance).HasColumnName("vendor_balance");
+            entity.Property(e => e.PettyCashBalance).HasColumnName("petty_cash_balance");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+        });
+
+        modelBuilder.Entity<VendorLedgerEntry>(entity =>
+        {
+            entity.ToTable("vendor_ledger_view");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.SequenceNumber).HasColumnName("sequence_number");
+            entity.Property(e => e.SafeId).HasColumnName("safe_id");
+            entity.Property(e => e.ChangeBagId).HasColumnName("change_bag_id");
+            entity.Property(e => e.CashBagId).HasColumnName("cash_bag_id");
+            entity.Property(e => e.PrepBagId).HasColumnName("prep_bag_id");
+            entity.Property(e => e.Type).HasColumnName("type");
+            entity.Property(e => e.Amount).HasColumnName("amount");
+            entity.Property(e => e.Balance).HasColumnName("balance");
+            entity.Property(e => e.Description).HasColumnName("description").HasMaxLength(200);
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+        });
+
+        modelBuilder.Entity<PettyCashLedgerEntry>(entity =>
+        {
+            entity.ToTable("petty_cash_ledger_view");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.SequenceNumber).HasColumnName("sequence_number");
+            entity.Property(e => e.SafeId).HasColumnName("safe_id");
+            entity.Property(e => e.Type).HasColumnName("type");
+            entity.Property(e => e.Amount).HasColumnName("amount");
+            entity.Property(e => e.Balance).HasColumnName("balance");
+            entity.Property(e => e.Description).HasColumnName("description").HasMaxLength(200);
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+        });
+
+        modelBuilder.Entity<DomainEvent>(entity =>
+        {
+            entity.ToTable("domain_events");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.AggregateType).HasColumnName("aggregate_type").HasMaxLength(100);
+            entity.Property(e => e.AggregateId).HasColumnName("aggregate_id");
+            entity.Property(e => e.EventType).HasColumnName("event_type").HasMaxLength(100);
+            entity.Property(e => e.Payload).HasColumnName("payload").HasColumnType("jsonb");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
         });
     }
 }

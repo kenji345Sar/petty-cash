@@ -13,6 +13,8 @@ public class CheckCashBagUseCase(
     IVendorTransactionRepository transactionRepository,
     ISequenceNumberService sequenceNumberService,
     IBalanceService balanceService,
+    IProjectionService projectionService,
+    IEventStore eventStore,
     IUnitOfWork unitOfWork)
 {
     public async Task<DenominationCheckDto> ExecuteAsync(int bagId, DenominationCheckRequestDto dto)
@@ -37,6 +39,8 @@ public class CheckCashBagUseCase(
             await sequenceNumberService.AssignAsync(adjustment);
             await balanceService.AssignBalanceAsync(adjustment);
             await transactionRepository.AddAsync(adjustment);
+            await eventStore.AppendAsync(adjustment);
+            await projectionService.ProjectAsync(adjustment);
             bag.UpdateAmount(denomination.TotalAmount);
         }
 

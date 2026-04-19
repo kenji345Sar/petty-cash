@@ -42,20 +42,12 @@ public class SafeRepository(PettyCashDbContext context) : ISafeRepository
 
     private async Task LoadBalances(Safe safe)
     {
-        var balances = await context.Database
-            .SqlQueryRaw<BalanceResult>(
-                @"SELECT
-                    COALESCE((SELECT balance FROM vendor_transactions WHERE safe_id = {0} ORDER BY created_at DESC, id DESC LIMIT 1), 0) AS ""VendorBalance"",
-                    COALESCE((SELECT balance FROM petty_cash_transactions WHERE safe_id = {0} ORDER BY created_at DESC, id DESC LIMIT 1), 0) AS ""PettyCashBalance""",
-                safe.Id)
-            .FirstAsync();
+        var balance = await context.SafeBalances
+            .FirstOrDefaultAsync(b => b.SafeId == safe.Id);
 
-        safe.SetBalances(balances.VendorBalance, balances.PettyCashBalance);
+        if (balance != null)
+            safe.SetBalances(balance.VendorBalance, balance.PettyCashBalance);
+        else
+            safe.SetBalances(0, 0);
     }
-}
-
-internal class BalanceResult
-{
-    public int VendorBalance { get; set; }
-    public int PettyCashBalance { get; set; }
 }

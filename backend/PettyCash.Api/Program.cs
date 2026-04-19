@@ -13,7 +13,9 @@ using PettyCash.Domain.PettyCash.Ledger;
 using PettyCash.Domain.PettyCash.DenomCheck;
 using PettyCash.Domain.SafeAggregate;
 using PettyCash.Domain.Shared.Services;
+using PettyCash.Application.UseCases.Queries;
 using PettyCash.Infrastructure.Data;
+using PettyCash.Infrastructure.Queries;
 using PettyCash.Infrastructure.Repositories;
 using PettyCash.Infrastructure.Services;
 
@@ -35,6 +37,10 @@ builder.Services.AddScoped<IVendorTransactionRepository, VendorTransactionReposi
 builder.Services.AddScoped<IPettyCashTransactionRepository, PettyCashTransactionRepository>();
 builder.Services.AddScoped<ISequenceNumberService, SequenceNumberService>();
 builder.Services.AddScoped<IBalanceService, BalanceService>();
+builder.Services.AddScoped<IProjectionService, ProjectionService>();
+builder.Services.AddScoped<IEventStore, EventStore>();
+builder.Services.AddScoped<IVendorLedgerQueryService, VendorLedgerQueryService>();
+builder.Services.AddScoped<IPettyCashLedgerQueryService, PettyCashLedgerQueryService>();
 builder.Services.AddScoped<DepositBagUseCase>();
 builder.Services.AddScoped<MoveBagToRegisterUseCase>();
 builder.Services.AddScoped<GetBagsUseCase>();
@@ -358,6 +364,126 @@ using (var scope = app.Services.CreateScope())
             )
             UPDATE petty_cash_transactions SET balance = running.bal
             FROM running WHERE petty_cash_transactions.id = running.id");
+    }
+    // Read Model テーブルの作成マイグレーション
+    var hasSafeBalances = db.Database.SqlQueryRaw<int>(
+        "SELECT COUNT(*) AS \"Value\" FROM information_schema.tables WHERE table_name = 'safe_balances'"
+    ).First();
+
+    if (hasSafeBalances == 0)
+    {
+        // safe_balances（金庫残高 Read Model）
+        db.Database.ExecuteSqlRaw(@"
+            CREATE TABLE safe_balances (
+                safe_id INTEGER PRIMARY KEY REFERENCES safes(id),
+                vendor_balance INTEGER NOT NULL DEFAULT 0,
+                petty_cash_balance INTEGER NOT NULL DEFAULT 0,
+                updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+            )");
+
+        // vendor_ledger_view（業者出納帳 Read Model）
+        db.Database.ExecuteSqlRaw(@"
+            CREATE TABLE vendor_ledger_view (
+                id SERIAL PRIMARY KEY,
+                sequence_number INTEGER NOT NULL,
+                safe_id INTEGER NOT NULL,
+                change_bag_id INTEGER,
+                cash_bag_id INTEGER,
+                prep_bag_id INTEGER,
+                type INTEGER NOT NULL,
+                amount INTEGER NOT NULL,
+                balance INTEGER NOT NULL,
+                description VARCHAR(200) NOT NULL DEFAULT '',
+                created_at TIMESTAMP NOT NULL DEFAULT NOW()
+            )");
+
+        // petty_cash_ledger_view（小口出納帳 Read Model）
+        db.Database.ExecuteSqlRaw(@"
+            CREATE TABLE petty_cash_ledger_view (
+                id SERIAL PRIMARY KEY,
+                sequence_number INTEGER NOT NULL,
+                safe_id INTEGER NOT NULL,
+                type INTEGER NOT NULL,
+                amount INTEGER NOT NULL,
+                balance INTEGER NOT NULL,
+                description VARCHAR(200) NOT NULL DEFAULT '',
+                created_at TIMESTAMP NOT NULL DEFAULT NOW()
+            )");
+
+        // 既存データからRead Modelを初期構築
+        // safe_balances: 各金庫の最新残高をイベントストアから算出
+        db.Database.ExecuteSqlRaw(@"
+            INSERT INTO safe_balances (safe_id, vendor_balance, petty_cash_balance, updated_at)
+            SELECT s.id,
+                COALESCE((SELECT balance FROM vendor_transactions WHERE safe_id = s.id ORDER BY created_at DESC, id DESC LIMIT 1), 0),
+                COALESCE((SELECT balance FROM petty_cash_transactions WHERE safe_id = s.id ORDER BY created_at DESC, id DESC LIMIT 1), 0),
+                NOW()
+            FROM safes s");
+
+        // vendor_ledger_view: イベントストアの全データをコピー
+        db.Database.ExecuteSqlRaw(@"
+            INSERT INTO vendor_ledger_view (id, sequence_number, safe_id, change_bag_id, cash_bag_id, prep_bag_id, type, amount, balance, description, created_at)
+            SELECT id, sequence_number, safe_id, change_bag_id, cash_bag_id, prep_bag_id, type, amount, balance, description, created_at
+            FROM vendor_transactions");
+
+        // petty_cash_ledger_view: イベントストアの全データをコピー
+        db.Database.ExecuteSqlRaw(@"
+            INSERT INTO petty_cash_ledger_view (id, sequence_number, safe_id, type, amount, balance, description, created_at)
+            SELECT id, sequence_number, safe_id, type, amount, balance, description, created_at
+            FROM petty_cash_transactions");
+
+        // シーケンスを合わせる
+        db.Database.ExecuteSqlRaw(@"
+            SELECT setval('vendor_ledger_view_id_seq', GREATEST((SELECT COALESCE(MAX(id), 0) FROM vendor_ledger_view), 1));
+            SELECT setval('petty_cash_ledger_view_id_seq', GREATEST((SELECT COALESCE(MAX(id), 0) FROM petty_cash_ledger_view), 1))");
+    }
+    // domain_events（イベントストア）テーブルの作成マイグレーション
+    var hasDomainEvents = db.Database.SqlQueryRaw<int>(
+        "SELECT COUNT(*) AS \"Value\" FROM information_schema.tables WHERE table_name = 'domain_events'"
+    ).First();
+
+    if (hasDomainEvents == 0)
+    {
+        db.Database.ExecuteSqlRaw(@"
+            CREATE TABLE domain_events (
+                id BIGSERIAL PRIMARY KEY,
+                aggregate_type VARCHAR(100) NOT NULL,
+                aggregate_id INTEGER NOT NULL,
+                event_type VARCHAR(100) NOT NULL,
+                payload JSONB NOT NULL,
+                created_at TIMESTAMP NOT NULL DEFAULT NOW()
+            )");
+
+        db.Database.ExecuteSqlRaw(@"
+            CREATE INDEX idx_domain_events_aggregate ON domain_events (aggregate_type, aggregate_id)");
+
+        // 既存トランザクションからイベントを遡及生成
+        db.Database.ExecuteSqlRaw(@"
+            INSERT INTO domain_events (aggregate_type, aggregate_id, event_type, payload, created_at)
+            SELECT
+                'Safe', safe_id,
+                CASE type WHEN 0 THEN 'VendorMoneyDeposited' WHEN 1 THEN 'VendorMoneyWithdrawn' ELSE 'VendorBalanceAdjusted' END,
+                jsonb_build_object(
+                    'safeId', safe_id, 'amount', amount, 'balance', balance,
+                    'description', description, 'sequenceNumber', sequence_number,
+                    'changeBagId', change_bag_id, 'cashBagId', cash_bag_id, 'prepBagId', prep_bag_id
+                ),
+                created_at
+            FROM vendor_transactions
+            ORDER BY created_at, id");
+
+        db.Database.ExecuteSqlRaw(@"
+            INSERT INTO domain_events (aggregate_type, aggregate_id, event_type, payload, created_at)
+            SELECT
+                'Safe', safe_id,
+                CASE type WHEN 0 THEN 'PettyCashDeposited' WHEN 1 THEN 'PettyCashWithdrawn' ELSE 'PettyCashBalanceAdjusted' END,
+                jsonb_build_object(
+                    'safeId', safe_id, 'amount', amount, 'balance', balance,
+                    'description', description, 'sequenceNumber', sequence_number
+                ),
+                created_at
+            FROM petty_cash_transactions
+            ORDER BY created_at, id");
     }
 }
 

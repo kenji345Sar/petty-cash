@@ -1,5 +1,70 @@
 # 現在のアーキテクチャ — API・処理フロー全体図
 
+## 変更履歴: 残高計算方式の変遷
+
+### 変更前（475b4a9以前）— SUM毎回計算方式
+
+残高はDBに保存せず、**読み込みのたびにSUM関数で全取引を集計**して算出していた。
+
+```
+SafeRepository.LoadBalances():
+
+SELECT
+  COALESCE(
+    (SELECT SUM(
+      CASE WHEN type = 2 THEN amount    -- Adjustment: +amount
+           WHEN type = 0 THEN amount    -- Deposit:    +amount
+           ELSE -amount                  -- Withdrawal: -amount
+      END
+    ) FROM vendor_transactions WHERE safe_id = {0}),
+  0) AS "VendorBalance",
+
+  COALESCE(
+    (SELECT SUM(
+      CASE WHEN type = 2 THEN amount
+           WHEN type = 0 THEN amount
+           ELSE -amount
+      END
+    ) FROM petty_cash_transactions WHERE safe_id = {0}),
+  0) AS "PettyCashBalance"
+```
+
+**特徴:**
+- balance列なし — 取引テーブルにはamountのみ
+- 読み込みのたびに全取引をSUMで集計
+- 任意時点の残高を知りたい場合もSUMが必要
+- 取引が増えるほどクエリが遅くなる
+
+**呼び出し箇所:** 金庫を取得する全ての場所（GetSafes, GetByIdAsync, Dashboard等）で毎回実行
+
+### 変更後（475b4a9）— ランニングバランス方式
+
+各取引テーブルにbalance列を追加。取引ごとにその時点の残高を保持。
+
+```
+SafeRepository.LoadBalances():
+
+SELECT
+  COALESCE(
+    (SELECT balance FROM vendor_transactions
+     WHERE safe_id = {0} ORDER BY created_at DESC, id DESC LIMIT 1),
+  0) AS "VendorBalance",
+
+  COALESCE(
+    (SELECT balance FROM petty_cash_transactions
+     WHERE safe_id = {0} ORDER BY created_at DESC, id DESC LIMIT 1),
+  0) AS "PettyCashBalance"
+```
+
+**特徴:**
+- balance列あり — 各取引にその時点の残高を保持
+- 最新の1行を読むだけで現在残高がわかる
+- 任意時点の残高もその行を見るだけ
+- 取引数に関係なく一定速度
+- 過去日付の登録は禁止（時系列の整合性を保証）
+
+---
+
 ## 全体構成
 
 ```
