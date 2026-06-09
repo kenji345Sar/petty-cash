@@ -11,13 +11,15 @@ interface Props {
   onSafeUpdate: (safe: Safe) => void;
 }
 
-type Period = "thisMonth" | "lastMonth" | "custom";
+type Period = "month" | "custom";
 
 function getMonthRange(offset: number): [string, string] {
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth() + offset, 1);
   const end = new Date(now.getFullYear(), now.getMonth() + offset + 1, 0);
-  return [start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)];
+  const fmt = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return [fmt(start), fmt(end)];
 }
 
 const fmtId = (prefix: string, id: number) => `${prefix}-${String(id).padStart(3, "0")}`;
@@ -62,11 +64,12 @@ export function VendorTab({ safeId, onSafeUpdate }: Props) {
   const [denomChecks, setDenomChecks] = useState<DenominationCheck[]>([]);
 
   // Period
-  const [period, setPeriod] = useState<Period>("thisMonth");
-  const [thisMonth] = useState(() => getMonthRange(0));
-  const [lastMonth] = useState(() => getMonthRange(-1));
-  const [customFrom, setCustomFrom] = useState(thisMonth[0]);
-  const [customTo, setCustomTo] = useState(thisMonth[1]);
+  const [period, setPeriod] = useState<Period>("month");
+  const [monthOffset, setMonthOffset] = useState(0);
+  const [customFrom, setCustomFrom] = useState(() => getMonthRange(0)[0]);
+  const [customTo, setCustomTo] = useState(() => getMonthRange(0)[1]);
+
+  const [showBags, setShowBags] = useState(true);
 
   // Modals
   const [editCheck, setEditCheck] = useState<DenominationCheck | null>(null);
@@ -87,7 +90,9 @@ export function VendorTab({ safeId, onSafeUpdate }: Props) {
   const handleUpdate = () => { loadData(); };
 
   // Ledger filtering
-  const [from, to] = period === "thisMonth" ? thisMonth : period === "lastMonth" ? lastMonth : [customFrom, customTo];
+  const currentRange = getMonthRange(monthOffset);
+  const [from, to] = period === "month" ? currentRange : [customFrom, customTo];
+  const monthLabel = new Date(currentRange[0] + "T00:00:00").toLocaleDateString("ja-JP", { year: "numeric", month: "long" });
   const inRange = (dateStr: string) => {
     const d = dateStr.slice(0, 10);
     return d >= from && d <= to;
@@ -118,8 +123,9 @@ export function VendorTab({ safeId, onSafeUpdate }: Props) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <h2 style={{ margin: 0 }}>業者管理</h2>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <button className={period === "lastMonth" ? "btn-period active" : "btn-period"} onClick={() => setPeriod("lastMonth")}>先月</button>
-          <button className={period === "thisMonth" ? "btn-period active" : "btn-period"} onClick={() => setPeriod("thisMonth")}>今月</button>
+          <button className="btn-period" onClick={() => { setMonthOffset(o => o - 1); setPeriod("month"); }}>«</button>
+          <span style={{ minWidth: 96, textAlign: "center", fontWeight: "bold" }}>{monthLabel}</span>
+          <button className="btn-period" onClick={() => { setMonthOffset(o => o + 1); setPeriod("month"); }}>»</button>
           <button className={period === "custom" ? "btn-period active" : "btn-period"} onClick={() => setPeriod("custom")}>期間選択</button>
           {period === "custom" && (
             <>
@@ -132,9 +138,20 @@ export function VendorTab({ safeId, onSafeUpdate }: Props) {
       </div>
 
       {/* ===== バッグ管理 ===== */}
-      <BagList safeId={safeId} bags={filteredBags} denomChecks={denomChecks} onUpdate={handleUpdate} />
-      <hr style={{ margin: "32px 0" }} />
-      <CashBagList safeId={safeId} bags={filteredCashBags} allBags={cashBags} prepBags={filteredPrepBags} denomChecks={denomChecks} onUpdate={handleUpdate} />
+      <div
+        onClick={() => setShowBags(v => !v)}
+        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "16px 0 12px", padding: "6px 12px", background: "#f5f5f5", borderRadius: 6, cursor: "pointer", userSelect: "none" }}
+      >
+        <span style={{ fontWeight: "bold", color: "#555" }}>バッグ管理</span>
+        <span style={{ color: "#888", fontSize: "0.85rem" }}>{showBags ? "▲ 閉じる" : "▼ 開く"}</span>
+      </div>
+      {showBags && (
+        <>
+          <BagList safeId={safeId} bags={filteredBags} denomChecks={denomChecks} onUpdate={handleUpdate} />
+          <hr style={{ margin: "32px 0" }} />
+          <CashBagList safeId={safeId} bags={filteredCashBags} allBags={cashBags} prepBags={filteredPrepBags} denomChecks={denomChecks} onUpdate={handleUpdate} />
+        </>
+      )}
 
       {/* ===== 業者出納帳 ===== */}
       <div style={{ marginTop: 40 }}>

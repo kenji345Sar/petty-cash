@@ -67,7 +67,7 @@ export function BagList({ safeId, bags, denomChecks, onUpdate }: Props) {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2>釣り銭バッグ一覧</h2>
+        <h3 style={{ margin: 0 }}>釣り銭バッグ一覧</h3>
         <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
           {showForm ? "閉じる" : "釣り銭追加"}
         </button>
