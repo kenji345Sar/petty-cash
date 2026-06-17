@@ -50,6 +50,8 @@ export function PettyCashTab({ safeId, onSafeUpdate }: Props) {
   const [showDenomCheck, setShowDenomCheck] = useState(false);
   const [editCheck, setEditCheck] = useState<DenominationCheck | null>(null);
   const [viewDenomTx, setViewDenomTx] = useState<PettyCashTransaction | null>(null);
+  const [reverseTx, setReverseTx] = useState<PettyCashTransaction | null>(null);
+  const [reverseDesc, setReverseDesc] = useState("");
 
   const [safeBalance, setSafeBalance] = useState(0);
 
@@ -175,6 +177,7 @@ export function PettyCashTab({ safeId, onSafeUpdate }: Props) {
             <th>残高</th>
             <th>摘要</th>
             <th>日時</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -197,6 +200,12 @@ export function PettyCashTab({ safeId, onSafeUpdate }: Props) {
                 <td>{row.data.balance.toLocaleString()}円</td>
                 <td>{row.data.description}</td>
                 <td>{new Date(row.data.createdAt).toLocaleString("ja-JP")}</td>
+                <td>
+                  <button onClick={() => { setReverseTx(row.data); setReverseDesc(`#${row.data.sequenceNumber}の修正（赤伝）`); }}
+                    style={{ background: "none", border: "1px solid #ef4444", color: "#ef4444", borderRadius: 4, padding: "2px 8px", cursor: "pointer", fontSize: "0.8rem" }}>
+                    赤伝
+                  </button>
+                </td>
               </tr>
             ) : (
               <tr key={`chk-${row.data.id}`} style={{ background: "#f0f7ff", cursor: "pointer" }} onClick={() => setEditCheck(row.data)}>
@@ -211,6 +220,7 @@ export function PettyCashTab({ safeId, onSafeUpdate }: Props) {
                   </span>
                 </td>
                 <td>{new Date(row.data.createdAt).toLocaleString("ja-JP")}</td>
+                <td></td>
               </tr>
             )
           )}
@@ -282,6 +292,44 @@ export function PettyCashTab({ safeId, onSafeUpdate }: Props) {
           }}
           onCancel={() => setShowDenomInput(false)}
         />
+      )}
+
+      {/* 赤伝モーダル */}
+      {reverseTx && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+          <div className="card" style={{ background: "white", minWidth: 400 }}>
+            <h3 style={{ margin: "0 0 12px", color: "#ef4444" }}>赤伝作成</h3>
+            <p style={{ marginBottom: 12, color: "#555" }}>
+              #{reverseTx.sequenceNumber}（{reverseTx.type === "Deposit" ? "入金" : reverseTx.type === "Withdrawal" ? "出金" : "調整"} {reverseTx.amount.toLocaleString()}円）を打ち消す取引を作成します。
+            </p>
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ display: "block", marginBottom: 4 }}>摘要</label>
+              <input
+                type="text"
+                value={reverseDesc}
+                onChange={e => setReverseDesc(e.target.value)}
+                style={{ width: "100%", padding: "6px 8px", borderRadius: 4, border: "1px solid #ccc", boxSizing: "border-box" }}
+              />
+            </div>
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+              <button onClick={() => setReverseTx(null)} style={{ padding: "6px 16px", borderRadius: 4, border: "1px solid #ccc", cursor: "pointer", background: "white" }}>キャンセル</button>
+              <button
+                onClick={async () => {
+                  try {
+                    await api.reversePettyCashTransaction(reverseTx.id, reverseDesc);
+                    setReverseTx(null);
+                    handleUpdate();
+                  } catch (e) {
+                    alert(e instanceof Error ? e.message : "エラーが発生しました");
+                  }
+                }}
+                style={{ padding: "6px 16px", borderRadius: 4, border: "none", background: "#ef4444", color: "white", cursor: "pointer" }}
+              >
+                赤伝作成
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Edit denomination check modal */}

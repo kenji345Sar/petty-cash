@@ -256,4 +256,16 @@ export const api = {
 
   getPettyCashDashboard: (safeId: number) =>
     fetchJson<PettyCashDashboard>(`${API_BASE}/pettycash-dashboard?safeId=${safeId}`),
+
+  reversePettyCashTransaction: (id: number, description: string) =>
+    fetchJson<PettyCashTransaction>(`${API_BASE}/petty-cash-transactions/${id}/reverse`, {
+      method: "POST",
+      body: JSON.stringify({ description }),
+    }),
+
+  reverseVendorTransaction: (id: number, description: string) =>
+    fetchJson<VendorTransaction>(`${API_BASE}/vendor-transactions/${id}/reverse`, {
+      method: "POST",
+      body: JSON.stringify({ description }),
+    }),
 };

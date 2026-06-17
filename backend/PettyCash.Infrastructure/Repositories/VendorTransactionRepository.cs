@@ -17,6 +17,11 @@ public class VendorTransactionRepository(PettyCashDbContext context) : IVendorTr
             .ToListAsync();
     }
 
+    public async Task<VendorTransaction?> GetByIdAsync(int id)
+    {
+        return await context.VendorTransactions.FirstOrDefaultAsync(t => t.Id == id);
+    }
+
     public Task AddAsync(VendorTransaction transaction)
     {
         context.VendorTransactions.Add(transaction);
