@@ -9,15 +9,20 @@ public class PettyCashLedgerQueryService(PettyCashDbContext context) : IPettyCas
 {
     public async Task<IReadOnlyList<PettyCashTransactionDto>> GetBySafeIdAsync(int safeId)
     {
-        var entries = await context.PettyCashLedgerEntries
-            .Where(e => e.SafeId == safeId)
-            .OrderByDescending(e => e.CreatedAt)
+        var entries = await context.PettyCashTransactions
+            .Where(t => t.SafeId == safeId)
+            .OrderByDescending(t => t.CreatedAt)
             .ToListAsync();
 
-        return entries.Select(e => new PettyCashTransactionDto(
-            e.Id, e.SequenceNumber,
-            ((Domain.Shared.TransactionType)e.Type).ToString(),
-            e.Amount, e.Balance, e.Description, e.CreatedAt, null
-        )).ToList();
+        return entries.Select(e =>
+        {
+            var dn = e.Denomination;
+            var denomDto = dn != null
+                ? new DenominationDto(dn.Count10000, dn.Count5000, dn.Count1000, dn.Count500, dn.Count100, dn.Count50, dn.Count10, dn.Count5, dn.Count1)
+                : null;
+            return new PettyCashTransactionDto(
+                e.Id, e.SequenceNumber,
+                e.Type.ToString(), e.Amount, e.Balance, e.Description, e.CreatedAt, denomDto);
+        }).ToList();
     }
 }

@@ -17,7 +17,7 @@ public class CheckSafeUseCaseTests
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
 
     private CheckSafeUseCase CreateUseCase() =>
-        new(_safeRepo.Object, _checkRepo.Object, _txRepo.Object, _seqService.Object, Mock.Of<IBalanceService>(), Mock.Of<IProjectionService>(), Mock.Of<IEventStore>(), _unitOfWork.Object);
+        new(_safeRepo.Object, _checkRepo.Object, _txRepo.Object, _seqService.Object, Mock.Of<IBalanceService>(), _unitOfWork.Object);
 
     private static Safe CreateSafe(int vendorBalance, int pettyCashBalance)
     {

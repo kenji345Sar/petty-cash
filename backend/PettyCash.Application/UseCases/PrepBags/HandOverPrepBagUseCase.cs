@@ -7,7 +7,7 @@ using PettyCash.Domain.Shared.Services;
 
 namespace PettyCash.Application.UseCases.PrepBags;
 
-public class HandOverPrepBagUseCase(IPrepBagRepository prepBagRepository, IVendorTransactionRepository vendorTransactionRepository, ISequenceNumberService sequenceNumberService, IBalanceService balanceService, IProjectionService projectionService, IEventStore eventStore, IUnitOfWork unitOfWork)
+public class HandOverPrepBagUseCase(IPrepBagRepository prepBagRepository, IVendorTransactionRepository vendorTransactionRepository, ISequenceNumberService sequenceNumberService, IBalanceService balanceService, IUnitOfWork unitOfWork)
 {
     public async Task<PrepBagDto> ExecuteAsync(int id)
     {
@@ -18,8 +18,6 @@ public class HandOverPrepBagUseCase(IPrepBagRepository prepBagRepository, IVendo
         await sequenceNumberService.AssignAsync(transaction);
         await balanceService.AssignBalanceAsync(transaction);
         await vendorTransactionRepository.AddAsync(transaction);
-        await eventStore.AppendAsync(transaction);
-        await projectionService.ProjectAsync(transaction);
         await unitOfWork.SaveChangesAsync();
 
         return new PrepBagDto(

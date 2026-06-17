@@ -14,8 +14,6 @@ public class CreatePettyCashTransactionUseCase(
     ISafeRepository safeRepository,
     ISequenceNumberService sequenceNumberService,
     IBalanceService balanceService,
-    IProjectionService projectionService,
-    IEventStore eventStore,
     IUnitOfWork unitOfWork)
 {
     public async Task<PettyCashTransactionDto> ExecuteAsync(CreatePettyCashTransactionRequestDto dto)
@@ -45,8 +43,6 @@ public class CreatePettyCashTransactionUseCase(
         await sequenceNumberService.AssignAsync(transaction);
         await balanceService.AssignBalanceAsync(transaction);
         await transactionRepository.AddAsync(transaction);
-        await eventStore.AppendAsync(transaction);
-        await projectionService.ProjectAsync(transaction);
         await unitOfWork.SaveChangesAsync();
 
         var denomDto = transaction.Denomination is { } dn

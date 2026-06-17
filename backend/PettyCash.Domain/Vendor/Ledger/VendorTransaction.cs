@@ -134,6 +134,29 @@ public class VendorTransaction
         };
     }
 
+    /// <summary>
+    /// 赤伝取引を生成する。元取引の種別に応じて逆の種別・金額を決定する業務判断を含む。
+    /// </summary>
+    public static VendorTransaction CreateReversal(VendorTransaction original, string description, DateTime date)
+    {
+        var (reverseType, reverseAmount) = original.Type switch
+        {
+            TransactionType.Deposit    => (TransactionType.Withdrawal, original.Amount),
+            TransactionType.Withdrawal => (TransactionType.Deposit,    original.Amount),
+            TransactionType.Adjustment when original.Amount >= 0 => (TransactionType.Withdrawal, original.Amount),
+            _                                                     => (TransactionType.Deposit,    Math.Abs(original.Amount)),
+        };
+
+        return new VendorTransaction
+        {
+            SafeId = original.SafeId,
+            Type = reverseType,
+            Amount = reverseAmount,
+            Description = description,
+            CreatedAt = date
+        };
+    }
+
     internal static VendorTransaction CreatePrepBagWithdrawal(PrepBag bag, int amount, DateTime date)
     {
         var ids = string.Join(", ", bag.CashBags.Select(cb => $"#{cb.Id}"));
