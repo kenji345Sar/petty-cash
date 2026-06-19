@@ -229,6 +229,9 @@ export function VendorTab({ safeId, onSafeUpdate }: Props) {
             <p style={{ marginBottom: 12, color: "#555" }}>
               #{reverseTx.sequenceNumber}（{reverseTx.type === "Deposit" ? "入金" : reverseTx.type === "Withdrawal" ? "出金" : "調整"} {reverseTx.amount.toLocaleString()}円）を打ち消す取引を作成します。
             </p>
+            <p style={{ marginBottom: 12, padding: "8px 12px", background: "#fff7ed", border: "1px solid #fdba74", borderRadius: 4, color: "#9a3412", fontSize: "0.85rem" }}>
+              ⚠️ 赤伝は金額・残高を戻すだけで、<strong>バッグの状態（移動済み・入金済み等）は戻りません</strong>。バッグをやり直す場合は別途バッグ側の操作が必要です。
+            </p>
             <div style={{ marginBottom: 12 }}>
               <label style={{ display: "block", marginBottom: 4 }}>摘要</label>
               <input
