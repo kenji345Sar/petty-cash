@@ -55,4 +55,33 @@ public class HandOverPrepBagUseCaseTests
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             CreateUseCase().ExecuteAsync(1));
     }
+
+    // ── 保存有無 ──────────────────────────────────────────────────
+
+    [Fact]
+    public async Task 正常時はunitOfWorkSaveが呼ばれる()
+    {
+        var cb = CashBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, Denom5000);
+        var prep = PrepBag.Create(1, [cb], DateTime.UtcNow);
+        _prepRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(prep);
+
+        await CreateUseCase().ExecuteAsync(1);
+
+        _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task Domain例外時はtxRepoAddが呼ばれない()
+    {
+        var cb = CashBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, Denom5000);
+        var prep = PrepBag.Create(1, [cb], DateTime.UtcNow);
+        prep.MarkHandedOver(DateTime.UtcNow); // 引渡済みにして Domain 例外を起こす
+        _prepRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(prep);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            CreateUseCase().ExecuteAsync(1));
+
+        _txRepo.Verify(r => r.AddAsync(It.IsAny<VendorTransaction>()), Times.Never);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Never);
+    }
 }

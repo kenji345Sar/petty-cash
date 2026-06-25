@@ -89,4 +89,17 @@ public class PrepBagTests
 
         Assert.Throws<InvalidOperationException>(() => prep.Cancel());
     }
+
+    // ── バグ再現 ──────────────────────────────────────────────────
+    // PrepBag.MarkHandedOver は HandedOver チェックのみで Cancelled を見ていない。
+    // Cancelled 状態から MarkHandedOver を呼ぶと例外になるべき。
+    [Fact]
+    public void MarkHandedOver_取消済みのバッグから呼ぶと例外()
+    {
+        var cb = CreateCashBag(1, 0);
+        var prep = PrepBag.Create(1, [cb], DateTime.UtcNow);
+        prep.Cancel();
+
+        Assert.Throws<InvalidOperationException>(() => prep.MarkHandedOver(DateTime.UtcNow));
+    }
 }

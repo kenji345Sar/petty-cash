@@ -73,4 +73,19 @@ public class ChangeBagTests
 
         Assert.Equal(9500, bag.TotalAmount);
     }
+
+    // ── 仕様確認：MovedToRegister 後の UpdateAmount ─────────────────
+    // UpdateAmount に状態ガードがないため、レジ移動後でも金額変更できてしまう（仕様未確定）。
+    [Fact]
+    public void UpdateAmount_MovedToRegister後も変更できる_仕様確認()
+    {
+        var denom = MakeDenom(1); // 10000
+        var bag = ChangeBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, denom);
+        bag.MoveToRegister(DateTime.UtcNow);
+
+        bag.UpdateAmount(9500); // 現状は例外なし
+
+        Assert.Equal(9500, bag.TotalAmount);
+        Assert.Equal(BagStatus.MovedToRegister, bag.Status);
+    }
 }

@@ -3,9 +3,6 @@
 > 小口タブ・業者タブの両方で使う概念をここに一本化する（重複説明を避けるため）。
 > 各タブ固有の点は [petty-cash.md](./petty-cash.md) / [vendor.md](./vendor.md) に書く。
 
-<!-- 枠組みのみ。集約元: docs/architecture/denomination-vs-check.md,
-     domain-rules.md, api-screens/display-logic.md -->
-
 ## 1. 金種
 
 <!-- 紙幣・硬貨の種類（10000/5000/1000/500/100/50/10/5/1）と枚数。
@@ -25,19 +22,29 @@
 
 実装: `ReversePettyCashTransactionUseCase` / `ReverseVendorTransactionUseCase`、逆転ロジックは Domain の `CreateReversal`。
 
-**逆転ルール**（小口・業者共通）
+### 逆転ルール（小口・業者共通）
 
-| 元取引 | 赤伝で追加される取引 |
-|---|---|
-| 入金 (Deposit) | 出金 (Withdrawal) 同額 |
-| 出金 (Withdrawal) | 入金 (Deposit) 同額 |
-| 調整 (Adjustment, ≥0) | 出金 同額 |
-| 調整 (Adjustment, <0) | 入金 絶対値 |
+| 元取引 | 赤伝で追加される取引 | 金額 |
+|---|---|---|
+| 入金 (Deposit) | 出金 (Withdrawal) | 元と同額 |
+| 出金 (Withdrawal) | 入金 (Deposit) | 元と同額 |
+| 調整 (Adjustment, ≥0) | 出金 (Withdrawal) | 元と同額 |
+| 調整 (Adjustment, <0) | 入金 (Deposit) | **絶対値** |
 
-**重要な性質**
+> 実装: `PettyCashTransaction.CreateReversal` / `VendorTransaction.CreateReversal`（switch式で上記4パターンを判定）
+
+### 重要な性質
+
 - 赤伝は**新しい連番・新しい行**として時系列の末尾に積まれる。元取引やその後の行の `balance` は書き換えない。
 - 入金の赤伝は「出金」になるため、**残高が不足していると失敗する**（`EnsureCanWithdraw`）。過去の入金を取り消したくても、その分が既に使われていると赤伝できない。
 - 摘要の既定値は `#<元の番号>の修正（赤伝）`。
+
+### 二重赤伝（仕様未確定）
+
+同一取引IDに対して複数回赤伝を打つことの可否は **仕様未確定**（2026-06-24 時点）。
+
+- 現実装: Domain に「赤伝済み」状態を持たないため防止していない
+- 運用上問題が発生した場合: Domain への赤伝済みフラグ追加または Application での重複チェックを追加する
 
 > ⚠️ 業者の赤伝には固有の制約がある（バッグ状態を戻さない）。[vendor.md](./vendor.md#5-赤伝修正) を参照。
 

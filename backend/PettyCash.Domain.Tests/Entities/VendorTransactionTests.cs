@@ -52,4 +52,62 @@ public class VendorTransactionTests
 
         Assert.Throws<InvalidOperationException>(() => tx.SetSequenceNumber(2));
     }
+
+    // ── CreateReversal（逆転ロジック）──────────────────────────────
+    [Fact]
+    public void CreateReversal_入金の赤伝は出金になる()
+    {
+        var bag = ChangeBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, MakeDenom(1)); // 10000
+        var original = bag.DepositTransaction!; // Type=Deposit, Amount=10000, SafeId=1
+
+        var reversal = VendorTransaction.CreateReversal(original, "赤伝", DateTime.UtcNow);
+
+        Assert.Equal(TransactionType.Withdrawal, reversal.Type);
+        Assert.Equal(10000, reversal.Amount);
+    }
+
+    [Fact]
+    public void CreateReversal_出金の赤伝は入金になる()
+    {
+        var bag = ChangeBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, MakeDenom(1));
+        var original = bag.MoveToRegister(DateTime.UtcNow); // Type=Withdrawal, Amount=10000
+
+        var reversal = VendorTransaction.CreateReversal(original, "赤伝", DateTime.UtcNow);
+
+        Assert.Equal(TransactionType.Deposit, reversal.Type);
+        Assert.Equal(10000, reversal.Amount);
+    }
+
+    [Fact]
+    public void CreateReversal_調整プラスの赤伝は出金になる()
+    {
+        var original = VendorTransaction.CreateSafeAdjustment(1, 2000, DateTime.UtcNow); // Amount=+2000
+
+        var reversal = VendorTransaction.CreateReversal(original, "赤伝", DateTime.UtcNow);
+
+        Assert.Equal(TransactionType.Withdrawal, reversal.Type);
+        Assert.Equal(2000, reversal.Amount);
+    }
+
+    [Fact]
+    public void CreateReversal_調整マイナスの赤伝は入金で絶対値金額になる()
+    {
+        var original = VendorTransaction.CreateSafeAdjustment(1, -1500, DateTime.UtcNow); // Amount=-1500
+
+        var reversal = VendorTransaction.CreateReversal(original, "赤伝", DateTime.UtcNow);
+
+        Assert.Equal(TransactionType.Deposit, reversal.Type);
+        Assert.Equal(1500, reversal.Amount); // 絶対値
+    }
+
+    [Fact]
+    public void CreateReversal_SafeIdが元取引から引き継がれる()
+    {
+        var bag = ChangeBag.CreateDeposit(42, 0, "テスト", DateTime.UtcNow, MakeDenom(1));
+        var original = bag.DepositTransaction!;
+
+        var reversal = VendorTransaction.CreateReversal(original, "赤伝", DateTime.UtcNow);
+
+        Assert.Equal(42, reversal.SafeId);
+    }
 }

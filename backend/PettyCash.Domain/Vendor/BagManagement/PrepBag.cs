@@ -81,6 +81,8 @@ public class PrepBag
     {
         if (Status == PrepBagStatus.HandedOver)
             throw new InvalidOperationException("この準備バッグは既に引渡済みです。");
+        if (Status == PrepBagStatus.Cancelled)
+            throw new InvalidOperationException("取消済みの準備バッグは引渡できません。");
 
         Status = PrepBagStatus.HandedOver;
         HandedOverAt = handedOverAt;

@@ -41,4 +41,12 @@ public class CashBagTests
 
         Assert.Equal(7500, bag.TotalAmount);
     }
+
+    [Fact]
+    public void CreateDeposit_金種合計ゼロは例外()
+    {
+        var denom = new Denomination(0, 0, 0, 0, 0, 0, 0, 0, 0); // 全枚数ゼロ
+        Assert.Throws<ArgumentException>(() =>
+            CashBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, denom));
+    }
 }

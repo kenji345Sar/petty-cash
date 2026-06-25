@@ -52,4 +52,31 @@ public class MoveBagToRegisterUseCaseTests
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             CreateUseCase().ExecuteAsync(1));
     }
+
+    // ── 保存有無 ──────────────────────────────────────────────────
+
+    [Fact]
+    public async Task 正常時はunitOfWorkSaveが呼ばれる()
+    {
+        var bag = ChangeBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, Denom10000);
+        _bagRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(bag);
+
+        await CreateUseCase().ExecuteAsync(1);
+
+        _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task Domain例外時はbagRepoUpdateが呼ばれない()
+    {
+        var bag = ChangeBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, Denom10000);
+        bag.MoveToRegister(DateTime.UtcNow); // 移動済みにして Domain 例外を起こす
+        _bagRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(bag);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            CreateUseCase().ExecuteAsync(1));
+
+        _bagRepo.Verify(r => r.UpdateAsync(It.IsAny<ChangeBag>()), Times.Never);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Never);
+    }
 }

@@ -33,4 +33,39 @@ public class PettyCashTransactionTests
         Assert.Throws<ArgumentException>(() =>
             PettyCashTransaction.Create(1, TransactionType.Deposit, 0, "テスト", DateTime.UtcNow));
     }
+
+    // ── CreateReversal（逆転ロジック）──────────────────────────────
+    [Fact]
+    public void CreateReversal_入金の赤伝は出金になる()
+    {
+        var original = PettyCashTransaction.Create(1, TransactionType.Deposit, 5000, "小口入金", DateTime.UtcNow);
+
+        var reversal = PettyCashTransaction.CreateReversal(original, "赤伝", DateTime.UtcNow);
+
+        Assert.Equal(TransactionType.Withdrawal, reversal.Type);
+        Assert.Equal(5000, reversal.Amount);
+        Assert.Equal(1, reversal.SafeId);
+    }
+
+    [Fact]
+    public void CreateReversal_出金の赤伝は入金になる()
+    {
+        var original = PettyCashTransaction.Create(1, TransactionType.Withdrawal, 3000, "小口出金", DateTime.UtcNow);
+
+        var reversal = PettyCashTransaction.CreateReversal(original, "赤伝", DateTime.UtcNow);
+
+        Assert.Equal(TransactionType.Deposit, reversal.Type);
+        Assert.Equal(3000, reversal.Amount);
+    }
+
+    [Fact]
+    public void CreateReversal_調整プラスの赤伝は出金になる()
+    {
+        var original = PettyCashTransaction.Create(1, TransactionType.Adjustment, 2000, "有高調整", DateTime.UtcNow);
+
+        var reversal = PettyCashTransaction.CreateReversal(original, "赤伝", DateTime.UtcNow);
+
+        Assert.Equal(TransactionType.Withdrawal, reversal.Type);
+        Assert.Equal(2000, reversal.Amount);
+    }
 }

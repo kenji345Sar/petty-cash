@@ -4,9 +4,6 @@
 > 実装: `frontend/src/components/PettyCashTab.tsx`
 > 共通概念（金種・有高チェック・赤伝・残高・期間フィルタ）は [common.md](./common.md) を参照。
 
-<!-- 枠組みのみ。各節の中身はこれから埋める。
-     集約元: docs/architecture/business-flow.md, domain-rules.md, api-screens/display-logic.md -->
-
 ## 1. 画面構成
 
 <!-- 期間ナビ / アクションバー（入出金登録・有高チェック）/ 入力フォーム / 小口出納帳テーブル / 各モーダル
@@ -30,8 +27,25 @@
 
 ## 5. 赤伝（修正）
 
-<!-- 出納帳の各取引から赤伝作成。元取引を打ち消す逆取引を追加。
-     詳細は common.md、ここは小口固有の点だけ。 -->
+逆転ルール・追記型・残高の積み方は [common.md](./common.md#3-赤伝逆仕訳) を参照。
+
+### 小口固有の制約
+
+- 小口取引の `Amount` は必ず正数（`Create` 時に 1 以上を保証）
+- 調整マイナス（Amount < 0）の小口取引は現実装では作成不可のため、赤伝の `_ =>` パターン（絶対値化）は到達しない
+
+### テスト保証内容（PettyCashTransaction赤伝）
+
+| ルール | テスト |
+|---|---|
+| Deposit の赤伝 → Withdrawal（同額） | ✅ |
+| Withdrawal の赤伝 → Deposit（同額） | ✅ |
+| Adjustment(>0) の赤伝 → Withdrawal | ✅ |
+| Deposit 赤伝で残高不足 → 例外、Add 呼ばれない | ✅ |
+| Withdrawal 赤伝は残高チェックなし（safeRepo 呼ばれない） | ✅ |
+| 未存在 ID → KeyNotFoundException、Add 呼ばれない | ✅ |
+| 正常時 txRepo.Add + unitOfWork.Save | ✅ |
+| 二重赤伝の防止 | ⚠️（仕様未確定） |
 
 ## 6. 業務ルール
 
