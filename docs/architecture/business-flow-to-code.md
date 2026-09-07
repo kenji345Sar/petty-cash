@@ -9,23 +9,23 @@
 | 業務用語 | システム上の名前 | 説明 |
 |---------|---------------|------|
 | 金庫 | Safe | 店舗ごとの現金管理単位 |
-| 釣り銭バッグ | ChangeBag (CA-XXX) | レジに渡す釣り銭の束 |
-| キャッシュバッグ | CashBag (BAG-XXX) | レジから回収した現金の束 |
-| 準備バッグ | PrepBag | 複数のキャッシュバッグをまとめて業者に渡す袋 |
+| 両替金バッグ | ChangeBag (CA-XXX) | レジに渡す両替金の束 |
+| 売上バッグ | CashBag (BAG-XXX) | レジから回収した現金の束 |
+| 準備バッグ | PrepBag | 複数の売上バッグをまとめて業者に渡す袋 |
 | 有高チェック | DenominationCheck | 実際の現金を数えて帳簿残高と照合する作業 |
-| 業者残高 | vendorBalance | 釣り銭・キャッシュバッグの収支合計 |
+| 業者残高 | vendorBalance | 両替金・売上バッグの収支合計 |
 | 小口残高 | pettyCashBalance | 小口現金の収支合計 |
 
 ---
 
 ## 業者管理の流れ
 
-### シナリオ1: 釣り銭バッグを作って金庫に入れる
+### シナリオ1: 両替金バッグを作って金庫に入れる
 
 ```
-【業務】レジに持っていく釣り銭を金庫に入金する
+【業務】レジに持っていく両替金を金庫に入金する
 
-【画面】業者タブ → 「釣り銭追加」ボタン → 金額・備考を入力 → 登録
+【画面】業者タブ → 「両替金追加」ボタン → 金額・備考を入力 → 登録
 
 【API】POST /api/bags/deposit
 
@@ -51,12 +51,12 @@ DepositBagUseCase.ExecuteAsync()
 
 ---
 
-### シナリオ2: 釣り銭バッグをレジに移動する
+### シナリオ2: 両替金バッグをレジに移動する
 
 ```
-【業務】金庫内の釣り銭バッグをレジへ持っていく
+【業務】金庫内の両替金バッグをレジへ持っていく
 
-【画面】業者タブ → 釣り銭バッグ一覧の「移動」ボタン
+【画面】業者タブ → 両替金バッグ一覧の「移動」ボタン
 
 【API】POST /api/bags/{id}/move
 
@@ -83,12 +83,12 @@ MoveBagToRegisterUseCase.ExecuteAsync()
 
 ---
 
-### シナリオ3: レジの現金を回収してキャッシュバッグに入れる
+### シナリオ3: レジの現金を回収して売上バッグに入れる
 
 ```
-【業務】レジの現金をキャッシュバッグに入れて金庫へ
+【業務】レジの現金を売上バッグに入れて金庫へ
 
-【画面】業者タブ → 「キャッシュバッグ追加」ボタン → 金額・備考を入力 → 登録
+【画面】業者タブ → 「売上バッグ追加」ボタン → 金額・備考を入力 → 登録
 
 【API】POST /api/cashbags/deposit
 
@@ -114,12 +114,12 @@ DepositCashBagUseCase.ExecuteAsync()
 
 ---
 
-### シナリオ4: キャッシュバッグを準備バッグにまとめる
+### シナリオ4: 売上バッグを準備バッグにまとめる
 
 ```
-【業務】複数のキャッシュバッグを1つにまとめて業者引き渡し準備をする
+【業務】複数の売上バッグを1つにまとめて業者引き渡し準備をする
 
-【画面】業者タブ → キャッシュバッグ一覧でチェック → 「CashBag→準備Bag」ボタン
+【画面】業者タブ → 売上バッグ一覧でチェック → 「CashBag→準備Bag」ボタン
 
 【API】POST /api/prepbags
 
@@ -172,7 +172,7 @@ HandOverPrepBagUseCase.ExecuteAsync()
 
 ---
 
-### シナリオ6: 有高チェック（釣り銭バッグ / キャッシュバッグ）
+### シナリオ6: 有高チェック（両替金バッグ / 売上バッグ）
 
 ```
 【業務】バッグの中身を実際に数えて、登録金額と一致するか確認する
@@ -180,8 +180,8 @@ HandOverPrepBagUseCase.ExecuteAsync()
 
 【画面】業者タブ → バッグ行の「有高」ボタン → 金種を入力 → 登録
 
-【API】POST /api/denominationchecks/changebag/{bagId}   （釣り銭バッグ）
-       POST /api/denominationchecks/cashbag/{bagId}    （キャッシュバッグ）
+【API】POST /api/denominationchecks/changebag/{bagId}   （両替金バッグ）
+       POST /api/denominationchecks/cashbag/{bagId}    （売上バッグ）
 
 【コード】
 CheckChangeBagUseCase / CheckCashBagUseCase
@@ -306,8 +306,8 @@ GET /api/vendor-dashboard?safeId=X
 GetVendorDashboardUseCase
     ├── safe_balances            → ヘッダーの残高表示
     ├── vendor_ledger_view       → 出納帳テーブル
-    ├── change_bags              → 釣り銭バッグ一覧
-    ├── cash_bags                → キャッシュバッグ一覧
+    ├── change_bags              → 両替金バッグ一覧
+    ├── cash_bags                → 売上バッグ一覧
     ├── prep_bags                → 準備バッグ一覧
     └── vendor_denomination_checks → 有高チェック履歴
 

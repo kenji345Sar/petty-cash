@@ -56,8 +56,8 @@ PettyCash.Domain/Events/
 |-----------|------|------|
 | Amount | int | 金額 |
 | Description | string | 摘要 |
-| ChangeBagId | int? | 関連する釣り銭バッグID |
-| CashBagId | int? | 関連するキャッシュバッグID |
+| ChangeBagId | int? | 関連する両替金バッグID |
+| CashBagId | int? | 関連する売上バッグID |
 | PrepBagId | int? | 関連する準備バッグID |
 
 ### 2. イベントストア（Infrastructure層）
@@ -143,9 +143,9 @@ GET /api/safes
 | UseCase | イベント | 説明 |
 |---------|---------|------|
 | CreateTransactionUseCase | MoneyDeposited / MoneyWithdrawn | 手動入出金 |
-| DepositBagUseCase | MoneyDeposited | 釣り銭バッグ入金 |
-| MoveBagToRegisterUseCase | MoneyWithdrawn | 釣り銭バッグ出金（レジへ移動） |
-| DepositCashBagUseCase | MoneyDeposited | キャッシュバッグ入金 |
+| DepositBagUseCase | MoneyDeposited | 両替金バッグ入金 |
+| MoveBagToRegisterUseCase | MoneyWithdrawn | 両替金バッグ出金（レジへ移動） |
+| DepositCashBagUseCase | MoneyDeposited | 売上バッグ入金 |
 | HandOverPrepBagUseCase | MoneyWithdrawn | 準備バッグ引渡 |
 
 ## マイグレーション

@@ -107,7 +107,7 @@ export function DenominationCheckPage({ bags, cashBags, prepBags, onDone }: Prop
       <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 16 }}>
         <label style={{ fontWeight: "bold" }}>バッグ種別:</label>
         <div style={{ display: "flex", gap: 4 }}>
-          {([["change", "釣り銭"], ["cash", "キャッシュ"], ["prep", "準備"]] as const).map(([type, label]) => (
+          {([["change", "両替金"], ["cash", "キャッシュ"], ["prep", "準備"]] as const).map(([type, label]) => (
             <button
               key={type}
               className={bagType === type ? "btn-period active" : "btn-period"}

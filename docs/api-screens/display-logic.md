@@ -7,8 +7,8 @@ App.tsx（メインコンテナ）
 ├── 金庫セレクター（ヘッダー）
 └── TransactionList.tsx（メインコンテンツ）
     ├── 出納帳テーブル
-    ├── BagList.tsx（釣り銭バッグ管理）
-    ├── CashBagList.tsx（キャッシュバッグ管理）
+    ├── BagList.tsx（両替金バッグ管理）
+    ├── CashBagList.tsx（売上バッグ管理）
     └── DenominationCheckPage.tsx（有高チェック）
 ```
 
@@ -56,8 +56,8 @@ useEffect(() => {
 
 | API | 取得データ | 用途 |
 |-----|-----------|------|
-| `GET /api/bags?safeId=X` | ChangeBag[] | 釣り銭バッグ一覧 |
-| `GET /api/cashbags?safeId=X` | CashBag[] | キャッシュバッグ一覧 |
+| `GET /api/bags?safeId=X` | ChangeBag[] | 両替金バッグ一覧 |
+| `GET /api/cashbags?safeId=X` | CashBag[] | 売上バッグ一覧 |
 | `GET /api/transactions?safeId=X` | Transaction[] | 出納帳の取引一覧 |
 | `GET /api/denominationchecks?safeId=X` | DenominationCheck[] | 金種チェック履歴 |
 | `GET /api/prepbags?safeId=X` | PrepBag[] | 準備バッグ一覧 |
@@ -90,8 +90,8 @@ SafeIdは各エンティティの外部キーとしてDB上に存在し、WHERE�
 ### バッグ列の表示ロジック
 
 ```
-changeBagId != null → 釣り銭バッグから検索 → 「釣り銭#ID 金額円」
-cashBagId != null   → キャッシュバッグから検索 → 「キャッシュ#ID 金額円」
+changeBagId != null → 両替金バッグから検索 → 「両替金#ID 金額円」
+cashBagId != null   → 売上バッグから検索 → 「キャッシュ#ID 金額円」
 prepBagId != null   → 準備バッグから検索 → 「準備#ID 金額円」
 いずれもnull        → 「-」を表示（手動入出金）
 ```

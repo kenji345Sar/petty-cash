@@ -29,9 +29,9 @@
 
 | テスト観点 | 保証する仕様 | テストケース名 | 層 | 種別 | 結果 | 備考 |
 |---|---|---|---|---|---|---|
-| CashBag複数枚の合計 | TotalAmount = CashBagの合計金額 | `Create_キャッシュバッグの合計が金額になる` | Domain | 正常系 | ✅ | |
+| CashBag複数枚の合計 | TotalAmount = CashBagの合計金額 | `Create_売上バッグの合計が金額になる` | Domain | 正常系 | ✅ | |
 | 空リスト禁止 | CashBag 0枚で例外 | `Create_空リストは例外` | Domain | 異常系 | ✅ | |
-| 初期ステータス | 作成直後はPreparing | `Create_キャッシュバッグの合計が金額になる` | Domain | 状態遷移 | ✅ | StatusをAssert |
+| 初期ステータス | 作成直後はPreparing | `Create_売上バッグの合計が金額になる` | Domain | 状態遷移 | ✅ | StatusをAssert |
 | 正常保存 ★ | prepRepo.Add + UoW.Save が呼ばれる | `正常作成でprepRepoAddとunitOfWorkSaveが呼ばれる` | App | 正常系/保存有無 | ✅ | |
 | CashBag未存在 ★ | KeyNotFoundException、保存されない | `CashBag未存在でKeyNotFoundExceptionでprepRepoは呼ばれない` | App | 異常系/保存有無 | ✅ | |
 | IDs空リスト ★ | ArgumentException、保存されない | `CashBagIds空でArgumentExceptionでprepRepoは呼ばれない` | App | 異常系/保存有無 | ✅ | |
@@ -96,7 +96,7 @@
 
 ### 2.5 ChangeBagレジ移動
 
-> 金庫内の釣銭バッグ（ChangeBag）をレジへ移動し、出金取引を生成する操作。
+> 金庫内の両替金バッグ（ChangeBag）をレジへ移動し、出金取引を生成する操作。
 
 | テスト観点 | 保証する仕様 | テストケース名 | 層 | 種別 | 結果 | 備考 |
 |---|---|---|---|---|---|---|
@@ -276,7 +276,7 @@ if (Status == PrepBagStatus.Cancelled)
 | 禁止とした場合に追加するテスト | `UpdateAmount_MovedToRegister後は例外` |
 | 禁止とした場合に必要な実装 | `UpdateAmount` に `if (Status == BagStatus.MovedToRegister) throw ...` を追加 |
 
-> 参照: [vendor.md — 2.1 釣銭バッグ](./spec/vendor.md#21-釣銭バッグchangebag-表示-ca-xxx)
+> 参照: [vendor.md — 2.1 両替金バッグ](./spec/vendor.md#21-両替金バッグchangebag-表示-ca-xxx)
 
 ---
 

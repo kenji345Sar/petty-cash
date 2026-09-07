@@ -6,18 +6,18 @@ using PettyCash.Domain.Vendor.Ledger;
 namespace PettyCash.Domain.Vendor.BagManagement;
 
 /// <summary>
-/// 準備バッグ。複数のキャッシュバッグをまとめて業者へ引き渡すための単位。
+/// 準備バッグ。複数の売上バッグをまとめて業者へ引き渡すための単位。
 ///
 /// 【ライフサイクル】
 ///   作成（複数CashBagをまとめる）→ 引渡 or 取消
 ///
 /// 【業務ルール】
-///   - 1つ以上のキャッシュバッグが必要
-///   - 既に別の準備バッグに含まれているキャッシュバッグは追加できない
-///   - 合計金額は含まれるキャッシュバッグの合計から自動算出される
+///   - 1つ以上の売上バッグが必要
+///   - 既に別の準備バッグに含まれている売上バッグは追加できない
+///   - 合計金額は含まれる売上バッグの合計から自動算出される
 ///   - 引渡時に出金取引（VendorTransaction）が自動生成される
 ///   - 引渡済みの準備バッグは取消できない
-///   - 取消するとキャッシュバッグとの紐づけが解除され、再割り当て可能になる
+///   - 取消すると売上バッグとの紐づけが解除され、再割り当て可能になる
 /// </summary>
 public class PrepBag
 {
@@ -42,12 +42,12 @@ public class PrepBag
     public static PrepBag Create(int safeId, IReadOnlyList<CashBag> cashBags, DateTime date)
     {
         if (cashBags.Count == 0)
-            throw new ArgumentException("キャッシュバッグを1つ以上選択してください。");
+            throw new ArgumentException("売上バッグを1つ以上選択してください。");
 
         foreach (var cashBag in cashBags)
         {
             if (cashBag.PrepBagId != null)
-                throw new InvalidOperationException($"キャッシュバッグ(ID={cashBag.Id})は既に準備バッグに含まれています。");
+                throw new InvalidOperationException($"売上バッグ(ID={cashBag.Id})は既に準備バッグに含まれています。");
         }
 
         var bag = new PrepBag

@@ -67,9 +67,9 @@ export function BagList({ safeId, bags, denomChecks, onUpdate }: Props) {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h3 style={{ margin: 0 }}>釣り銭バッグ一覧</h3>
+        <h3 style={{ margin: 0 }}>両替金バッグ一覧</h3>
         <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
-          {showForm ? "閉じる" : "釣り銭追加"}
+          {showForm ? "閉じる" : "両替金追加"}
         </button>
       </div>
 
@@ -84,7 +84,7 @@ export function BagList({ safeId, bags, denomChecks, onUpdate }: Props) {
             </div>
             <div>
               <label>備考</label>
-              <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} style={{ marginLeft: 8, width: 300 }} placeholder="例: 釣り銭準備金" />
+              <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} style={{ marginLeft: 8, width: 300 }} placeholder="例: 両替金準備金" />
             </div>
             <div>
               <label>日付</label>

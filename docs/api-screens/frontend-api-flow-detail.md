@@ -3,14 +3,14 @@
 ## 概要
 
 現在のフロントエンドは、アクション実行後にタブ内の全データを再取得する設計になっている。
-ここでは「釣り銭バッグのレジへ移動」を例に、実際のHTTPリクエストの流れを解説する。
+ここでは「両替金バッグのレジへ移動」を例に、実際のHTTPリクエストの流れを解説する。
 
 ---
 
-## 例：釣り銭バッグをレジへ移動する場合
+## 例：両替金バッグをレジへ移動する場合
 
 ### ユーザー操作
-業者タブ → 釣り銭バッグ一覧 → 「レジへ移動」ボタンをクリック
+業者タブ → 両替金バッグ一覧 → 「レジへ移動」ボタンをクリック
 
 ### 発生するHTTPリクエスト（合計6回）
 
@@ -23,8 +23,8 @@
        │  成功後、onUpdate() が呼ばれる
        │  → VendorTab.handleUpdate() → loadData() + loadSafes()
        ▼
-  ② GET /api/bags?safeId=1            ← 釣り銭バッグ一覧の再取得
-  ③ GET /api/cashbags?safeId=1        ← キャッシュバッグ一覧の再取得
+  ② GET /api/bags?safeId=1            ← 両替金バッグ一覧の再取得
+  ③ GET /api/cashbags?safeId=1        ← 売上バッグ一覧の再取得
   ④ GET /api/vendor-transactions?safeId=1  ← 業者出納帳の再取得
   ⑤ GET /api/denominationchecks/vendor?safeId=1  ← 有高チェック履歴の再取得
   ⑥ GET /api/prepbags?safeId=1        ← 準備バッグ一覧の再取得
@@ -97,9 +97,9 @@ public async Task<VendorTransactionDto> ExecuteAsync(int bagId)
 
 | アクション | API呼び出し | 再取得 |
 |-----------|-----------|--------|
-| 釣り銭バッグ入金 | POST /api/bags/deposit | 5 + 1 = 6回 |
+| 両替金バッグ入金 | POST /api/bags/deposit | 5 + 1 = 6回 |
 | レジへ移動 | POST /api/bags/{id}/move | 5 + 1 = 6回 |
-| キャッシュバッグ入金 | POST /api/cashbags/deposit | 5 + 1 = 6回 |
+| 売上バッグ入金 | POST /api/cashbags/deposit | 5 + 1 = 6回 |
 | 準備バッグ作成 | POST /api/prepbags | 5 + 1 = 6回 |
 | 準備バッグ引渡 | POST /api/prepbags/{id}/handover | 5 + 1 = 6回 |
 | 有高チェック | POST /api/denominationchecks/... | 5 + 1 = 6回 |

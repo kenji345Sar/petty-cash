@@ -210,8 +210,8 @@ GetPettyCashDashboardUseCase.ExecuteAsync()
 | vendor_ledger_view | Read Model（業者出納帳） | **読み込みのみ** |
 | petty_cash_ledger_view | Read Model（小口出納帳） | **読み込みのみ** |
 | safes | 金庫マスタ | 読み書き |
-| change_bags | 釣り銭バッグ | 読み書き |
-| cash_bags | キャッシュバッグ | 読み書き |
+| change_bags | 両替金バッグ | 読み書き |
+| cash_bags | 売上バッグ | 読み書き |
 | prep_bags | 準備バッグ | 読み書き |
 | vendor_denomination_checks | 有高チェック記録 | 読み書き |
 | safe_denomination_checks | 有高チェック記録 | 読み書き |

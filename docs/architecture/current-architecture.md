@@ -153,7 +153,7 @@ CheckSafeUseCase.ExecuteAsync()
 
 ## 2. 業者管理の処理フロー
 
-### 2-1. 釣り銭バッグ入金
+### 2-1. 両替金バッグ入金
 
 ```
 フロント: POST /api/bags/deposit
@@ -170,7 +170,7 @@ DepositBagUseCase.ExecuteAsync()
 DB: change_bags に1行INSERT + vendor_transactions に1行INSERT
 ```
 
-### 2-2. 釣り銭バッグ → レジ移動（出金）
+### 2-2. 両替金バッグ → レジ移動（出金）
 
 ```
 フロント: POST /api/bags/{id}/move
@@ -188,7 +188,7 @@ MoveBagToRegisterUseCase.ExecuteAsync()
 DB: change_bags を UPDATE（status変更）+ vendor_transactions に1行INSERT
 ```
 
-### 2-3. キャッシュバッグ入金
+### 2-3. 売上バッグ入金
 
 ```
 フロント: POST /api/cashbags/deposit
@@ -223,7 +223,7 @@ HandOverPrepBagUseCase.ExecuteAsync()
 DB: prep_bags を UPDATE + vendor_transactions に1行INSERT
 ```
 
-### 2-5. 有高チェック（釣り銭バッグ / キャッシュバッグ）
+### 2-5. 有高チェック（両替金バッグ / 売上バッグ）
 
 ```
 フロント: POST /api/denominationchecks/changebag/{bagId}
@@ -323,8 +323,8 @@ GetSafesUseCase.ExecuteAsync()
 | テーブル | 役割 | 読み書き |
 |---------|------|---------|
 | safes | 金庫マスタ（残高はbalance列から都度算出） | 読み書き |
-| change_bags | 釣り銭バッグ | 読み書き |
-| cash_bags | キャッシュバッグ | 読み書き |
+| change_bags | 両替金バッグ | 読み書き |
+| cash_bags | 売上バッグ | 読み書き |
 | prep_bags | 準備バッグ | 読み書き |
 | **vendor_transactions** | **業者取引（イベントストア相当）** | **読み書き ← 問題** |
 | **petty_cash_transactions** | **小口取引（イベントストア相当）** | **読み書き ← 問題** |

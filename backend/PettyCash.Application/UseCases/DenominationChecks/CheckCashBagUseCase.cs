@@ -18,7 +18,7 @@ public class CheckCashBagUseCase(
     public async Task<DenominationCheckDto> ExecuteAsync(int bagId, DenominationCheckRequestDto dto)
     {
         var bag = await bagRepository.GetByIdAsync(bagId)
-            ?? throw new KeyNotFoundException($"キャッシュバッグ(ID={bagId})が見つかりません。");
+            ?? throw new KeyNotFoundException($"売上バッグ(ID={bagId})が見つかりません。");
 
         var now = DateTime.UtcNow;
         var denomination = new Denomination(

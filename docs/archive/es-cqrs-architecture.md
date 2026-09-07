@@ -109,7 +109,7 @@ CreatePettyCashTransactionUseCase.ExecuteAsync()
     └── unitOfWork.SaveChangesAsync()
 ```
 
-### 1-2. 釣り銭バッグ入金
+### 1-2. 両替金バッグ入金
 
 ```
 フロント: POST /api/bags/deposit
@@ -129,7 +129,7 @@ DepositBagUseCase.ExecuteAsync()
     └── unitOfWork.SaveChangesAsync()
 ```
 
-### 1-3. 釣り銭バッグ → レジ移動（出金）
+### 1-3. 両替金バッグ → レジ移動（出金）
 
 ```
 フロント: POST /api/bags/{id}/move
@@ -149,7 +149,7 @@ MoveBagToRegisterUseCase.ExecuteAsync()
     └── unitOfWork.SaveChangesAsync()
 ```
 
-### 1-4. キャッシュバッグ入金
+### 1-4. 売上バッグ入金
 
 ```
 フロント: POST /api/cashbags/deposit
@@ -287,7 +287,7 @@ CREATE TABLE domain_events (
 
 | event_type | 発生条件 | payload内容 |
 |-----------|---------|------------|
-| VendorMoneyDeposited | 釣り銭/キャッシュバッグ入金 | safeId, amount, balance, description, changeBagId/cashBagId |
+| VendorMoneyDeposited | 両替金/売上バッグ入金 | safeId, amount, balance, description, changeBagId/cashBagId |
 | VendorMoneyWithdrawn | レジ移動/準備バッグ引渡 | safeId, amount, balance, description, changeBagId/prepBagId |
 | VendorBalanceAdjusted | 有高チェック差額調整 | safeId, amount, balance, description |
 | PettyCashDeposited | 小口入金 | safeId, amount, balance, description |
@@ -319,8 +319,8 @@ CREATE TABLE domain_events (
 | **vendor_ledger_view** | **Read Model（業者出納帳）** | **読み込みのみ** |
 | **petty_cash_ledger_view** | **Read Model（小口出納帳）** | **読み込みのみ** |
 | safes | 金庫マスタ | 読み書き |
-| change_bags | 釣り銭バッグ | 読み書き |
-| cash_bags | キャッシュバッグ | 読み書き |
+| change_bags | 両替金バッグ | 読み書き |
+| cash_bags | 売上バッグ | 読み書き |
 | prep_bags | 準備バッグ | 読み書き |
 | vendor_denomination_checks | 有高チェック記録 | 読み書き |
 | safe_denomination_checks | 有高チェック記録 | 読み書き |

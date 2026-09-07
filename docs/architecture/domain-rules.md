@@ -45,7 +45,7 @@ UseCase は `safe.EnsureCanWithdraw(amount)` を呼ぶだけ。
 
 ---
 
-## ChangeBag（釣り銭バッグ）の業務ルール
+## ChangeBag（両替金バッグ）の業務ルール
 
 ```csharp
 // backend/PettyCash.Domain/Vendor/BagManagement/ChangeBag.cs
@@ -87,7 +87,7 @@ public VendorTransaction MoveToRegister(DateTime movedAt)
 
 | ルール | コード |
 |-------|-------|
-| キャッシュバッグを1つ以上必要 | `if (cashBags.Count == 0) throw` |
+| 売上バッグを1つ以上必要 | `if (cashBags.Count == 0) throw` |
 | 他の準備バッグに含まれているバッグは追加不可 | `if (cashBag.PrepBagId != null) throw` |
 | 合計金額はバッグの合算で自動算出 | `cashBags.Sum(b => b.TotalAmount)` |
 | 引渡済みは取消できない | `if (Status == HandedOver) throw` |
@@ -120,7 +120,7 @@ UseCase がこれらを呼ぶことで、業務ルール違反は自動的にエ
 
 ```csharp
 /// <summary>
-/// 釣り銭バッグ。業者から受け取った釣り銭を金庫で保管し、必要に応じてレジへ移動する。
+/// 両替金バッグ。業者から受け取った両替金を金庫で保管し、必要に応じてレジへ移動する。
 ///
 /// 【業務ルール】
 ///   - 入金時は金種表の入力が必須（金額直接入力は不可）

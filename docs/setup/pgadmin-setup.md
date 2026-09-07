@@ -101,8 +101,8 @@ petty-cash-local
 
 | テーブル名 | 内容 |
 |-----------|------|
-| `change_bags` | 釣り銭バッグ（金庫管理） |
-| `cash_bags` | キャッシュバッグ（レジ管理） |
+| `change_bags` | 両替金バッグ（金庫管理） |
+| `cash_bags` | 売上バッグ（レジ管理） |
 | `transactions` | 出納帳（全ての入金・出金記録） |
 | `denomination_checks` | 金種チェック記録 |
 

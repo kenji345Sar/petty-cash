@@ -24,13 +24,13 @@ public class UpdateVendorDenominationCheckUseCase(
         if (check.ChangeBagId.HasValue)
         {
             var bag = await changeBagRepository.GetByIdAsync(check.ChangeBagId.Value)
-                ?? throw new KeyNotFoundException($"釣り銭バッグ(ID={check.ChangeBagId})が見つかりません。");
+                ?? throw new KeyNotFoundException($"両替金バッグ(ID={check.ChangeBagId})が見つかりません。");
             expectedAmount = bag.TotalAmount;
         }
         else if (check.CashBagId.HasValue)
         {
             var bag = await cashBagRepository.GetByIdAsync(check.CashBagId.Value)
-                ?? throw new KeyNotFoundException($"キャッシュバッグ(ID={check.CashBagId})が見つかりません。");
+                ?? throw new KeyNotFoundException($"売上バッグ(ID={check.CashBagId})が見つかりません。");
             expectedAmount = bag.TotalAmount;
         }
         else if (check.PrepBagId.HasValue)

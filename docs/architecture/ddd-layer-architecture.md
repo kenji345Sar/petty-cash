@@ -86,7 +86,7 @@ UseCaseが全てを**つなぐ**役割。ドメインもインフラも直接は
   VendorTransaction.cs      … 業者取引のルール（ファクトリメソッド等）
   PettyCashTransaction.cs   … 小口取引のルール
   Safe.cs                   … 金庫（残高チェック等）
-  ChangeBag.cs              … 釣り銭バッグ（状態遷移等）
+  ChangeBag.cs              … 両替金バッグ（状態遷移等）
 
 値オブジェクト:
   Denomination.cs           … 金種（10000円×3枚、5000円×2枚...）

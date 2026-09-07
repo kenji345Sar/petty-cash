@@ -15,7 +15,7 @@ public class CreatePrepBagUseCase(ICashBagRepository cashBagRepository, IPrepBag
         foreach (var id in dto.CashBagIds)
         {
             var cashBag = await cashBagRepository.GetByIdAsync(id)
-                ?? throw new KeyNotFoundException($"キャッシュバッグ(ID={id})が見つかりません。");
+                ?? throw new KeyNotFoundException($"売上バッグ(ID={id})が見つかりません。");
             cashBags.Add(cashBag);
         }
 

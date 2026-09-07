@@ -21,20 +21,20 @@
 
 ### ユーザー操作時（各ボタン押下で呼ばれるAPI）
 
-#### 釣り銭バッグ（BagList コンポーネント）
+#### 両替金バッグ（BagList コンポーネント）
 
 | 操作 | API | コントローラー |
 |---|---|---|
-| 釣り銭追加 → 入金する | POST `/api/bags/deposit` | BagsController |
+| 両替金追加 → 入金する | POST `/api/bags/deposit` | BagsController |
 | 移動ボタン | POST `/api/bags/{id}/move` | BagsController |
 | 有高ボタン（新規チェック） | POST `/api/denominationchecks/changebag/{id}` | DenominationChecksController |
 | 有高行クリック（修正） | PUT `/api/denominationchecks/vendor/{id}` | DenominationChecksController |
 
-#### キャッシュバッグ（CashBagList コンポーネント）
+#### 売上バッグ（CashBagList コンポーネント）
 
 | 操作 | API | コントローラー |
 |---|---|---|
-| キャッシュバッグ追加 → 入金する | POST `/api/cashbags/deposit` | CashBagsController |
+| 売上バッグ追加 → 入金する | POST `/api/cashbags/deposit` | CashBagsController |
 | 有高ボタン（新規チェック） | POST `/api/denominationchecks/cashbag/{id}` | DenominationChecksController |
 | 有高行クリック（修正） | PUT `/api/denominationchecks/vendor/{id}` | DenominationChecksController |
 

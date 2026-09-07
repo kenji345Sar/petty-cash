@@ -143,8 +143,8 @@ HTTPリクエスト開始
 | DbSet プロパティ | テーブル名 | 分類 |
 |----------------|----------|------|
 | `Safes` | `safes` | 金庫 |
-| `ChangeBags` | `change_bags` | 釣り銭バッグ |
-| `CashBags` | `cash_bags` | キャッシュバッグ |
+| `ChangeBags` | `change_bags` | 両替金バッグ |
+| `CashBags` | `cash_bags` | 売上バッグ |
 | `PrepBags` | `prep_bags` | 準備バッグ |
 | `VendorTransactions` | `vendor_transactions` | 業者取引 |
 | `PettyCashTransactions` | `petty_cash_transactions` | 小口取引 |

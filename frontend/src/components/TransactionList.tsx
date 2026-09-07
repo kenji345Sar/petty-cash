@@ -237,7 +237,7 @@ export function TransactionList({ safeId, transactions, denomChecks, bags, cashB
                 style={{ marginLeft: 8, width: 300 }}
                 placeholder={view === "petty"
                   ? (txType === "Deposit" ? "例: レジから金庫へ" : "例: 金庫からレジへ")
-                  : (txType === "Deposit" ? "例: 釣り銭配達" : "例: 売上引渡")}
+                  : (txType === "Deposit" ? "例: 両替金配達" : "例: 売上引渡")}
               />
             </div>
             <div>

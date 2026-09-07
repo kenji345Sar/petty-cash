@@ -16,7 +16,7 @@ public class PrepBagTests
         CashBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, MakeDenom(0, yen5000, yen1000));
 
     [Fact]
-    public void Create_キャッシュバッグの合計が金額になる()
+    public void Create_売上バッグの合計が金額になる()
     {
         var cb1 = CreateCashBag(1, 0); // 5000
         var cb2 = CreateCashBag(0, 3); // 3000

@@ -8,8 +8,8 @@ namespace PettyCash.Domain.Vendor.Ledger;
 /// 業者取引。業者との間で発生する入出金・調整の記録（業者出納帳の1行）。
 ///
 /// 【取引種別】
-///   - 入金（Deposit）: 釣り銭バッグ/キャッシュバッグの金庫への入金
-///   - 出金（Withdrawal）: 釣り銭バッグのレジ移動、準備バッグの業者引渡
+///   - 入金（Deposit）: 両替金バッグ/売上バッグの金庫への入金
+///   - 出金（Withdrawal）: 両替金バッグのレジ移動、準備バッグの業者引渡
 ///   - 調整（Adjustment）: 有高チェックで差額が出た場合の自動調整
 ///
 /// 【業務ルール】
@@ -63,7 +63,7 @@ public class VendorTransaction
             ChangeBag = bag,
             Type = TransactionType.Deposit,
             Amount = amount,
-            Description = string.IsNullOrWhiteSpace(description) ? "釣り銭バッグ入金" : description,
+            Description = string.IsNullOrWhiteSpace(description) ? "両替金バッグ入金" : description,
             Denomination = denomination,
             CreatedAt = date
         };
@@ -77,7 +77,7 @@ public class VendorTransaction
             ChangeBag = bag,
             Type = TransactionType.Withdrawal,
             Amount = amount,
-            Description = "釣り銭バッグ出金（レジへ移動）",
+            Description = "両替金バッグ出金（レジへ移動）",
             CreatedAt = date
         };
     }
@@ -90,7 +90,7 @@ public class VendorTransaction
             CashBag = bag,
             Type = TransactionType.Deposit,
             Amount = amount,
-            Description = string.IsNullOrWhiteSpace(bag.Description) ? "キャッシュバッグ入金（レジから金庫へ）" : bag.Description,
+            Description = string.IsNullOrWhiteSpace(bag.Description) ? "売上バッグ入金（レジから金庫へ）" : bag.Description,
             Denomination = denomination,
             CreatedAt = date
         };
@@ -104,7 +104,7 @@ public class VendorTransaction
             ChangeBag = bag,
             Type = TransactionType.Adjustment,
             Amount = difference,
-            Description = $"釣り銭バッグ#{bag.Id} 有高調整（{(difference > 0 ? "+" : "")}{difference:N0}円）",
+            Description = $"両替金バッグ#{bag.Id} 有高調整（{(difference > 0 ? "+" : "")}{difference:N0}円）",
             CreatedAt = date
         };
     }
@@ -117,7 +117,7 @@ public class VendorTransaction
             CashBag = bag,
             Type = TransactionType.Adjustment,
             Amount = difference,
-            Description = $"キャッシュバッグ#{bag.Id} 有高調整（{(difference > 0 ? "+" : "")}{difference:N0}円）",
+            Description = $"売上バッグ#{bag.Id} 有高調整（{(difference > 0 ? "+" : "")}{difference:N0}円）",
             CreatedAt = date
         };
     }

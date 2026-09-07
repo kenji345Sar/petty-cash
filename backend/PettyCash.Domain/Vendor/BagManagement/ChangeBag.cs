@@ -7,7 +7,7 @@ using PettyCash.Domain.Vendor.Ledger;
 namespace PettyCash.Domain.Vendor.BagManagement;
 
 /// <summary>
-/// 釣り銭バッグ。業者から受け取った釣り銭を金庫で保管し、必要に応じてレジへ移動する。
+/// 両替金バッグ。業者から受け取った両替金を金庫で保管し、必要に応じてレジへ移動する。
 ///
 /// 【ライフサイクル】
 ///   入金（金庫に保管）→ レジへ移動

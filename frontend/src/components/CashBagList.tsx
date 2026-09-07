@@ -141,9 +141,9 @@ export function CashBagList({ safeId, bags, allBags, prepBags, denomChecks, onUp
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h3 style={{ margin: 0 }}>キャッシュバッグ一覧</h3>
+        <h3 style={{ margin: 0 }}>売上バッグ一覧</h3>
         <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
-          {showForm ? "閉じる" : "キャッシュバッグ追加"}
+          {showForm ? "閉じる" : "売上バッグ追加"}
         </button>
       </div>
 

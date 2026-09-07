@@ -28,8 +28,8 @@ UseCase が並行して5種類のデータを取得し、`VendorDashboardDto` �
 ```
 VendorDashboardDto {
     Safe              ← 金庫情報 + 残高
-    Bags              ← 釣り銭バッグ一覧
-    CashBags          ← キャッシュバッグ一覧
+    Bags              ← 両替金バッグ一覧
+    CashBags          ← 売上バッグ一覧
     Transactions      ← 業者出納帳
     DenominationChecks← 有高チェック履歴
     PrepBags          ← 準備バッグ一覧
@@ -77,7 +77,7 @@ SafeRepository.GetByIdAsync()
 
 ---
 
-## 釣り銭バッグ一覧
+## 両替金バッグ一覧
 
 ```
 表示: CA-001  200,000円  (備考なし)  金庫内  2026/6/3 9:00:00  -  [移動][有高]
@@ -113,7 +113,7 @@ VendorTab.tsx
 
 ---
 
-## キャッシュバッグ一覧
+## 売上バッグ一覧
 
 ```
 表示: BAG-XXX  金額  備考  入金日時  操作
@@ -233,5 +233,5 @@ GetVendorDenominationChecksUseCase.ExecuteAsync(safeId)
 | 残高取得 | `backend/PettyCash.Infrastructure/Repositories/SafeRepository.cs` |
 | 出納帳取得 | `backend/PettyCash.Infrastructure/Queries/VendorLedgerQueryService.cs` |
 | バッグ取得 | `backend/PettyCash.Infrastructure/Repositories/ChangeBagRepository.cs` |
-| キャッシュバッグ取得 | `backend/PettyCash.Infrastructure/Repositories/CashBagRepository.cs` |
+| 売上バッグ取得 | `backend/PettyCash.Infrastructure/Repositories/CashBagRepository.cs` |
 | 準備バッグ取得 | `backend/PettyCash.Infrastructure/Repositories/PrepBagRepository.cs` |
