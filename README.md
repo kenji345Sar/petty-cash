@@ -56,6 +56,22 @@ cd backend/PettyCash.Api && dotnet run
 cd frontend && nvm use && npm run dev
 ```
 
+## Docker で本番構成を起動する
+
+接続情報は `.env` から読み込む。`POSTGRES_PASSWORD` は必須で、未設定の場合は起動が中止される。
+
+```bash
+cp .env.example .env
+# .env を編集して POSTGRES_PASSWORD を推測できない値にする
+#   例: openssl rand -base64 32
+
+docker compose -f docker-compose.prod.yml up -d
+```
+
+**注意:** `POSTGRES_PASSWORD` には推測できない値を設定すること。
+
+`.env` は Git 管理外（`.gitignore` 済み）。設定できる項目は `.env.example` を参照。
+
 ## プロジェクト構成
 
 ```

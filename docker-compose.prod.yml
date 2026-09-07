@@ -2,13 +2,13 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: petty_cash
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-petty_cash}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -21,10 +21,10 @@ services:
     ports:
       - "5141:5141"
     environment:
-      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=petty_cash;Username=postgres;Password=postgres"
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB:-petty_cash};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"
       ASPNETCORE_ENVIRONMENT: Production
-      CorsOrigins__0: "http://localhost:8080"
-      CorsOrigins__1: "http://localhost"
+      CorsOrigins__0: "${CORS_ORIGIN_0:-http://localhost:8080}"
+      CorsOrigins__1: "${CORS_ORIGIN_1:-http://localhost}"
     depends_on:
       db:
         condition: service_healthy
