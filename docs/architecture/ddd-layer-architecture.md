@@ -9,7 +9,7 @@ PettyCash.Api（API層）
 PettyCash.Application（アプリケーション層）
   ├── UseCases/              … ドメインとインフラを仲介する
   ├── Dtos/                  … 外部とのデータ受け渡し用
-  └── UseCases/Queries/      … Read Model読み込み用インターフェース
+  └── UseCases/Queries/      … 出納帳読み込み用インターフェース（QueryService）
 
 PettyCash.Domain（ドメイン層）
   ├── Vendor/                … 業者ドメイン（エンティティ、リポジトリIF）
@@ -20,9 +20,8 @@ PettyCash.Domain（ドメイン層）
 PettyCash.Infrastructure（インフラ層）
   ├── Data/                  … DbContext（DB接続）
   ├── Repositories/          … リポジトリ実装（DB読み書き）
-  ├── Services/              … ドメインサービス実装（EventStore等）
-  ├── Queries/               … QueryService実装（Read Model読み込み）
-  └── ReadModels/            … Read Modelエンティティ
+  ├── Services/              … ドメインサービス実装（採番・残高計算）
+  └── Queries/               … QueryService実装（出納帳の読み込み）
 ```
 
 ---
@@ -60,10 +59,8 @@ public async Task<PettyCashTransactionDto> ExecuteAsync(...)
     await sequenceNumberService.AssignAsync(transaction);
     await balanceService.AssignBalanceAsync(transaction);
 
-    // 3. インフラ操作（DB保存）
+    // 3. インフラ操作（DB保存の予約）
     await transactionRepository.AddAsync(transaction);
-    await eventStore.AppendAsync(transaction);
-    await projectionService.ProjectAsync(transaction);
 
     // 4. コミット
     await unitOfWork.SaveChangesAsync();
@@ -99,9 +96,7 @@ UseCaseが全てを**つなぐ**役割。ドメインもインフラも直接は
   IChangeBagRepository.cs   … 「バッグを取得・保存できる」という契約
 
 ドメインサービス インターフェース（契約だけ）:
-  IEventStore.cs            … 「イベントを記録できる」という契約
   IBalanceService.cs        … 「残高を計算できる」という契約
-  IProjectionService.cs     … 「Read Modelを更新できる」という契約
   ISequenceNumberService.cs … 「採番できる」という契約
   IUnitOfWork.cs            … 「コミットできる」という契約
 ```
@@ -119,14 +114,12 @@ UseCaseが全てを**つなぐ**役割。ドメインもインフラも直接は
   ChangeBagRepository.cs    … IChangeBagRepository の実装
 
 ドメインサービス実装:
-  EventStore.cs             … IEventStore の実装（domain_eventsテーブルにINSERT）
-  BalanceService.cs         … IBalanceService の実装（SQLでbalance取得）
-  ProjectionService.cs      … IProjectionService の実装（Read Modelテーブル更新）
+  BalanceService.cs         … IBalanceService の実装（直前の取引行のbalanceを取得して加算）
   SequenceNumberService.cs  … ISequenceNumberService の実装（SQLでMAX+1取得）
 
 QueryService実装:
-  VendorLedgerQueryService.cs      … Read Modelから業者出納帳を取得
-  PettyCashLedgerQueryService.cs   … Read Modelから小口出納帳を取得
+  VendorLedgerQueryService.cs      … vendor_transactions から業者出納帳を取得
+  PettyCashLedgerQueryService.cs   … petty_cash_transactions から小口出納帳を取得
 
 DbContext:
   PettyCashDbContext.cs     … EF Core のDB接続・テーブルマッピング
@@ -166,8 +159,8 @@ Program.csでDI登録することで、実行時にインターフェースと�
 ```csharp
 // Program.cs
 builder.Services.AddScoped<ISafeRepository, SafeRepository>();
-builder.Services.AddScoped<IEventStore, EventStore>();
-// → UseCaseが IEventStore を要求すると、EventStore が注入される
+builder.Services.AddScoped<IBalanceService, BalanceService>();
+// → UseCaseが IBalanceService を要求すると、BalanceService が注入される
 ```
 
 テスト時は実装をモックに差し替えられる：
@@ -179,9 +172,7 @@ var useCase = new CreatePettyCashTransactionUseCase(
     Mock.Of<ISafeRepository>(),
     Mock.Of<ISequenceNumberService>(),
     Mock.Of<IBalanceService>(),
-    Mock.Of<IProjectionService>(),
-    Mock.Of<IEventStore>(),                      // イベントを記録しないモック
-    Mock.Of<IUnitOfWork>()
+    Mock.Of<IUnitOfWork>()                       // コミットしないモック
 );
 ```
 
@@ -219,16 +210,11 @@ var useCase = new CreatePettyCashTransactionUseCase(
    → sequenceNumberService.AssignAsync()     Domain層のサービス（IF）→ Infrastructure層（実装）
    → balanceService.AssignBalanceAsync()     同上
    → transactionRepository.AddAsync()        Domain層のリポジトリ（IF）→ Infrastructure層（実装）
-   → eventStore.AppendAsync()                同上
-   → projectionService.ProjectAsync()        同上
    → unitOfWork.SaveChangesAsync()           コミット
 
 4. Infrastructure層: 各実装がDBにアクセス
-   → petty_cash_transactions にINSERT
-   → domain_events にINSERT
-   → petty_cash_ledger_view にINSERT
-   → safe_balances をUPDATE
-   → 全て同一トランザクションでコミット
+   → petty_cash_transactions の直前の balance を読んで新しい残高を計算
+   → petty_cash_transactions にINSERT（残高は取引行の balance 列に保存）
 
 5. Application層: UseCase がDTOに変換して返す
    → PettyCashTransactionDto
@@ -246,12 +232,15 @@ var useCase = new CreatePettyCashTransactionUseCase(
 | エンティティ（VendorTransaction等） | Domain層 | ビジネスルールだから |
 | 値オブジェクト（Denomination） | Domain層 | ビジネスルールだから |
 | リポジトリIF（ISafeRepository） | Domain層 | 契約（何ができるか）はドメインの関心事 |
-| ドメインサービスIF（IEventStore等） | Domain層 | 同上 |
+| ドメインサービスIF（IBalanceService等） | Domain層 | 同上 |
 | リポジトリ実装（SafeRepository） | Infrastructure層 | DBアクセスは技術的関心事 |
-| ドメインサービス実装（EventStore等） | Infrastructure層 | 同上 |
+| ドメインサービス実装（BalanceService等） | Infrastructure層 | 同上 |
 | UseCase | Application層 | ドメインとインフラの仲介 |
 | DTO | Application層 | 外部とのデータ受け渡し |
 | QueryServiceIF | Application層 | DTOを返すのでDomain層には置けない |
 | QueryService実装 | Infrastructure層 | DBアクセスは技術的関心事 |
 | Controller | API層 | HTTPの入口 |
-| Read Modelエンティティ | Infrastructure層 | DB固有の構造 |
+
+---
+
+イベントソーシング（ES+CQRS）を入れた場合に各層へ何が加わるかは [event-sourcing/changes-from-current.md](../event-sourcing/changes-from-current.md) を参照。

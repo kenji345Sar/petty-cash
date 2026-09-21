@@ -326,35 +326,14 @@ GetSafesUseCase.ExecuteAsync()
 | change_bags | 両替金バッグ | 読み書き |
 | cash_bags | 売上バッグ | 読み書き |
 | prep_bags | 準備バッグ | 読み書き |
-| **vendor_transactions** | **業者取引（イベントストア相当）** | **読み書き ← 問題** |
-| **petty_cash_transactions** | **小口取引（イベントストア相当）** | **読み書き ← 問題** |
+| vendor_transactions | 業者取引（残高は各行の balance 列） | 読み書き |
+| petty_cash_transactions | 小口取引（残高は各行の balance 列） | 読み書き |
 | vendor_denomination_checks | 業者有高チェック記録 | 読み書き |
 | safe_denomination_checks | 金庫有高チェック記録 | 読み書き |
 
 ---
 
-## 6. ★ 現在の問題点 — Read Model が無い
+## 6. イベントソーシングへの対応
 
-全ての読み込みがイベントストア（トランザクションテーブル）を直接クエリしている。
-
-```
-現在:
-  vendor_transactions       ←── 書き込み（イベント記録）
-  vendor_transactions       ←── 読み込み（出納帳表示・残高取得）★同じテーブル
-
-  petty_cash_transactions   ←── 書き込み（イベント記録）
-  petty_cash_transactions   ←── 読み込み（出納帳表示・残高取得）★同じテーブル
-
-本来のCQRS:
-  vendor_transactions       ←── 書き込み（イベント記録）
-       ↓ プロジェクション
-  vendor_ledger_view（Read Model） ←── 読み込み（出納帳表示）
-  safe_balances（Read Model）      ←── 読み込み（残高取得）
-```
-
-### Read Model を導入すると
-
-- **書き込み**: 今まで通りトランザクションテーブルにINSERT
-- **プロジェクション**: INSERT後にRead Modelテーブルを更新
-- **読み込み**: Read Modelテーブルからのみ読む（イベントストアは読まない）
-- **メリット**: 読み込みが高速、書き込みと読み込みの構造を独立して最適化できる
+取引テーブルは書き込みと読み込みの両方に使っている（Read Model は無い）。
+この構成の課題と、ES+CQRS を入れた場合の変化は [event-sourcing/](../event-sourcing/README.md) にまとめている。

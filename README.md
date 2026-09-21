@@ -2,6 +2,25 @@
 
 業務経験をもとに、個人で設計・実装した学習用プロジェクトです。
 
+## 設計方針：ドメイン駆動設計（DDD）
+
+業務ルールをドメイン層（`PettyCash.Domain`）に集め、それ以外の層はドメインを「使う側」として分けている。
+
+| 層 | プロジェクト | 役割 |
+|---|---|---|
+| API | PettyCash.Api | HTTP の受け口。業務ルールは持たない |
+| アプリケーション | PettyCash.Application | ユースケース。ドメインを組み合わせて業務行為を実現する |
+| **ドメイン** | **PettyCash.Domain** | **業務ルールそのもの（金庫・小口・業者）** |
+| インフラ | PettyCash.Infrastructure | DB への読み書き（リポジトリの実装） |
+
+どう実現しているかは docs を参照：
+
+- [DDD レイヤー構成](docs/architecture/ddd-layer-architecture.md)：各層の責務とコード例
+- [業務ルールの在り処](docs/architecture/domain-rules.md)：どのルールがドメインのどこにあるか
+- [業務フロー → コード対応](docs/architecture/business-flow-to-code.md)：画面の操作でどのコードが動くか
+
+仕様（何ができるか）は [docs/spec/](docs/spec/README.md)、docs 全体の目次は [docs/README.md](docs/README.md)。
+
 ## 必要なもの
 
 - Node.js 22（nvm 推奨）

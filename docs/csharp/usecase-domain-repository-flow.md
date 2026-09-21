@@ -62,8 +62,6 @@ public async Task<PettyCashTransactionDto> ExecuteAsync(int originalId, ReverseT
     await sequenceNumberService.AssignAsync(reversal);
     await balanceService.AssignBalanceAsync(reversal);
     await transactionRepository.AddAsync(reversal);   // Repository: 赤伝を保存
-    await eventStore.AppendAsync(reversal);           // 付加機能①
-    await projectionService.ProjectAsync(reversal);   // 付加機能②
     await unitOfWork.SaveChangesAsync();              // ここで初めて DB に書き込む
 
     return new PettyCashTransactionDto(...);
@@ -106,8 +104,9 @@ Domain がやること：**業務の判断**。UseCase は「作って」と依�
 // Safe.cs（別のドメインクラス）
 public void EnsureCanWithdraw(int amount)
 {
-    if (PettyCashBalance < amount)
-        throw new InvalidOperationException("残高が不足しています。");
+    if (amount > CurrentBalance)
+        throw new InvalidOperationException(
+            $"残高不足です。現在残高: {CurrentBalance}円、出金額: {amount}円");
 }
 ```
 
@@ -136,7 +135,7 @@ Repository がやること：**SQL を実行する**。業務の判断はしな�
 
 ## 付加機能（核の流れには影響しない）
 
-UseCase の後半にある3つは、DDD + CQRS の付加的な仕組み。
+UseCase の後半にある3つは、採番・残高計算・コミットの仕組み。
 核の流れ（UseCase→Domain→Repository）とは独立しているので、別で理解する。
 
 ### SequenceNumberService（採番）
@@ -152,37 +151,21 @@ await sequenceNumberService.AssignAsync(reversal);
 SELECT MAX(sequence_number) FROM petty_cash_transactions WHERE safe_id = ? + 1
 ```
 
-### EventStore（イベント記録）
+### BalanceService（残高計算）
 
 ```csharp
-await eventStore.AppendAsync(reversal);
+await balanceService.AssignBalanceAsync(reversal);
 ```
 
-やること：`domain_events` テーブルに「何が起きたか」を JSON で記録するだけ。
+やること：直前の取引行の残高を読み、今回の増減を足した新しい残高を取引にセットする。
 
 ```sql
 -- SQL の中身
-INSERT INTO domain_events (aggregate_type, aggregate_id, event_type, payload, created_at)
-VALUES ('Safe', 1, 'PettyCashWithdrawn', '{"amount":1000,...}', now())
+SELECT balance FROM petty_cash_transactions
+WHERE safe_id = ? ORDER BY created_at DESC, id DESC LIMIT 1
 ```
 
-取引の処理結果には影響しない。将来の監査ログや再構築のための記録。
-
-### ProjectionService（集計表の更新）
-
-```csharp
-await projectionService.ProjectAsync(reversal);
-```
-
-やること：ダッシュボード用の集計テーブルを更新する。
-
-```sql
--- SQL の中身（2つの INSERT/UPDATE）
-INSERT INTO petty_cash_ledger_view (...) VALUES (...)
-UPDATE safe_balances SET petty_cash_balance = ? WHERE safe_id = ?
-```
-
-ダッシュボードはこの集計テーブルを読むことで高速に表示できる。
+残高は取引行の `balance` 列に保存される。画面の残高表示もこの値を読む。
 
 ### unitOfWork.SaveChangesAsync（一括コミット）
 
@@ -193,9 +176,7 @@ await unitOfWork.SaveChangesAsync();
 やること：それまでの `Add()` や変更を **1トランザクションで DB に送る**。
 
 ```
-AddAsync(reversal)       ─┐
-AppendAsync(event)       ─┤ → BEGIN; INSERT ...; INSERT ...; UPDATE ...; COMMIT;
-ProjectAsync(projection) ─┘
+AddAsync(reversal)  → BEGIN; INSERT INTO petty_cash_transactions ...; COMMIT;
 ```
 
 この1行より前は「予約」、この1行で初めて DB に書き込まれる。
@@ -210,5 +191,5 @@ ProjectAsync(projection) ─┘
 | UseCase | 手順を書く（何をどの順番で） | しない |
 | Domain | 業務の判断（赤伝の作り方、残高チェック） | **する** |
 | Repository | SQL を実行する（読む・書く） | しない |
-| EventStore | 「何が起きたか」を記録する | しない |
-| Projection | 集計テーブルを更新する | しない |
+
+イベントソーシング（ES+CQRS）を入れると、UseCase の後半にイベント記録と Read Model 更新が加わる。詳しくは [event-sourcing/changes-from-current.md](../event-sourcing/changes-from-current.md) を参照。

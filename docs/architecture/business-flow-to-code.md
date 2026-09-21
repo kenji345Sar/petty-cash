@@ -35,18 +35,13 @@ BagsController.Deposit()
 DepositBagUseCase.ExecuteAsync()
     ├── ChangeBag.CreateDeposit()          … バッグと入金取引を同時生成（Domain層）
     ├── sequenceNumberService.AssignAsync() … 通し番号を採番
-    ├── balanceService.AssignBalanceAsync() … 業者残高を更新
+    ├── balanceService.AssignBalanceAsync() … 新しい業者残高を計算して取引行にセット
     ├── bagRepository.AddAsync()           … DB保存
-    ├── eventStore.AppendAsync()           … イベント記録（VendorMoneyDeposited）
-    ├── projectionService.ProjectAsync()   … 残高Read Modelを更新
     └── unitOfWork.SaveChangesAsync()      … コミット
 
 【DB変化】
   change_bags        : 1行INSERT（status = InSafe）
   vendor_transactions: 1行INSERT（type = Deposit）
-  vendor_ledger_view : 1行INSERT（Read Model）
-  safe_balances      : vendor_balance を UPDATE（Read Model）
-  domain_events      : 1行INSERT（event_type = VendorMoneyDeposited）
 ```
 
 ---
@@ -67,18 +62,13 @@ MoveBagToRegisterUseCase.ExecuteAsync()
     ├── bagRepository.GetByIdAsync()       … バッグを取得
     ├── bag.MoveToRegister()               … 状態変更＋出金取引生成（Domain層）
     ├── sequenceNumberService.AssignAsync()
-    ├── balanceService.AssignBalanceAsync() … 業者残高を減らす
+    ├── balanceService.AssignBalanceAsync() … 出金後の業者残高を計算して取引行にセット
     ├── bagRepository.UpdateAsync()
-    ├── eventStore.AppendAsync()           … イベント記録（VendorMoneyWithdrawn）
-    ├── projectionService.ProjectAsync()
     └── unitOfWork.SaveChangesAsync()
 
 【DB変化】
   change_bags        : status を InSafe → MovedToRegister に UPDATE
   vendor_transactions: 1行INSERT（type = Withdrawal）
-  vendor_ledger_view : 1行INSERT（Read Model）
-  safe_balances      : vendor_balance を UPDATE（Read Model）
-  domain_events      : 1行INSERT（event_type = VendorMoneyWithdrawn）
 ```
 
 ---
@@ -100,16 +90,11 @@ DepositCashBagUseCase.ExecuteAsync()
     ├── sequenceNumberService.AssignAsync()
     ├── balanceService.AssignBalanceAsync()
     ├── cashBagRepository.AddAsync()
-    ├── eventStore.AppendAsync()           … イベント記録（VendorMoneyDeposited）
-    ├── projectionService.ProjectAsync()
     └── unitOfWork.SaveChangesAsync()
 
 【DB変化】
-  cash_bags          : 1行INSERT（status = AtRegister）
+  cash_bags          : 1行INSERT（status = MovedToSafe）
   vendor_transactions: 1行INSERT（type = Deposit）
-  vendor_ledger_view : 1行INSERT（Read Model）
-  safe_balances      : vendor_balance を UPDATE（Read Model）
-  domain_events      : 1行INSERT（event_type = VendorMoneyDeposited）
 ```
 
 ---
@@ -127,14 +112,14 @@ DepositCashBagUseCase.ExecuteAsync()
 PrepBagsController.Create()
     ↓
 CreatePrepBagUseCase.ExecuteAsync()
-    ├── PrepBag.Create()                   … 準備バッグを生成（Domain層）
-    ├── 各CashBagのstatusを MovedToSafe に変更
+    ├── cashBagRepository.GetByIdAsync()   … 選択された売上バッグを取得
+    ├── PrepBag.Create()                   … 準備バッグを生成し、売上バッグを紐づける（Domain層）
     ├── prepBagRepository.AddAsync()
     └── unitOfWork.SaveChangesAsync()
 
 【DB変化】
   prep_bags : 1行INSERT（status = Preparing）
-  cash_bags : 対象の status を MovedToSafe に UPDATE
+  cash_bags : 対象の prep_bag_id に準備バッグを設定
   ※ この時点では残高変動なし
 ```
 
@@ -158,16 +143,11 @@ HandOverPrepBagUseCase.ExecuteAsync()
     ├── sequenceNumberService.AssignAsync()
     ├── balanceService.AssignBalanceAsync()
     ├── vendorTransactionRepository.AddAsync()
-    ├── eventStore.AppendAsync()           … イベント記録（VendorMoneyWithdrawn）
-    ├── projectionService.ProjectAsync()
     └── unitOfWork.SaveChangesAsync()
 
 【DB変化】
   prep_bags          : status を Preparing → HandedOver に UPDATE
   vendor_transactions: 1行INSERT（type = Withdrawal）
-  vendor_ledger_view : 1行INSERT（Read Model）
-  safe_balances      : vendor_balance を UPDATE（Read Model）
-  domain_events      : 1行INSERT（event_type = VendorMoneyWithdrawn）
 ```
 
 ---
@@ -195,8 +175,6 @@ CheckChangeBagUseCase / CheckCashBagUseCase
     │     ├── sequenceNumberService.AssignAsync()
     │     ├── balanceService.AssignBalanceAsync()
     │     ├── transactionRepository.AddAsync()
-    │     ├── eventStore.AppendAsync()         … VendorBalanceAdjusted
-    │     ├── projectionService.ProjectAsync()
     │     └── bag.UpdateAmount()               … バッグ金額を実数に修正
     │
     └── unitOfWork.SaveChangesAsync()
@@ -208,9 +186,6 @@ CheckChangeBagUseCase / CheckCashBagUseCase
   vendor_denomination_checks: 1行INSERT
   vendor_transactions       : 1行INSERT（type = Adjustment）
   change_bags / cash_bags   : totalAmount を UPDATE
-  vendor_ledger_view        : 1行INSERT（Read Model）
-  safe_balances             : vendor_balance を UPDATE（Read Model）
-  domain_events             : 1行INSERT（event_type = VendorBalanceAdjusted）
 ```
 
 ---
@@ -232,17 +207,12 @@ PettyCashTransactionsController.Create()
 CreatePettyCashTransactionUseCase.ExecuteAsync()
     ├── PettyCashTransaction.Create()      … 取引エンティティを生成（Domain層）
     ├── sequenceNumberService.AssignAsync()
-    ├── balanceService.AssignBalanceAsync() … 小口残高を更新
+    ├── balanceService.AssignBalanceAsync() … 新しい小口残高を計算して取引行にセット
     ├── transactionRepository.AddAsync()
-    ├── eventStore.AppendAsync()           … PettyCashDeposited / PettyCashWithdrawn
-    ├── projectionService.ProjectAsync()
     └── unitOfWork.SaveChangesAsync()
 
 【DB変化】
   petty_cash_transactions  : 1行INSERT
-  petty_cash_ledger_view   : 1行INSERT（Read Model）
-  safe_balances            : petty_cash_balance を UPDATE（Read Model）
-  domain_events            : 1行INSERT
 ```
 
 ---
@@ -264,12 +234,10 @@ CheckSafeUseCase.ExecuteAsync()
     ├── checkRepository.AddAsync()
     │
     ├── if (差額 != 0):
-    │     ├── PettyCashTransaction.CreateAdjustment() … 調整取引を生成
+    │     ├── VendorTransaction.CreateSafeAdjustment() … 調整取引を生成（※業者取引として記録される）
     │     ├── sequenceNumberService.AssignAsync()
     │     ├── balanceService.AssignBalanceAsync()
-    │     ├── transactionRepository.AddAsync()
-    │     ├── eventStore.AppendAsync()     … PettyCashBalanceAdjusted
-    │     └── projectionService.ProjectAsync()
+    │     └── transactionRepository.AddAsync()
     │
     └── unitOfWork.SaveChangesAsync()
 
@@ -278,10 +246,7 @@ CheckSafeUseCase.ExecuteAsync()
 
 【DB変化（差額あり）】
   safe_denomination_checks : 1行INSERT
-  petty_cash_transactions  : 1行INSERT（type = Adjustment）
-  petty_cash_ledger_view   : 1行INSERT（Read Model）
-  safe_balances            : petty_cash_balance を UPDATE（Read Model）
-  domain_events            : 1行INSERT（event_type = PettyCashBalanceAdjusted）
+  vendor_transactions      : 1行INSERT（type = Adjustment）
 ```
 
 ---
@@ -289,23 +254,23 @@ CheckSafeUseCase.ExecuteAsync()
 ## 画面表示（データ読み込み）の流れ
 
 画面を開いたとき・金庫を切り替えたときに起きること。
-**すべて Read Model テーブルからのみ読む（トランザクションテーブルは読まない）。**
+残高は取引テーブルの最新行の `balance` 列を、出納帳は取引テーブルそのものを読む。
 
 ```
 【小口タブを開く】
 GET /api/pettycash-dashboard?safeId=X
     ↓
 GetPettyCashDashboardUseCase
-    ├── safe_balances            → ヘッダーの残高表示
-    ├── petty_cash_ledger_view   → 出納帳テーブル
+    ├── petty_cash_transactions / vendor_transactions の最新行 → ヘッダーの残高表示
+    ├── petty_cash_transactions  → 出納帳テーブル
     └── safe_denomination_checks → 有高チェック履歴
 
 【業者タブを開く】
 GET /api/vendor-dashboard?safeId=X
     ↓
 GetVendorDashboardUseCase
-    ├── safe_balances            → ヘッダーの残高表示
-    ├── vendor_ledger_view       → 出納帳テーブル
+    ├── petty_cash_transactions / vendor_transactions の最新行 → ヘッダーの残高表示
+    ├── vendor_transactions      → 出納帳テーブル
     ├── change_bags              → 両替金バッグ一覧
     ├── cash_bags                → 売上バッグ一覧
     ├── prep_bags                → 準備バッグ一覧
@@ -315,7 +280,7 @@ GetVendorDashboardUseCase
 GET /api/safes
     ↓
 GetSafesUseCase
-    └── safe_balances            → 各金庫の残高（業者・小口）
+    └── safes ＋ 各取引テーブルの最新行 → 各金庫の残高（業者・小口）
 ```
 
 ---
@@ -330,5 +295,7 @@ GetSafesUseCase
 | ユースケース（業務ロジックの入口） | `backend/PettyCash.Application/UseCases/` |
 | ドメインエンティティ（ルール） | `backend/PettyCash.Domain/` |
 | リポジトリ実装（DB操作） | `backend/PettyCash.Infrastructure/Repositories/` |
-| Read Model更新（ProjectionService） | `backend/PettyCash.Infrastructure/Services/ProjectionService.cs` |
-| イベント記録（EventStore） | `backend/PettyCash.Infrastructure/Services/EventStore.cs` |
+| 採番・残高計算 | `backend/PettyCash.Infrastructure/Services/` |
+| 出納帳の読み込み（QueryService） | `backend/PettyCash.Infrastructure/Queries/` |
+
+イベントソーシング（ES+CQRS）を入れた場合にこの流れがどう変わるかは [event-sourcing/changes-from-current.md](../event-sourcing/changes-from-current.md) を参照。

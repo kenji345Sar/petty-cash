@@ -53,4 +53,4 @@
 - 開発者向け（コードとの対応・層構成）: [docs/architecture/](../architecture/)
 - C# / EF Core 学習ノート: [docs/csharp/](../csharp/)
 - 環境構築: [docs/setup/](../setup/)
-- 過去の設計記録（削除済みのES+CQRS等）: [docs/archive/](../archive/README.md)
+- イベントソーシング（ES+CQRS）への対応: [docs/event-sourcing/](../event-sourcing/README.md)

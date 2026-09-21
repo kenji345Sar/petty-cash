@@ -61,7 +61,7 @@
 
 **読み取り**: QueryService は保存済みの `balance` をそのまま返すだけ（再計算なし）。
 
-> 旧 ES+CQRS 構成では Read Model 経由で残高を読んでいたが、その層を削除しても「残高は取引行に保存」という事実は不変。詳細は [docs/archive/](../archive/README.md)。
+> ES+CQRS を入れて Read Model 経由で残高を読むようにしても、「残高は取引行に保存」という事実は変わらない。詳細は [docs/event-sourcing/](../event-sourcing/README.md)。
 
 ## 5. 期間フィルタ
 

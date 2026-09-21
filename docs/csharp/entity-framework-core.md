@@ -81,10 +81,11 @@ var safes = await context.Safes
 
 | ファイル | 対応テーブル |
 |---------|-----------|
-| `SafeRepository.cs` | `safes`, `safe_balances` |
+| `SafeRepository.cs` | `safes`（残高は `vendor_transactions` / `petty_cash_transactions` の最新行から読む） |
 | `ChangeBagRepository.cs` | `change_bags` |
 | `CashBagRepository.cs` | `cash_bags` |
 | `PrepBagRepository.cs` | `prep_bags` |
-| `VendorLedgerQueryService.cs` | `vendor_ledger_view`（Read Model） |
+| `VendorLedgerQueryService.cs` | `vendor_transactions` |
+| `PettyCashLedgerQueryService.cs` | `petty_cash_transactions` |
 
 すべて `PettyCashDbContext` 経由でアクセスする。

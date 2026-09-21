@@ -1,6 +1,8 @@
 # docs — 目次
 
-目的別に分けている。仕様を知りたいときは、まず [spec/](spec/README.md) から読む。
+このシステムはドメイン駆動設計（DDD）で作っている（方針はリポジトリ直下の [README](../README.md) を参照）。docs はその「何を作っているか」と「どう実現しているか」を書いたもの。
+
+目的別に分けている。仕様を知りたいときは、まず [spec/](spec/README.md) から読む。DDD をどう実現しているかは [architecture/](architecture/) を読む。
 
 | 目的 | フォルダ |
 |---|---|
@@ -9,7 +11,8 @@
 | 画面と API の調べ方 | [api-screens/](api-screens/) |
 | C#・EF Core の学習ノート | [csharp/](csharp/) |
 | 環境構築 | [setup/](setup/) |
-| 記録（トラブル・テスト・過去の設計） | [troubleshooting/](troubleshooting/)・[archive/](archive/README.md)・[test-specification.md](test-specification.md) |
+| イベントソーシング（ES+CQRS）への対応 | [event-sourcing/](event-sourcing/README.md) |
+| 記録（トラブル・テスト） | [troubleshooting/](troubleshooting/)・[test-specification.md](test-specification.md) |
 
 ---
 
@@ -67,6 +70,19 @@
 | [docker-network-diagram.md](setup/docker-network-diagram.md) | Docker のネットワーク・ポート構成図 |
 | [pgadmin-setup.md](setup/pgadmin-setup.md) | pgAdmin 4 のセットアップ |
 
+## event-sourcing/ — イベントソーシング（ES+CQRS）への対応
+
+現行コードは ES+CQRS を使っていない。ES 対応は別リポジトリで行う予定で、ここはその資料。
+
+| ファイル | 内容 |
+|---|---|
+| [README.md](event-sourcing/README.md) | このフォルダの位置づけ |
+| [motivation.md](event-sourcing/motivation.md) | なぜ ES+CQRS を入れるのか（現行構成の課題） |
+| [changes-from-current.md](event-sourcing/changes-from-current.md) | 現行構成から何が変わるか（コード・DB・テスト） |
+| [es-cqrs-architecture.md](event-sourcing/es-cqrs-architecture.md) | 以前の実装の処理フロー全体図 |
+| [es-cqrs-poc.md](event-sourcing/es-cqrs-poc.md) | 以前の PoC 実装の説明 |
+| [read-model-design.md](event-sourcing/read-model-design.md) | Read Model の設計 |
+
 ## 記録
 
 | ファイル | 内容 |
@@ -74,4 +90,3 @@
 | [test-specification.md](test-specification.md) | テスト仕様書 |
 | [troubleshooting/troubleshooting.md](troubleshooting/troubleshooting.md) | アプリのトラブルシューティング記録 |
 | [troubleshooting/docker-troubleshooting.md](troubleshooting/docker-troubleshooting.md) | Docker のトラブルシューティング記録 |
-| [archive/](archive/README.md) | 削除済みの ES+CQRS の設計記録（現行コードとは一致しない） |

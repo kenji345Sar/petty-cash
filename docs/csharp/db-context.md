@@ -150,7 +150,5 @@ HTTPリクエスト開始
 | `PettyCashTransactions` | `petty_cash_transactions` | 小口取引 |
 | `VendorDenominationChecks` | `vendor_denomination_checks` | 業者有高チェック |
 | `PettyCashDenominationChecks` | `safe_denomination_checks` | 小口有高チェック |
-| `SafeBalances` | `safe_balances` | 残高（Read Model） |
-| `VendorLedgerEntries` | `vendor_ledger_view` | 業者出納帳（Read Model） |
-| `PettyCashLedgerEntries` | `petty_cash_ledger_view` | 小口出納帳（Read Model） |
-| `DomainEvents` | `domain_events` | イベントストア |
+
+イベントソーシング（ES+CQRS）を入れた場合に追加されるテーブルは [event-sourcing/changes-from-current.md](../event-sourcing/changes-from-current.md) を参照。
