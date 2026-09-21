@@ -8,7 +8,9 @@
 - .NET 8 SDK
 - PostgreSQL 15+
 
-## セットアップ
+## セットアップ（初回のみ）
+
+2回目以降は「[開発時の起動手順（毎日）](#開発時の起動手順毎日)」だけを見ればよい。
 
 ### 1. Node.js
 
@@ -19,7 +21,14 @@ nvm use        # Node 22 に切り替え
 
 ### 2. PostgreSQL
 
-データベースとユーザーを作成する。
+PostgreSQL は Homebrew のサービスとして常駐させる前提。一度登録すれば Mac ログイン時に自動起動する。
+
+```bash
+brew services start postgresql@16   # 初回のみ（以降はログイン時に自動起動）
+brew services list                  # 起動しているか確認
+```
+
+データベースとユーザーを作成する（**初回のみ**。2回目以降は不要）。
 
 ```sql
 CREATE DATABASE petty_cash;
@@ -35,7 +44,7 @@ cd backend/PettyCash.Api
 dotnet run
 ```
 
-起動時にマイグレーションが自動実行される（`Program.cs`）。
+起動時に `EnsureCreated()` でテーブルが自動作成される（`Program.cs`）。テーブルが存在しない場合のみ作成し、既存テーブルの変更は行わない。
 デフォルトで `http://localhost:5141` で起動。
 
 ### 4. フロントエンド
@@ -50,6 +59,8 @@ npm run dev
 
 ## 開発時の起動手順（毎日）
 
+PostgreSQL はログイン時に自動起動しているので操作不要（止まっている場合は `brew services start postgresql@16`）。
+
 ```bash
 # ターミナル1: バックエンド
 cd backend/PettyCash.Api && dotnet run
@@ -57,6 +68,17 @@ cd backend/PettyCash.Api && dotnet run
 # ターミナル2: フロントエンド
 cd frontend && nvm use && npm run dev
 ```
+
+## Docker で開発環境を起動する（別の方法）
+
+上記のセットアップの代わりに、`docker-compose.yml` で DB・バックエンド・フロントエンドをまとめて起動することもできる。DB はコンテナ内に自動作成されるため、PostgreSQL のセットアップ（手順2）は不要。
+
+```bash
+docker compose up
+```
+
+フロントエンドは `http://localhost:5174` で起動。バックエンドの 5141 は `dotnet run` と同じポートなので、両方を同時には起動できない。
+ポート構成・ログ確認などの詳細は [docs/setup/docker-setup.md](docs/setup/docker-setup.md) を参照。
 
 ## Docker で本番構成を起動する
 
@@ -84,4 +106,5 @@ backend/
   PettyCash.Infrastructure/ … DB実装・サービス実装
 frontend/
   src/                      … React + TypeScript（Vite）
+docs/                       … 仕様書・設計解説・学習ノート（目次は docs/README.md）
 ```
