@@ -87,6 +87,7 @@
 
 | ファイル | 内容 |
 |---|---|
+| [issue.md](issue.md) | 未解決の問題（見つかったが、まだ直していないもの） |
 | [test-specification.md](test-specification.md) | テスト仕様書 |
 | [troubleshooting/troubleshooting.md](troubleshooting/troubleshooting.md) | アプリのトラブルシューティング記録 |
 | [troubleshooting/docker-troubleshooting.md](troubleshooting/docker-troubleshooting.md) | Docker のトラブルシューティング記録 |
