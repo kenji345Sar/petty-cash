@@ -64,6 +64,24 @@ public class PettyCashTransaction
     }
 
     /// <summary>
+    /// 有高チェックの差額を調整する取引を生成する。差額（実数 − 小口帳簿）をそのまま金額にする。
+    /// </summary>
+    public static PettyCashTransaction CreateAdjustment(int safeId, int difference, DateTime date)
+    {
+        if (difference == 0)
+            throw new ArgumentException("差額がゼロの場合は調整取引を作成しません。");
+
+        return new PettyCashTransaction
+        {
+            SafeId = safeId,
+            Type = TransactionType.Adjustment,
+            Amount = difference,
+            Description = $"小口有高調整（{(difference > 0 ? "+" : "")}{difference:N0}円）",
+            CreatedAt = date
+        };
+    }
+
+    /// <summary>
     /// 赤伝取引を生成する。元取引の種別に応じて逆の種別・金額を決定する業務判断を含む。
     /// </summary>
     public static PettyCashTransaction CreateReversal(PettyCashTransaction original, string description, DateTime date)

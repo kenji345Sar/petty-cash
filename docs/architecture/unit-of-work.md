@@ -23,7 +23,7 @@ UnitOfWorkなら全部成功 or 全部失敗（アトミック）になる。
 public class CheckSafeUseCase(
     ISafeRepository safeRepository,
     IPettyCashDenominationCheckRepository checkRepository,
-    IVendorTransactionRepository transactionRepository,
+    IPettyCashTransactionRepository transactionRepository,
     ISequenceNumberService sequenceNumberService,
     IUnitOfWork unitOfWork)  // <-- UnitOfWorkを注入
 {
@@ -33,7 +33,7 @@ public class CheckSafeUseCase(
             ?? throw new KeyNotFoundException(...);
 
         var denomination = new Denomination(...);
-        var check = PettyCashDenominationCheck.CreateForSafe(safeId, denomination, safe.CurrentBalance, now);
+        var check = PettyCashDenominationCheck.CreateForSafe(safeId, denomination, safe.PettyCashBalance, now);
 
         // (1) チェック結果を追跡に追加（まだDBには保存されない）
         await sequenceNumberService.AssignAsync(check);
@@ -42,7 +42,7 @@ public class CheckSafeUseCase(
         // (2) 差額があれば調整取引も追跡に追加（まだDBには保存されない）
         if (check.Difference != 0)
         {
-            var adjustment = VendorTransaction.CreateSafeAdjustment(safeId, check.Difference, now);
+            var adjustment = PettyCashTransaction.CreateAdjustment(safeId, check.Difference, now);
             await sequenceNumberService.AssignAsync(adjustment);
             await transactionRepository.AddAsync(adjustment);
         }

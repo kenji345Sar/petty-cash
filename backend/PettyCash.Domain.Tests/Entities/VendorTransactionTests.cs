@@ -13,26 +13,6 @@ public class VendorTransactionTests
         new(yen10000, yen5000, yen1000, 0, 0, 0, 0, 0, 0);
 
     [Fact]
-    public void CreateSafeAdjustment_プラス差額()
-    {
-        var tx = VendorTransaction.CreateSafeAdjustment(1, 2000, DateTime.UtcNow);
-
-        Assert.Equal(TransactionType.Adjustment, tx.Type);
-        Assert.Equal(2000, tx.Amount);
-        Assert.Contains("+2,000", tx.Description);
-    }
-
-    [Fact]
-    public void CreateSafeAdjustment_マイナス差額()
-    {
-        var tx = VendorTransaction.CreateSafeAdjustment(1, -1500, DateTime.UtcNow);
-
-        Assert.Equal(TransactionType.Adjustment, tx.Type);
-        Assert.Equal(-1500, tx.Amount);
-        Assert.Contains("-1,500", tx.Description);
-    }
-
-    [Fact]
     public void SetSequenceNumber_採番できる()
     {
         var bag = ChangeBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, MakeDenom(1));
@@ -81,7 +61,8 @@ public class VendorTransactionTests
     [Fact]
     public void CreateReversal_調整プラスの赤伝は出金になる()
     {
-        var original = VendorTransaction.CreateSafeAdjustment(1, 2000, DateTime.UtcNow); // Amount=+2000
+        var bag = ChangeBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, MakeDenom(1));
+        var original = VendorTransaction.CreateAdjustment(bag, 2000, DateTime.UtcNow); // Amount=+2000
 
         var reversal = VendorTransaction.CreateReversal(original, "赤伝", DateTime.UtcNow);
 
@@ -92,7 +73,8 @@ public class VendorTransactionTests
     [Fact]
     public void CreateReversal_調整マイナスの赤伝は入金で絶対値金額になる()
     {
-        var original = VendorTransaction.CreateSafeAdjustment(1, -1500, DateTime.UtcNow); // Amount=-1500
+        var bag = ChangeBag.CreateDeposit(1, 0, "テスト", DateTime.UtcNow, MakeDenom(1));
+        var original = VendorTransaction.CreateAdjustment(bag, -1500, DateTime.UtcNow); // Amount=-1500
 
         var reversal = VendorTransaction.CreateReversal(original, "赤伝", DateTime.UtcNow);
 

@@ -122,18 +122,6 @@ public class VendorTransaction
         };
     }
 
-    public static VendorTransaction CreateSafeAdjustment(int safeId, int difference, DateTime date)
-    {
-        return new VendorTransaction
-        {
-            SafeId = safeId,
-            Type = TransactionType.Adjustment,
-            Amount = difference,
-            Description = $"金庫有高調整（{(difference > 0 ? "+" : "")}{difference:N0}円）",
-            CreatedAt = date
-        };
-    }
-
     /// <summary>
     /// 赤伝取引を生成する。元取引の種別に応じて逆の種別・金額を決定する業務判断を含む。
     /// </summary>

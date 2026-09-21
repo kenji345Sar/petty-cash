@@ -1,5 +1,5 @@
 using PettyCash.Application.Dtos;
-using PettyCash.Domain.Vendor.Ledger;
+using PettyCash.Domain.PettyCash.Ledger;
 using PettyCash.Domain.PettyCash.DenomCheck;
 using PettyCash.Domain.SafeAggregate;
 using PettyCash.Domain.Shared.Services;
@@ -10,7 +10,7 @@ namespace PettyCash.Application.UseCases.DenominationChecks;
 public class CheckSafeUseCase(
     ISafeRepository safeRepository,
     IPettyCashDenominationCheckRepository checkRepository,
-    IVendorTransactionRepository transactionRepository,
+    IPettyCashTransactionRepository transactionRepository,
     ISequenceNumberService sequenceNumberService,
     IBalanceService balanceService,
     IUnitOfWork unitOfWork)
@@ -26,14 +26,15 @@ public class CheckSafeUseCase(
             dto.Count500, dto.Count100, dto.Count50,
             dto.Count10, dto.Count5, dto.Count1);
 
-        var check = PettyCashDenominationCheck.CreateForSafe(safeId, denomination, safe.CurrentBalance, now);
+        // 小口の有高チェックなので、帳簿額は小口残高（業者残高は含めない）
+        var check = PettyCashDenominationCheck.CreateForSafe(safeId, denomination, safe.PettyCashBalance, now);
         await sequenceNumberService.AssignAsync(check);
         await checkRepository.AddAsync(check);
 
-        // 差額があれば調整取引を記録
+        // 差額があれば小口取引に調整を記録
         if (check.Difference != 0)
         {
-            var adjustment = VendorTransaction.CreateSafeAdjustment(safeId, check.Difference, now);
+            var adjustment = PettyCashTransaction.CreateAdjustment(safeId, check.Difference, now);
             await sequenceNumberService.AssignAsync(adjustment);
             await balanceService.AssignBalanceAsync(adjustment);
             await transactionRepository.AddAsync(adjustment);

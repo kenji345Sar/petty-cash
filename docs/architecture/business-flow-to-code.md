@@ -228,13 +228,13 @@ CreatePettyCashTransactionUseCase.ExecuteAsync()
 
 【コード】
 CheckSafeUseCase.ExecuteAsync()
-    ├── safeRepository.GetByIdAsync()      … 現在の帳簿残高を取得
+    ├── safeRepository.GetByIdAsync()      … 小口の帳簿残高を取得（業者残高は含めない）
     ├── PettyCashDenominationCheck.CreateForSafe() … チェック記録を生成
     ├── sequenceNumberService.AssignAsync()
     ├── checkRepository.AddAsync()
     │
     ├── if (差額 != 0):
-    │     ├── VendorTransaction.CreateSafeAdjustment() … 調整取引を生成（※業者取引として記録される）
+    │     ├── PettyCashTransaction.CreateAdjustment() … 小口の調整取引を生成
     │     ├── sequenceNumberService.AssignAsync()
     │     ├── balanceService.AssignBalanceAsync()
     │     └── transactionRepository.AddAsync()
@@ -246,7 +246,7 @@ CheckSafeUseCase.ExecuteAsync()
 
 【DB変化（差額あり）】
   safe_denomination_checks : 1行INSERT
-  vendor_transactions      : 1行INSERT（type = Adjustment）
+  petty_cash_transactions  : 1行INSERT（type = Adjustment）
 ```
 
 ---

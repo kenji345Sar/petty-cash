@@ -76,7 +76,7 @@ public class UpdatePettyCashDenominationCheckUseCase(
             dto.Count500, dto.Count100, dto.Count50,
             dto.Count10, dto.Count5, dto.Count1);
 
-        check.Update(denomination, safe.CurrentBalance);
+        check.Update(denomination, safe.PettyCashBalance);
         await checkRepository.UpdateAsync(check);
         await unitOfWork.SaveChangesAsync();
 

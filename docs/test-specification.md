@@ -12,11 +12,11 @@
 | 項目 | 値 |
 |---|---|
 | 対象範囲 | Domain層（Entity / ValueObject） + Application層（UseCase） |
-| Domainテスト総数 | **59件** |
-| Applicationテスト総数 | **55件** |
-| 合計 | **114件** |
+| Domainテスト総数 | **61件** |
+| Applicationテスト総数 | **57件** |
+| 合計 | **118件** |
 | 今回追加 | **+46件**（Domain +11 / Application +35） |
-| バグ修正 | PrepBag.MarkHandedOver — Cancelled 状態から引渡できた不具合を修正 |
+| バグ修正 | PrepBag.MarkHandedOver — Cancelled 状態から引渡できた不具合を修正（[4.1](#41-prepbagmarkhandedover--cancelled-状態からの引渡)）<br>小口の有高チェックが合計残高と比べ、調整を業者取引に記録していた不具合を修正（4.2） |
 | 仕様未確定として残した項目 | 2件（詳細は [Section 5](#5-仕様未確定として残した項目)） |
 
 ---
@@ -157,7 +157,7 @@
 | Deposit → Withdrawal ★ | 入金の赤伝は出金（同額）、SafeId引継 | `CreateReversal_入金の赤伝は出金になる` | Domain | 正常系 | ✅ | |
 | Withdrawal → Deposit ★ | 出金の赤伝は入金（同額） | `CreateReversal_出金の赤伝は入金になる` | Domain | 正常系 | ✅ | |
 | Adjustment(>0) → Withdrawal ★ | 調整プラスの赤伝は出金 | `CreateReversal_調整プラスの赤伝は出金になる` | Domain | 正常系 | ✅ | |
-| Adjustment(<0) パターン | 現実装ではAmount<0の小口取引は作成不可のため到達しない | — | — | — | — | `Create()`でAmount≤0は例外 |
+| Adjustment(<0) → Deposit | 調整マイナスの赤伝は入金（**絶対値**） | `CreateReversal_調整マイナスの赤伝は入金で絶対値金額になる` | Domain | 正常系 | ✅ | 調整取引は `CreateAdjustment()` でのみ作れる（マイナス可） |
 
 #### 2.7.2 UseCase（Application）
 
@@ -192,7 +192,7 @@
 | 保証する仕様 | テストケース名 | 層 | 結果 |
 |---|---|---|---|
 | 差額なし → 調整取引を作らない | `差額ゼロなら調整取引は作成されない` | App | ✅ |
-| 差額あり → 調整取引(Adjustment)を保存 | `差額ありなら調整取引が保存される` | App | ✅ |
+| 差額あり → 調整取引(Adjustment)を保存（CheckSafe は小口取引に保存） | `差額ありなら調整取引が保存される` / `差額ありなら小口取引に調整が保存される` | App | ✅ |
 | 金庫未存在 → KeyNotFoundException | `金庫が見つからない場合は例外` | App | ✅ |
 | DenominationCheck が保存される | `有高チェックが保存される` | App | ✅ |
 
@@ -248,6 +248,37 @@ if (Status == PrepBagStatus.Cancelled)
 | Preparing → HandedOver | MarkHandedOver | ✅ 正常 |
 | HandedOver → HandedOver | MarkHandedOver | ✅ 例外（二重引渡禁止） |
 | **Cancelled → HandedOver** | **MarkHandedOver** | **✅ 例外（修正済み）** |
+
+### 4.2 CheckSafe — 小口の有高チェックが業者取引を調整していた
+
+#### 不具合の内容
+
+小口タブの「有高チェック」（`CheckSafeUseCase`）は、帳簿額に**合計残高**（業者＋小口）を使い、差額の調整を**業者取引**（`VendorTransaction.CreateSafeAdjustment`）に記録していた。
+画面は小口残高を帳簿額として表示するため、画面どおりに数えて登録しても業者残高分の差額が出て、業者残高が減っていた。
+
+```
+例: 業者 48,000円 / 小口 17,100円 の金庫で 15,000円 を数えて登録
+  帳簿 65,100円（合計）→ 差額 −50,100円 → 業者取引に調整 → 業者残高 −2,100円
+```
+
+修正内容の編集（`UpdatePettyCashDenominationCheckUseCase`）も、帳簿額に合計残高を使っていた。
+
+#### 修正内容
+
+- 帳簿額を `safe.PettyCashBalance`（小口残高）に変更（登録・修正の両方）
+- 調整は `PettyCashTransaction.CreateAdjustment` で**小口取引**に記録。`VendorTransaction.CreateSafeAdjustment` は削除
+- 画面タイトルを「有高チェック（金庫全体）」から「有高チェック（小口）」に変更
+
+#### 追加・変更したテスト
+
+| テスト観点 | テストケース名 | 層 |
+|---|---|---|
+| 帳簿額は小口残高（業者残高を含まない） | `帳簿額は小口残高で業者残高を含まない` | App |
+| 差額は小口取引に調整として保存 | `差額ありなら小口取引に調整が保存される` | App |
+| 修正時の帳簿額も小口残高 | `修正時の帳簿額も小口残高になる` | App |
+| 調整取引の生成（プラス / マイナス / ゼロは例外） | `CreateAdjustment_プラス差額` / `CreateAdjustment_マイナス差額` / `CreateAdjustment_差額ゼロは例外` | Domain |
+
+`VendorTransaction` の `CreateSafeAdjustment_*` テスト2件は、メソッドの削除に合わせて削除した。
 
 ---
 

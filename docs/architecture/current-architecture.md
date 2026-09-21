@@ -135,13 +135,13 @@ GetPettyCashDashboardUseCase.ExecuteAsync()
 DenominationChecksController.CheckSafe()
     ↓
 CheckSafeUseCase.ExecuteAsync()
-    ├── safeRepository.GetByIdAsync()           … 現在残高を取得
+    ├── safeRepository.GetByIdAsync()           … 小口残高を取得
     ├── PettyCashDenominationCheck.CreateForSafe() … 金種チェック記録を生成
     ├── sequenceNumberService.AssignAsync()
     ├── checkRepository.AddAsync()
     │
     ├── if (差額 != 0):
-    │     ├── VendorTransaction.CreateSafeAdjustment() … 調整取引を生成
+    │     ├── PettyCashTransaction.CreateAdjustment() … 小口の調整取引を生成
     │     ├── sequenceNumberService.AssignAsync()
     │     ├── balanceService.AssignBalanceAsync()       … ★ 残高再計算
     │     └── transactionRepository.AddAsync()
@@ -309,7 +309,7 @@ GetSafesUseCase.ExecuteAsync()
 | POST | /api/petty-cash-transactions | PettyCashTransactionsController | CreatePettyCashTransactionUseCase | petty_cash_transactions |
 | GET | /api/denominationchecks/vendor | DenominationChecksController | GetVendorDenominationChecksUseCase | - |
 | GET | /api/denominationchecks/safe | DenominationChecksController | GetPettyCashDenominationChecksUseCase | - |
-| POST | /api/denominationchecks/safe/{safeId} | DenominationChecksController | CheckSafeUseCase | safe_denomination_checks + vendor_transactions |
+| POST | /api/denominationchecks/safe/{safeId} | DenominationChecksController | CheckSafeUseCase | safe_denomination_checks + petty_cash_transactions |
 | POST | /api/denominationchecks/changebag/{bagId} | DenominationChecksController | CheckChangeBagUseCase | vendor_denomination_checks + vendor_transactions |
 | POST | /api/denominationchecks/cashbag/{bagId} | DenominationChecksController | CheckCashBagUseCase | vendor_denomination_checks + vendor_transactions |
 | POST | /api/denominationchecks/prepbag/{bagId} | DenominationChecksController | CheckPrepBagUseCase | vendor_denomination_checks |

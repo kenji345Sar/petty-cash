@@ -68,4 +68,43 @@ public class PettyCashTransactionTests
         Assert.Equal(TransactionType.Withdrawal, reversal.Type);
         Assert.Equal(2000, reversal.Amount);
     }
+
+    // ── CreateAdjustment（有高チェックの差額調整）──────────────────
+    [Fact]
+    public void CreateAdjustment_プラス差額()
+    {
+        var tx = PettyCashTransaction.CreateAdjustment(1, 2000, DateTime.UtcNow);
+
+        Assert.Equal(1, tx.SafeId);
+        Assert.Equal(TransactionType.Adjustment, tx.Type);
+        Assert.Equal(2000, tx.Amount);
+        Assert.Contains("+2,000", tx.Description);
+    }
+
+    [Fact]
+    public void CreateAdjustment_マイナス差額()
+    {
+        var tx = PettyCashTransaction.CreateAdjustment(1, -1500, DateTime.UtcNow);
+
+        Assert.Equal(TransactionType.Adjustment, tx.Type);
+        Assert.Equal(-1500, tx.Amount);
+        Assert.Contains("-1,500", tx.Description);
+    }
+
+    [Fact]
+    public void CreateAdjustment_差額ゼロは例外()
+    {
+        Assert.Throws<ArgumentException>(() => PettyCashTransaction.CreateAdjustment(1, 0, DateTime.UtcNow));
+    }
+
+    [Fact]
+    public void CreateReversal_調整マイナスの赤伝は入金で絶対値金額になる()
+    {
+        var original = PettyCashTransaction.CreateAdjustment(1, -1500, DateTime.UtcNow);
+
+        var reversal = PettyCashTransaction.CreateReversal(original, "赤伝", DateTime.UtcNow);
+
+        Assert.Equal(TransactionType.Deposit, reversal.Type);
+        Assert.Equal(1500, reversal.Amount);
+    }
 }
