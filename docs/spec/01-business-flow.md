@@ -1,6 +1,7 @@
 # 業務フロー
 
 このシステムが扱う業務の流れをコードの説明なしに整理する。
+業務の各操作でどのコードが動くかは [architecture/03-flow-to-code.md](../architecture/03-flow-to-code.md) を参照。
 
 ---
 

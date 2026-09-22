@@ -3,7 +3,7 @@
 > テストコードを読まなくても「どの業務仕様を、どのテストで保証しているか」が分かることを目的とした仕様書。
 >
 > - ★ マークは今回（2026-06-24）新規追加したテスト
-> - 仕様の詳細は [common.md](./spec/common.md) / [vendor.md](./spec/vendor.md) / [petty-cash.md](./spec/petty-cash.md) を参照
+> - 仕様の詳細は [common.md](./spec/02-common.md) / [vendor.md](./spec/04-vendor.md) / [petty-cash.md](./spec/03-petty-cash.md) を参照
 
 ---
 
@@ -293,7 +293,7 @@ if (Status == PrepBagStatus.Cancelled)
 | 禁止とした場合に追加するテスト | `ReverseVendorTransaction_赤伝済み取引に再赤伝すると例外` |
 | 禁止とした場合に必要な実装 | VendorTransaction / PettyCashTransaction に `IsReversed` フラグを追加し、CreateReversal 前にチェック |
 
-> 参照: [common.md — 二重赤伝（仕様未確定）](./spec/common.md#二重赤伝仕様未確定)
+> 参照: [common.md — 二重赤伝（仕様未確定）](./spec/02-common.md#二重赤伝仕様未確定)
 
 ---
 
@@ -307,7 +307,7 @@ if (Status == PrepBagStatus.Cancelled)
 | 禁止とした場合に追加するテスト | `UpdateAmount_MovedToRegister後は例外` |
 | 禁止とした場合に必要な実装 | `UpdateAmount` に `if (Status == BagStatus.MovedToRegister) throw ...` を追加 |
 
-> 参照: [vendor.md — 2.1 両替金バッグ](./spec/vendor.md#21-両替金バッグchangebag-表示-ca-xxx)
+> 参照: [vendor.md — 2.1 両替金バッグ](./spec/04-vendor.md#21-両替金バッグchangebag-表示-ca-xxx)
 
 ---
 

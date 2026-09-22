@@ -15,9 +15,11 @@
 
 どう実現しているかは docs を参照：
 
-- [DDD レイヤー構成](docs/architecture/ddd-layer-architecture.md)：各層の責務とコード例
-- [業務ルールの在り処](docs/architecture/domain-rules.md)：どのルールがドメインのどこにあるか
-- [業務フロー → コード対応](docs/architecture/business-flow-to-code.md)：画面の操作でどのコードが動くか
+- [DDD レイヤー構成](docs/architecture/01-ddd-layers.md)：各層の責務とコード例
+- [業務ルールの在り処](docs/architecture/02-domain-model.md)：どのルールがドメインのどこにあるか
+- [業務フロー → コード対応](docs/architecture/03-flow-to-code.md)：画面の操作でどのコードが動くか
+
+読む順番は [docs/architecture/README.md](docs/architecture/README.md) を参照。
 
 仕様（何ができるか）は [docs/spec/](docs/spec/README.md)、docs 全体の目次は [docs/README.md](docs/README.md)。
 

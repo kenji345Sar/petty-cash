@@ -243,4 +243,21 @@ var useCase = new CreatePettyCashTransactionUseCase(
 
 ---
 
+## DB テーブルと役割
+
+| テーブル | 役割 | 読み書き |
+|---------|------|---------|
+| safes | 金庫マスタ（残高は持たず、取引テーブルの最新行から読む） | 読み書き |
+| change_bags | 両替金バッグ | 読み書き |
+| cash_bags | 売上バッグ | 読み書き |
+| prep_bags | 準備バッグ | 読み書き |
+| vendor_transactions | 業者取引（残高は各行の balance 列） | 読み書き |
+| petty_cash_transactions | 小口取引（残高は各行の balance 列） | 読み書き |
+| vendor_denomination_checks | 業者有高チェック記録 | 読み書き |
+| safe_denomination_checks | 小口有高チェック記録 | 読み書き |
+
+残高の持ち方は [05-balance-design.md](05-balance-design.md) を参照。
+
+---
+
 イベントソーシング（ES+CQRS）を入れた場合に各層へ何が加わるかは [event-sourcing/changes-from-current.md](../event-sourcing/changes-from-current.md) を参照。

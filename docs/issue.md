@@ -74,3 +74,26 @@ if (amount > CurrentBalance)   // CurrentBalance = VendorBalance + PettyCashBala
 ### 関連
 
 小口の有高チェックが合計残高と比べていた不具合は、2026-09-21 に修正済み（[test-specification.md](test-specification.md) の 4.2）。これと同じ種類の問題。
+
+---
+
+## 3. 金種の一覧が画面側で重複している
+
+- **見つけた日**: 2026-09-22
+- **状態**: 未対応
+
+金種の一覧（1万円〜1円、セット枚数）が、`frontend/src/shared/denomination.ts`（`DENOM_ITEMS`）と `frontend/src/components/DenominationCheckForm.tsx`（`DENOMINATIONS`）の2か所にある。
+金種を変えるときに片方だけ直す事故が起きうる。ドメイン側で `Denomination` を共通にしている理由（[architecture/02-domain-model.md](architecture/02-domain-model.md)）と同じ考え方で、画面側も `DENOM_ITEMS` に一本化するのがよい。
+
+---
+
+## 4. 過去日付で登録すると残高がずれる
+
+- **見つけた日**: 2026-09-22
+- **状態**: 未対応（仕様の確認が必要）
+
+残高は取引行ごとに持ち、「最新の行 = 現在の残高」を前提にしている（[architecture/05-balance-design.md](architecture/05-balance-design.md)）。
+バッグ入金などはリクエストの日付をそのまま使うため、過去の日付で登録すると、並び順では途中に入る行に「登録時点の最新残高 + 増減」が入り、前後の行と残高がずれる。
+
+確認したいこと: 過去日付の登録を禁止するか、許すなら登録後に以降の行の残高を計算し直すか。
+

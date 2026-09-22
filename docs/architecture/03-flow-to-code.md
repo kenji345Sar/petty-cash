@@ -1,6 +1,7 @@
 # 業務フロー → コード対応ガイド
 
 「この画面ボタンを押すと、コードのどこが動くのか」を業務の流れに沿って整理する。
+業務そのものの流れ（コードなし）は [spec/01-business-flow.md](../spec/01-business-flow.md)、API の一覧は [api-screens/api-endpoints.md](../api-screens/api-endpoints.md) を参照。
 
 ---
 

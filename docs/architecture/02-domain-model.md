@@ -105,12 +105,52 @@ ChangeBag.MoveToRegister()   → 二重移動を弾く
 PrepBag.Create()             → バッグなし・重複バッグを弾く
 PrepBag.Cancel()             → 引渡済みの取消を弾く
 PrepBag.MarkHandedOver()     → 二重引渡を弾く
+PettyCashTransaction.CreateAdjustment() → 差額ゼロの調整取引を弾く
 Safe.EnsureCanWithdraw()     → 残高超過の出金を弾く
 Safe.Create()                → 名前なしの金庫作成を弾く
 ```
 
 UseCase がこれらを呼ぶことで、業務ルール違反は自動的にエラーになる。
 インフラ層やコントローラーはこれらのルールを知らなくてよい。
+
+---
+
+## 設計判断: 金種（値オブジェクト）と有高チェック（エンティティ）
+
+金種と有高チェックの業務上の意味は [spec/02-common.md](../spec/02-common.md) の「1. 金種」「2. 有高チェック」を参照。ここではドメインでどう表現しているかを書く。
+
+| クラス | 種類 | 表すもの |
+|---|---|---|
+| `Denomination` | 値オブジェクト | 紙幣・硬貨ごとの枚数と、その合計金額（`TotalAmount`） |
+| `VendorDenominationCheck` / `PettyCashDenominationCheck` | エンティティ | 「実際に数えた」という記録。`Denomination` を持ち、帳簿との差額を計算する |
+
+`Denomination` は2つの場面で使われる。
+
+| 用途 | 使用箇所 |
+|---|---|
+| 有高チェックで数えた枚数 | `*DenominationCheck.Denomination` |
+| 取引に含まれる金種の内訳 | `VendorTransaction.Denomination` / `PettyCashTransaction.Denomination` |
+
+### なぜ金種を用途ごとに分けないのか
+
+値オブジェクト `Denomination` は共通のまま、**意味の違いはそれを持つエンティティが担う**。
+
+- データ構造（1万円○枚、千円○枚…）は同じ
+- 計算ルール（`TotalAmount`）も同じ
+- 違うのは「何の文脈で使われるか」だけで、それは入っている先（チェックか取引か）で決まる
+
+用途ごとに分けると、同じ計算ロジックを2か所で保守することになり、片方だけ直して反映し忘れる事故が起きる。
+
+### 画面側の分け方
+
+UI の流れの違い（金種表で金額をセットするか、有高チェックとして保存するか）は、ドメインではなく画面側で分けている。
+
+| コンポーネント | 用途 |
+|---|---|
+| `DenominationInput.tsx` | 金種表。合計を金額欄にセットして戻る |
+| `DenominationCheckForm.tsx` | 有高チェック。帳簿との差額を表示し、API で保存する |
+
+`DenominationInput.tsx` は金種の定義を `frontend/src/shared/denomination.ts`（`DENOM_ITEMS`）から読むが、`DenominationCheckForm.tsx` は同じ一覧をファイル内に持っている（重複。[issue.md](../issue.md) の 3.）。
 
 ---
 

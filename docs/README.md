@@ -2,40 +2,43 @@
 
 このシステムはドメイン駆動設計（DDD）で作っている（方針はリポジトリ直下の [README](../README.md) を参照）。docs はその「何を作っているか」と「どう実現しているか」を書いたもの。
 
-目的別に分けている。仕様を知りたいときは、まず [spec/](spec/README.md) から読む。DDD をどう実現しているかは [architecture/](architecture/) を読む。
+目的別に分けている。仕様を知りたいときは、まず [spec/](spec/README.md) から読む。DDD をどう実現しているかは [architecture/](architecture/README.md) を読む。どちらも番号順に読めばよい。
 
 | 目的 | フォルダ |
 |---|---|
 | 仕様（何ができるか・業務ルール） | [spec/](spec/README.md) |
-| 業務とコードの対応・設計判断 | [architecture/](architecture/) |
+| DDD でどう実現しているか | [architecture/](architecture/README.md) |
 | 画面と API の調べ方 | [api-screens/](api-screens/) |
 | C#・EF Core の学習ノート | [csharp/](csharp/) |
 | 環境構築 | [setup/](setup/) |
 | イベントソーシング（ES+CQRS）への対応 | [event-sourcing/](event-sourcing/README.md) |
-| 記録（トラブル・テスト） | [troubleshooting/](troubleshooting/)・[test-specification.md](test-specification.md) |
+| 記録（未解決の問題・テスト・トラブル） | [issue.md](issue.md)・[test-specification.md](test-specification.md)・[troubleshooting/](troubleshooting/) |
 
 ---
 
-## spec/ — 仕様書の本体
+## spec/ — 仕様書の本体（何を作っているか）
+
+番号順に読む。読む順番と各ファイルの内容は [spec/README.md](spec/README.md) を参照。
 
 | ファイル | 内容 |
 |---|---|
-| [README.md](spec/README.md) | 仕様書の入口・全体像 |
-| [common.md](spec/common.md) | 小口・業者で共通する概念 |
-| [petty-cash.md](spec/petty-cash.md) | 小口タブの仕様 |
-| [vendor.md](spec/vendor.md) | 業者タブの仕様 |
+| [README.md](spec/README.md) | 全体像・画面マップ・用語・読む順番 |
+| [01-business-flow.md](spec/01-business-flow.md) | 業務の流れ（コードの説明なし） |
+| [02-common.md](spec/02-common.md) | 小口・業者で共通する概念 |
+| [03-petty-cash.md](spec/03-petty-cash.md) | 小口タブの仕様 |
+| [04-vendor.md](spec/04-vendor.md) | 業者タブの仕様 |
 
-## architecture/ — 業務とコードの対応・設計判断
+## architecture/ — DDD でどう実現しているか
+
+番号順に読む。読む順番と各ファイルの内容は [architecture/README.md](architecture/README.md) を参照。
 
 | ファイル | 内容 |
 |---|---|
-| [business-flow.md](architecture/business-flow.md) | 業務フロー（コードの説明なし） |
-| [business-flow-to-code.md](architecture/business-flow-to-code.md) | 業務の流れに沿って、どのコードが動くかを対応づけ |
-| [current-architecture.md](architecture/current-architecture.md) | API・処理フローの全体図 |
-| [ddd-layer-architecture.md](architecture/ddd-layer-architecture.md) | DDD レイヤー構成の解説 |
-| [domain-rules.md](architecture/domain-rules.md) | 業務ルールがコードのどこにあるか |
-| [unit-of-work.md](architecture/unit-of-work.md) | UnitOfWork パターン |
-| [denomination-vs-check.md](architecture/denomination-vs-check.md) | 金種表と有高チェックの設計方針 |
+| [01-ddd-layers.md](architecture/01-ddd-layers.md) | 4層の構成と依存のルール、DB テーブル |
+| [02-domain-model.md](architecture/02-domain-model.md) | ドメインが守る業務ルール、金種と有高チェックの設計判断 |
+| [03-flow-to-code.md](architecture/03-flow-to-code.md) | 業務の操作ごとの処理の流れ |
+| [04-unit-of-work.md](architecture/04-unit-of-work.md) | 一括コミットの仕組み |
+| [05-balance-design.md](architecture/05-balance-design.md) | 残高を取引行に持たせる設計と、その変遷 |
 
 ## api-screens/ — 画面と API の調べ方
 
