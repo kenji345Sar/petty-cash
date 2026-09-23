@@ -197,6 +197,20 @@ var useCase = new CreatePettyCashTransactionUseCase(
 
 ---
 
+## UseCase にない手順
+
+「何をどの順番でやるか」は UseCase にある、が基本。ただし例外が3つある。
+
+| 場所 | 例 | なぜそこにあるか |
+|---|---|---|
+| ドメイン（集約の中） | `ChangeBag.CreateDeposit()` はバッグと入金取引を同時に作る。`ChangeBag.MoveToRegister()` は状態を変えて出金取引を返す | 「バッグと取引は必ずセットで生まれる」という業務の決まりなので、外に出すと守れなくなる |
+| インフラ | `SafeRepository.GetByIdAsync()` は金庫を読んだあと `LoadBalances()` で残高を読み直してセットする | 「残高をどう組み立てて読むか」は技術的な都合。UseCase は「金庫を1件取得する」としか知らない |
+| 画面（フロントエンド） | 登録後にタブ内のデータを取り直して再描画する（[api-screens/frontend-api-flow-detail.md](../api-screens/frontend-api-flow-detail.md)） | 画面の更新の仕方はサーバーの関心事ではない |
+
+UseCase を読んでも処理が追いきれないときは、この3か所を見る。
+
+---
+
 ## 実際の処理フロー（小口入金の例）
 
 ```

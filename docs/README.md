@@ -36,7 +36,7 @@
 |---|---|
 | [01-ddd-layers.md](architecture/01-ddd-layers.md) | 4層の構成と依存のルール、DB テーブル |
 | [02-domain-model.md](architecture/02-domain-model.md) | ドメインが守る業務ルール、金種と有高チェックの設計判断 |
-| [03-flow-to-code.md](architecture/03-flow-to-code.md) | 業務の操作ごとの処理の流れ |
+| [03-flow-to-code.md](architecture/03-flow-to-code.md) | 業務の操作ごとの処理の流れ、UseCase 一覧、1例を各層ごとに詳しく追う |
 | [04-unit-of-work.md](architecture/04-unit-of-work.md) | 一括コミットの仕組み |
 | [05-balance-design.md](architecture/05-balance-design.md) | 残高を取引行に持たせる設計と、その変遷 |
 
@@ -53,11 +53,12 @@
 
 ## csharp/ — C# 学習ノート
 
+C# / EF Core の書き方を学ぶためのノート。このプロジェクトの設計の説明は [architecture/](architecture/README.md) にある。
+
 | ファイル | 内容 |
 |---|---|
 | [csharp-concepts.md](csharp/csharp-concepts.md) | C# の基本概念 |
 | [routing.md](csharp/routing.md) | ASP.NET Core のルーティング規則 |
-| [usecase-domain-repository-flow.md](csharp/usecase-domain-repository-flow.md) | UseCase・Domain・Repository の流れ |
 | [db-context.md](csharp/db-context.md) | DbContext の仕組み（DB 接続まで） |
 | [db-context-code-walkthrough.md](csharp/db-context-code-walkthrough.md) | 同上を実際のコードで追う |
 | [entity-framework-core.md](csharp/entity-framework-core.md) | EF Core の仕組み |
