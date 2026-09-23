@@ -35,7 +35,7 @@
 | ファイル | 内容 |
 |---|---|
 | [01-ddd-layers.md](architecture/01-ddd-layers.md) | 4層の構成と依存のルール、DB テーブル |
-| [02-domain-model.md](architecture/02-domain-model.md) | ドメインが守る業務ルール、金種と有高チェックの設計判断 |
+| [02-domain-model.md](architecture/02-domain-model.md) | モデル一覧（エンティティ・値オブジェクト）と関係、ないもの、各モデルの業務ルール |
 | [03-flow-to-code.md](architecture/03-flow-to-code.md) | 業務の操作ごとの処理の流れ、UseCase 一覧、1例を各層ごとに詳しく追う |
 | [04-unit-of-work.md](architecture/04-unit-of-work.md) | 一括コミットの仕組み |
 | [05-balance-design.md](architecture/05-balance-design.md) | 残高を取引行に持たせる設計と、その変遷 |
