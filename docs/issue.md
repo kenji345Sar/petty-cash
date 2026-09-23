@@ -21,7 +21,7 @@
 
 ### 原因
 
-[SequenceNumberService](../backend/PettyCash.Infrastructure/Services/SequenceNumberService.cs) は、4テーブル（業者取引・小口取引・業者有高チェック・小口有高チェック）の `MAX(sequence_number) + 1` を **DB から読んで**番号を決める。
+[SequenceNumberService](../backend/PettyCash.Infrastructure/Services/SequenceNumberService.cs) は、4テーブル（売上金取引・小口取引・売上金有高チェック・小口有高チェック）の `MAX(sequence_number) + 1` を **DB から読んで**番号を決める。
 
 有高チェックの UseCase は、チェック記録と調整取引を続けて採番してから、最後に `SaveChangesAsync` でまとめて保存する。
 1つ目の番号はまだ DB に保存されていないので、2つ目も同じ番号を読んでしまう。
@@ -57,8 +57,8 @@ SaveChangesAsync()
 
 ### 現象
 
-小口の出金（入出金登録・赤伝）で残高不足を判定する `Safe.EnsureCanWithdraw` が、小口残高ではなく**合計残高**（業者＋小口）と比べている。
-そのため、小口残高が 15,000円でも、業者残高が 48,000円あれば 60,000円の出金が通ってしまい、小口残高がマイナスになる。
+小口の出金（入出金登録・赤伝）で残高不足を判定する `Safe.EnsureCanWithdraw` が、小口残高ではなく**合計残高**（売上金＋小口）と比べている。
+そのため、小口残高が 15,000円でも、売上金残高が 48,000円あれば 60,000円の出金が通ってしまい、小口残高がマイナスになる。
 
 ```csharp
 // backend/PettyCash.Domain/Safe/Safe.cs
@@ -69,7 +69,7 @@ if (amount > CurrentBalance)   // CurrentBalance = VendorBalance + PettyCashBala
 ### 確認したいこと
 
 - 小口の出金は、小口残高の範囲内に限るべきか（小口の有高チェックと同じ考え方なら、限るべき）
-- 業者側の出金にも、同じ判定を入れるべきか
+- 売上金側の出金にも、同じ判定を入れるべきか
 
 ### 関連
 

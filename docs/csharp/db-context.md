@@ -146,9 +146,9 @@ HTTPリクエスト開始
 | `ChangeBags` | `change_bags` | 両替金バッグ |
 | `CashBags` | `cash_bags` | 売上バッグ |
 | `PrepBags` | `prep_bags` | 準備バッグ |
-| `VendorTransactions` | `vendor_transactions` | 業者取引 |
+| `VendorTransactions` | `vendor_transactions` | 売上金取引 |
 | `PettyCashTransactions` | `petty_cash_transactions` | 小口取引 |
-| `VendorDenominationChecks` | `vendor_denomination_checks` | 業者有高チェック |
+| `VendorDenominationChecks` | `vendor_denomination_checks` | 売上金有高チェック |
 | `PettyCashDenominationChecks` | `safe_denomination_checks` | 小口有高チェック |
 
 イベントソーシング（ES+CQRS）を入れた場合に追加されるテーブルは [event-sourcing/changes-from-current.md](../event-sourcing/changes-from-current.md) を参照。

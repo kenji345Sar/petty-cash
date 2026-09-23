@@ -33,7 +33,7 @@ function App() {
   return (
     <div className="app">
       <header>
-        <h1>小口現金管理システム</h1>
+        <h1>店舗現金管理システム</h1>
         {safes.length > 0 && (
           <div className="safe-selector">
             <select
@@ -47,7 +47,7 @@ function App() {
             {selectedSafe && (
               <div className="safe-balance-group">
                 <span className="safe-balance vendor">
-                  業者: {selectedSafe.vendorBalance.toLocaleString()}円
+                  売上金: {selectedSafe.vendorBalance.toLocaleString()}円
                 </span>
                 <span className="safe-balance petty">
                   小口: {selectedSafe.pettyCashBalance.toLocaleString()}円
@@ -86,7 +86,7 @@ function App() {
                 borderRadius: "8px 8px 0 0",
               }}
             >
-              業者
+              売上金
             </button>
           </div>
         )}

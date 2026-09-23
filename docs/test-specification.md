@@ -16,7 +16,7 @@
 | Applicationテスト総数 | **57件** |
 | 合計 | **118件** |
 | 今回追加 | **+46件**（Domain +11 / Application +35） |
-| バグ修正 | PrepBag.MarkHandedOver — Cancelled 状態から引渡できた不具合を修正（[4.1](#41-prepbagmarkhandedover--cancelled-状態からの引渡)）<br>小口の有高チェックが合計残高と比べ、調整を業者取引に記録していた不具合を修正（4.2） |
+| バグ修正 | PrepBag.MarkHandedOver — Cancelled 状態から引渡できた不具合を修正（[4.1](#41-prepbagmarkhandedover--cancelled-状態からの引渡)）<br>小口の有高チェックが合計残高と比べ、調整を売上金取引に記録していた不具合を修正（4.2） |
 | 仕様未確定として残した項目 | 2件（詳細は [Section 5](#5-仕様未確定として残した項目)） |
 
 ---
@@ -116,7 +116,7 @@
 
 ### 2.6 VendorTransaction赤伝
 
-> 業者出納帳の過去取引を打ち消す逆取引を追記する操作。元取引は変更しない。
+> 売上金出納帳の過去取引を打ち消す逆取引を追記する操作。元取引は変更しない。
 
 #### 2.6.1 逆転ロジック（Domain）
 
@@ -249,16 +249,16 @@ if (Status == PrepBagStatus.Cancelled)
 | HandedOver → HandedOver | MarkHandedOver | ✅ 例外（二重引渡禁止） |
 | **Cancelled → HandedOver** | **MarkHandedOver** | **✅ 例外（修正済み）** |
 
-### 4.2 CheckSafe — 小口の有高チェックが業者取引を調整していた
+### 4.2 CheckSafe — 小口の有高チェックが売上金取引を調整していた
 
 #### 不具合の内容
 
-小口タブの「有高チェック」（`CheckSafeUseCase`）は、帳簿額に**合計残高**（業者＋小口）を使い、差額の調整を**業者取引**（`VendorTransaction.CreateSafeAdjustment`）に記録していた。
-画面は小口残高を帳簿額として表示するため、画面どおりに数えて登録しても業者残高分の差額が出て、業者残高が減っていた。
+小口タブの「有高チェック」（`CheckSafeUseCase`）は、帳簿額に**合計残高**（売上金＋小口）を使い、差額の調整を**売上金取引**（`VendorTransaction.CreateSafeAdjustment`）に記録していた。
+画面は小口残高を帳簿額として表示するため、画面どおりに数えて登録しても売上金残高分の差額が出て、売上金残高が減っていた。
 
 ```
 例: 業者 48,000円 / 小口 17,100円 の金庫で 15,000円 を数えて登録
-  帳簿 65,100円（合計）→ 差額 −50,100円 → 業者取引に調整 → 業者残高 −2,100円
+  帳簿 65,100円（合計）→ 差額 −50,100円 → 売上金取引に調整 → 売上金残高 −2,100円
 ```
 
 修正内容の編集（`UpdatePettyCashDenominationCheckUseCase`）も、帳簿額に合計残高を使っていた。
@@ -273,7 +273,7 @@ if (Status == PrepBagStatus.Cancelled)
 
 | テスト観点 | テストケース名 | 層 |
 |---|---|---|
-| 帳簿額は小口残高（業者残高を含まない） | `帳簿額は小口残高で業者残高を含まない` | App |
+| 帳簿額は小口残高（売上金残高を含まない） | `帳簿額は小口残高で売上金残高を含まない` | App |
 | 差額は小口取引に調整として保存 | `差額ありなら小口取引に調整が保存される` | App |
 | 修正時の帳簿額も小口残高 | `修正時の帳簿額も小口残高になる` | App |
 | 調整取引の生成（プラス / マイナス / ゼロは例外） | `CreateAdjustment_プラス差額` / `CreateAdjustment_マイナス差額` / `CreateAdjustment_差額ゼロは例外` | Domain |

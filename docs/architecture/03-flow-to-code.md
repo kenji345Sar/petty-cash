@@ -14,19 +14,19 @@
 | 売上バッグ | CashBag (BAG-XXX) | レジから回収した現金の束 |
 | 準備バッグ | PrepBag | 複数の売上バッグをまとめて業者に渡す袋 |
 | 有高チェック | DenominationCheck | 実際の現金を数えて帳簿残高と照合する作業 |
-| 業者残高 | vendorBalance | 両替金・売上バッグの収支合計 |
+| 売上金残高 | vendorBalance | 両替金・売上バッグの収支合計 |
 | 小口残高 | pettyCashBalance | 小口現金の収支合計 |
 
 ---
 
-## 業者管理の流れ
+## 売上金管理の流れ
 
 ### シナリオ1: 両替金バッグを作って金庫に入れる
 
 ```
 【業務】レジに持っていく両替金を金庫に入金する
 
-【画面】業者タブ → 「両替金追加」ボタン → 金額・備考を入力 → 登録
+【画面】売上金タブ → 「両替金追加」ボタン → 金額・備考を入力 → 登録
 
 【API】POST /api/bags/deposit
 
@@ -36,7 +36,7 @@ BagsController.Deposit()
 DepositBagUseCase.ExecuteAsync()
     ├── ChangeBag.CreateDeposit()          … バッグと入金取引を同時生成（Domain層）
     ├── sequenceNumberService.AssignAsync() … 通し番号を採番
-    ├── balanceService.AssignBalanceAsync() … 新しい業者残高を計算して取引行にセット
+    ├── balanceService.AssignBalanceAsync() … 新しい売上金残高を計算して取引行にセット
     ├── bagRepository.AddAsync()           … DB保存
     └── unitOfWork.SaveChangesAsync()      … コミット
 
@@ -52,7 +52,7 @@ DepositBagUseCase.ExecuteAsync()
 ```
 【業務】金庫内の両替金バッグをレジへ持っていく
 
-【画面】業者タブ → 両替金バッグ一覧の「移動」ボタン
+【画面】売上金タブ → 両替金バッグ一覧の「移動」ボタン
 
 【API】POST /api/bags/{id}/move
 
@@ -63,7 +63,7 @@ MoveBagToRegisterUseCase.ExecuteAsync()
     ├── bagRepository.GetByIdAsync()       … バッグを取得
     ├── bag.MoveToRegister()               … 状態変更＋出金取引生成（Domain層）
     ├── sequenceNumberService.AssignAsync()
-    ├── balanceService.AssignBalanceAsync() … 出金後の業者残高を計算して取引行にセット
+    ├── balanceService.AssignBalanceAsync() … 出金後の売上金残高を計算して取引行にセット
     ├── bagRepository.UpdateAsync()
     └── unitOfWork.SaveChangesAsync()
 
@@ -79,7 +79,7 @@ MoveBagToRegisterUseCase.ExecuteAsync()
 ```
 【業務】レジの現金を売上バッグに入れて金庫へ
 
-【画面】業者タブ → 「売上バッグ追加」ボタン → 金額・備考を入力 → 登録
+【画面】売上金タブ → 「売上バッグ追加」ボタン → 金額・備考を入力 → 登録
 
 【API】POST /api/cashbags/deposit
 
@@ -105,7 +105,7 @@ DepositCashBagUseCase.ExecuteAsync()
 ```
 【業務】複数の売上バッグを1つにまとめて業者引き渡し準備をする
 
-【画面】業者タブ → 売上バッグ一覧でチェック → 「CashBag→準備Bag」ボタン
+【画面】売上金タブ → 売上バッグ一覧でチェック → 「CashBag→準備Bag」ボタン
 
 【API】POST /api/prepbags
 
@@ -129,9 +129,9 @@ CreatePrepBagUseCase.ExecuteAsync()
 ### シナリオ5: 準備バッグを業者に引き渡す（出金）
 
 ```
-【業務】準備バッグを銀行・業者に渡して業者残高から差し引く
+【業務】準備バッグを銀行・業者に渡して売上金残高から差し引く
 
-【画面】業者タブ → 準備バッグ一覧の「引渡」ボタン
+【画面】売上金タブ → 準備バッグ一覧の「引渡」ボタン
 
 【API】POST /api/prepbags/{id}/handover
 
@@ -159,7 +159,7 @@ HandOverPrepBagUseCase.ExecuteAsync()
 【業務】バッグの中身を実際に数えて、登録金額と一致するか確認する
         差額があれば帳簿を自動調整する
 
-【画面】業者タブ → バッグ行の「有高」ボタン → 金種を入力 → 登録
+【画面】売上金タブ → バッグ行の「有高」ボタン → 金種を入力 → 登録
 
 【API】POST /api/denominationchecks/changebag/{bagId}   （両替金バッグ）
        POST /api/denominationchecks/cashbag/{bagId}    （売上バッグ）
@@ -229,7 +229,7 @@ CreatePettyCashTransactionUseCase.ExecuteAsync()
 
 【コード】
 CheckSafeUseCase.ExecuteAsync()
-    ├── safeRepository.GetByIdAsync()      … 小口の帳簿残高を取得（業者残高は含めない）
+    ├── safeRepository.GetByIdAsync()      … 小口の帳簿残高を取得（売上金残高は含めない）
     ├── PettyCashDenominationCheck.CreateForSafe() … チェック記録を生成
     ├── sequenceNumberService.AssignAsync()
     ├── checkRepository.AddAsync()
@@ -266,7 +266,7 @@ GetPettyCashDashboardUseCase
     ├── petty_cash_transactions  → 出納帳テーブル
     └── safe_denomination_checks → 有高チェック履歴
 
-【業者タブを開く】
+【売上金タブを開く】
 GET /api/vendor-dashboard?safeId=X
     ↓
 GetVendorDashboardUseCase
@@ -281,7 +281,7 @@ GetVendorDashboardUseCase
 GET /api/safes
     ↓
 GetSafesUseCase
-    └── safes ＋ 各取引テーブルの最新行 → 各金庫の残高（業者・小口）
+    └── safes ＋ 各取引テーブルの最新行 → 各金庫の残高（売上金・小口）
 ```
 
 ---

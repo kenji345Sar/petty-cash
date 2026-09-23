@@ -123,7 +123,7 @@ export function VendorTab({ safeId, onSafeUpdate }: Props) {
     <div>
       {/* ===== 期間フィルタ（全体共通） ===== */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ margin: 0 }}>業者管理</h2>
+        <h2 style={{ margin: 0 }}>売上金管理</h2>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <button className="btn-period" onClick={() => { setMonthOffset(o => o - 1); setPeriod("month"); }}>«</button>
           <span style={{ minWidth: 96, textAlign: "center", fontWeight: "bold" }}>{monthLabel}</span>
@@ -155,9 +155,9 @@ export function VendorTab({ safeId, onSafeUpdate }: Props) {
         </>
       )}
 
-      {/* ===== 業者出納帳 ===== */}
+      {/* ===== 売上金出納帳 ===== */}
       <div style={{ marginTop: 40 }}>
-        <h2 style={{ margin: 0, marginBottom: 12 }}>業者出納帳</h2>
+        <h2 style={{ margin: 0, marginBottom: 12 }}>売上金出納帳</h2>
         <table>
           <thead>
             <tr>

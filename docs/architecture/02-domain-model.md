@@ -28,7 +28,7 @@ Domain を読めば「このシステムが何を守っているか」がわか�
 | ルール | コード |
 |-------|-------|
 | 金庫名は必須 | `if (string.IsNullOrWhiteSpace(name)) throw` |
-| 残高は業者・小口に分かれる | `VendorBalance` / `PettyCashBalance` の2プロパティ |
+| 残高は売上金・小口に分かれる | `VendorBalance` / `PettyCashBalance` の2プロパティ |
 | 残高を超える出金はできない | `EnsureCanWithdraw()` で `amount > CurrentBalance` を弾く |
 
 ```csharp

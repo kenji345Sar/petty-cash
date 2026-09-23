@@ -16,7 +16,7 @@
 | GET | `/api/petty-cash-transactions?safeId=` | 小口取引一覧 |
 | POST | `/api/petty-cash-transactions` | 小口入出金登録 |
 
-## 業者 — 両替金バッグ（ChangeBags）
+## 売上金 — 両替金バッグ（ChangeBags）
 
 | メソッド | エンドポイント | 用途 |
 |---|---|---|
@@ -24,14 +24,14 @@
 | POST | `/api/bags/deposit` | 両替金バッグ入金 |
 | POST | `/api/bags/{id}/move` | レジへ移動 |
 
-## 業者 — 売上バッグ（CashBags）
+## 売上金 — 売上バッグ（CashBags）
 
 | メソッド | エンドポイント | 用途 |
 |---|---|---|
 | GET | `/api/cashbags?safeId=` | 売上バッグ一覧 |
 | POST | `/api/cashbags/deposit` | 売上バッグ入金 |
 
-## 業者 — 準備バッグ（PrepBags）
+## 売上金 — 準備バッグ（PrepBags）
 
 | メソッド | エンドポイント | 用途 |
 |---|---|---|
@@ -40,11 +40,11 @@
 | POST | `/api/prepbags/{id}/handover` | 業者へ引渡 |
 | POST | `/api/prepbags/{id}/cancel` | 取消（CashBagを元に戻す） |
 
-## 業者 — 取引（VendorTransactions）
+## 売上金 — 取引（VendorTransactions）
 
 | メソッド | エンドポイント | 用途 |
 |---|---|---|
-| GET | `/api/vendor-transactions?safeId=` | 業者取引一覧 |
+| GET | `/api/vendor-transactions?safeId=` | 売上金取引一覧 |
 
 ## 有高チェック（DenominationChecks）
 
@@ -52,7 +52,7 @@
 
 | メソッド | エンドポイント | 用途 |
 |---|---|---|
-| GET | `/api/denominationchecks/vendor?safeId=` | 業者側チェック一覧 |
+| GET | `/api/denominationchecks/vendor?safeId=` | 売上金側チェック一覧 |
 | GET | `/api/denominationchecks/safe?safeId=` | 小口側チェック一覧 |
 
 ### 新規チェック
@@ -68,7 +68,7 @@
 
 | メソッド | エンドポイント | 用途 |
 |---|---|---|
-| PUT | `/api/denominationchecks/vendor/{id}` | 業者側チェック修正 |
+| PUT | `/api/denominationchecks/vendor/{id}` | 売上金側チェック修正 |
 | PUT | `/api/denominationchecks/safe/{id}` | 小口側チェック修正 |
 
 合計 **21エンドポイント**

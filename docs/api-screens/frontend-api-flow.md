@@ -1,14 +1,14 @@
 # フロントエンド → API 呼び出しフロー
 
-## 業者タブ（VendorTab）の例
+## 売上金タブ（VendorTab）の例
 
 ### タブ表示時（データ取得）
 
-業者タブを開いた瞬間に `Promise.all` で5つのGETを**並列**に呼び出す。
+売上金タブを開いた瞬間に `Promise.all` で5つのGETを**並列**に呼び出す。
 全部返ってきたら画面を描画する。
 
 ```
-業者タブ表示 (VendorTab.loadData)
+売上金タブ表示 (VendorTab.loadData)
   │
   ├─→ GET /api/bags?safeId=           → BagsController        → GetBagsUseCase
   ├─→ GET /api/cashbags?safeId=       → CashBagsController    → GetCashBagsUseCase
@@ -48,7 +48,7 @@
 | 有高ボタン（新規チェック） | POST `/api/denominationchecks/prepbag/{id}` | DenominationChecksController |
 | 有高行クリック（修正） | PUT `/api/denominationchecks/vendor/{id}` | DenominationChecksController |
 
-#### 業者出納帳（VendorTab 内）
+#### 売上金出納帳（VendorTab 内）
 
 | 操作 | API | コントローラー |
 |---|---|---|
@@ -61,7 +61,7 @@
 
 ## コントローラー × タブ対応表
 
-| コントローラー | 小口タブ | 業者タブ |
+| コントローラー | 小口タブ | 売上金タブ |
 |---|---|---|
 | SafesController | (ヘッダー) | (ヘッダー) |
 | PettyCashTransactionsController | o | - |

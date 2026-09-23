@@ -12,7 +12,7 @@ PettyCash.Application（アプリケーション層）
   └── UseCases/Queries/      … 出納帳読み込み用インターフェース（QueryService）
 
 PettyCash.Domain（ドメイン層）
-  ├── Vendor/                … 業者ドメイン（エンティティ、リポジトリIF）
+  ├── Vendor/                … 売上金ドメイン（エンティティ、リポジトリIF）
   ├── PettyCash/             … 小口ドメイン（エンティティ、リポジトリIF）
   ├── Safe/                  … 金庫集約
   └── Shared/                … 共有（ドメインサービスIF、値オブジェクト）
@@ -80,7 +80,7 @@ UseCaseが全てを**つなぐ**役割。ドメインもインフラも直接は
 
 ```
 エンティティ:
-  VendorTransaction.cs      … 業者取引のルール（ファクトリメソッド等）
+  VendorTransaction.cs      … 売上金取引のルール（ファクトリメソッド等）
   PettyCashTransaction.cs   … 小口取引のルール
   Safe.cs                   … 金庫（残高チェック等）
   ChangeBag.cs              … 両替金バッグ（状態遷移等）
@@ -118,7 +118,7 @@ UseCaseが全てを**つなぐ**役割。ドメインもインフラも直接は
   SequenceNumberService.cs  … ISequenceNumberService の実装（SQLでMAX+1取得）
 
 QueryService実装:
-  VendorLedgerQueryService.cs      … vendor_transactions から業者出納帳を取得
+  VendorLedgerQueryService.cs      … vendor_transactions から売上金出納帳を取得
   PettyCashLedgerQueryService.cs   … petty_cash_transactions から小口出納帳を取得
 
 DbContext:
@@ -251,9 +251,9 @@ var useCase = new CreatePettyCashTransactionUseCase(
 | change_bags | 両替金バッグ | 読み書き |
 | cash_bags | 売上バッグ | 読み書き |
 | prep_bags | 準備バッグ | 読み書き |
-| vendor_transactions | 業者取引（残高は各行の balance 列） | 読み書き |
+| vendor_transactions | 売上金取引（残高は各行の balance 列） | 読み書き |
 | petty_cash_transactions | 小口取引（残高は各行の balance 列） | 読み書き |
-| vendor_denomination_checks | 業者有高チェック記録 | 読み書き |
+| vendor_denomination_checks | 売上金有高チェック記録 | 読み書き |
 | safe_denomination_checks | 小口有高チェック記録 | 読み書き |
 
 残高の持ち方は [05-balance-design.md](05-balance-design.md) を参照。

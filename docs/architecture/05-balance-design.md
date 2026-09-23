@@ -72,11 +72,11 @@ SELECT
 
 ## 残高を読む場所
 
-金庫を取得するときに、`SafeRepository.LoadBalances()` が業者・小口それぞれの取引テーブルから**最新1行の `balance`** を読み、`safe.SetBalances()` でセットする。
+金庫を取得するときに、`SafeRepository.LoadBalances()` が売上金・小口それぞれの取引テーブルから**最新1行の `balance`** を読み、`safe.SetBalances()` でセットする。
 
 | 呼び出し元 | 用途 |
 |---|---|
-| `GetSafesUseCase` | ヘッダーの金庫一覧（各金庫の業者・小口残高） |
+| `GetSafesUseCase` | ヘッダーの金庫一覧（各金庫の売上金・小口残高） |
 | `GetPettyCashDashboardUseCase` / `GetVendorDashboardUseCase` | タブを開いたときの残高表示 |
 | `CheckSafeUseCase` | 小口の有高チェックの帳簿額（小口残高） |
 | `CreatePettyCashTransactionUseCase` / `Reverse*TransactionUseCase` | 出金前の残高確認（`EnsureCanWithdraw`） |

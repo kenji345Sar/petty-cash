@@ -10,7 +10,7 @@
 ## 例：両替金バッグをレジへ移動する場合
 
 ### ユーザー操作
-業者タブ → 両替金バッグ一覧 → 「レジへ移動」ボタンをクリック
+売上金タブ → 両替金バッグ一覧 → 「レジへ移動」ボタンをクリック
 
 ### 発生するHTTPリクエスト（合計6回）
 
@@ -25,7 +25,7 @@
        ▼
   ② GET /api/bags?safeId=1            ← 両替金バッグ一覧の再取得
   ③ GET /api/cashbags?safeId=1        ← 売上バッグ一覧の再取得
-  ④ GET /api/vendor-transactions?safeId=1  ← 業者出納帳の再取得
+  ④ GET /api/vendor-transactions?safeId=1  ← 売上金出納帳の再取得
   ⑤ GET /api/denominationchecks/vendor?safeId=1  ← 有高チェック履歴の再取得
   ⑥ GET /api/prepbags?safeId=1        ← 準備バッグ一覧の再取得
        │

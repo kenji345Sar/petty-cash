@@ -2,7 +2,7 @@
 
 > 金庫（店舗）の小口現金の入出金と有高チェックを管理する画面。
 > 実装: `frontend/src/components/PettyCashTab.tsx`
-> 共通概念（金種・有高チェック・赤伝・残高・期間フィルタ）は [common.md](./02-common.md) を参照。
+> 共通概念（金種・有高チェック・赤伝・残高・期間フィルタ）は [02-common.md](./02-common.md) を参照。
 
 ## 1. 画面構成
 

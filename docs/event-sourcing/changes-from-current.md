@@ -21,7 +21,7 @@
 |---|---|---|
 | `DomainEvents` | `domain_events` | イベントストア（JSONB の payload） |
 | `SafeBalances` | `safe_balances` | 残高（Read Model） |
-| `VendorLedgerEntries` | `vendor_ledger_view` | 業者出納帳（Read Model） |
+| `VendorLedgerEntries` | `vendor_ledger_view` | 売上金出納帳（Read Model） |
 | `PettyCashLedgerEntries` | `petty_cash_ledger_view` | 小口出納帳（Read Model） |
 
 ---
@@ -106,7 +106,7 @@ ES+CQRS:
 | 読むもの | 現行 | ES+CQRS |
 |---|---|---|
 | 残高（ヘッダー・金庫一覧） | 取引テーブルの最新行の `balance`（`SafeRepository`） | `safe_balances` |
-| 業者出納帳 | `vendor_transactions`（`VendorLedgerQueryService`） | `vendor_ledger_view` |
+| 売上金出納帳 | `vendor_transactions`（`VendorLedgerQueryService`） | `vendor_ledger_view` |
 | 小口出納帳 | `petty_cash_transactions`（`PettyCashLedgerQueryService`） | `petty_cash_ledger_view` |
 
 ES+CQRS では **すべて Read Model テーブルからのみ読む（取引テーブルは読まない）**。

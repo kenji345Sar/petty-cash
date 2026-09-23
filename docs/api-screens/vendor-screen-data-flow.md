@@ -1,4 +1,4 @@
-# 業者管理画面 — 表示データの出どころ
+# 売上金管理画面 — 表示データの出どころ
 
 画面に表示される各要素が、どのソースファイル・DB テーブルから来ているかを追う。
 
@@ -30,7 +30,7 @@ VendorDashboardDto {
     Safe              ← 金庫情報 + 残高
     Bags              ← 両替金バッグ一覧
     CashBags          ← 売上バッグ一覧
-    Transactions      ← 業者出納帳
+    Transactions      ← 売上金出納帳
     DenominationChecks← 有高チェック履歴
     PrepBags          ← 準備バッグ一覧
 }
@@ -54,13 +54,13 @@ VendorTab.tsx  loadData()
 ## ヘッダー（金庫名・残高バッジ）
 
 ```
-表示: 名古屋  業者: 261,000円  小口: 2,600円
+表示: 名古屋  売上金: 261,000円  小口: 2,600円
 ```
 
 | 表示 | フロント | バックエンド | DB |
 |-----|---------|------------|-----|
 | 金庫名「名古屋」 | `App.tsx` の `selectedSafe.name` | SafeDto.Name | `safes.name` |
-| 業者: 261,000円 | `App.tsx` の `selectedSafe.vendorBalance` | SafeDto.VendorBalance | `safe_balances.vendor_balance` |
+| 売上金: 261,000円 | `App.tsx` の `selectedSafe.vendorBalance` | SafeDto.VendorBalance | `safe_balances.vendor_balance` |
 | 小口: 2,600円 | `App.tsx` の `selectedSafe.pettyCashBalance` | SafeDto.PettyCashBalance | `safe_balances.petty_cash_balance` |
 
 **取得経路（残高）:**
@@ -161,7 +161,7 @@ GetPrepBagsUseCase.ExecuteAsync(safeId)
 
 ---
 
-## 業者出納帳
+## 売上金出納帳
 
 ```
 表示: 番号  種別  金額  残高  摘要  バッグ  日時

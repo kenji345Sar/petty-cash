@@ -149,4 +149,4 @@ class GetVendorDashboardUseCase {
 | インターフェース | 具体クラス | 役割 |
 |---------------|---------|------|
 | `ISafeRepository` | `SafeRepository` | 金庫のDB操作 |
-| `IVendorLedgerQueryService` | `VendorLedgerQueryService` | 業者出納帳の取得 |
+| `IVendorLedgerQueryService` | `VendorLedgerQueryService` | 売上金出納帳の取得 |

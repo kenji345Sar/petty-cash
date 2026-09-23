@@ -1,6 +1,6 @@
 # 画面からコードを調査する手順
 
-業者管理画面を例に、画面表示 → React → API → バックエンド → DB まで一本で追う。
+売上金管理画面を例に、画面表示 → React → API → バックエンド → DB まで一本で追う。
 
 ---
 
@@ -55,7 +55,7 @@
 ### 方法B: 画面上の文字列で検索
 
 ```
-Ctrl+Shift+F → 「業者管理」と入力
+Ctrl+Shift+F → 「売上金管理」と入力
 → frontend/src/components/VendorTab.tsx がヒット
 ```
 
@@ -68,7 +68,7 @@ F12 → `Components` タブ → 画面の要素をクリック → 右側にコ�
 ```tsx
 // frontend/src/App.tsx
 {activeTab === "vendor" && <VendorTab safeId={...} />}
-//                          ↑ 業者タブ = VendorTab.tsx
+//                          ↑ 売上金タブ = VendorTab.tsx
 ```
 
 ---
@@ -171,7 +171,7 @@ Network タブを使うとどの API が呼ばれているか実際に見える�
 ```
 Response の中身:
 {
-  "safe": { "name": "名古屋", "vendorBalance": 261000 }  ← 画面の「業者: 261,000円」
+  "safe": { "name": "名古屋", "vendorBalance": 261000 }  ← 画面の「売上金: 261,000円」
   "bags": [{ "totalAmount": 200000, "status": "InSafe" }] ← 画面の「CA-001 200,000円 金庫内」
 }
 ```

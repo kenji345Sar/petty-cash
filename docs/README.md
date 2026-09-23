@@ -24,9 +24,9 @@
 |---|---|
 | [README.md](spec/README.md) | 全体像・画面マップ・用語・読む順番 |
 | [01-business-flow.md](spec/01-business-flow.md) | 業務の流れ（コードの説明なし） |
-| [02-common.md](spec/02-common.md) | 小口・業者で共通する概念 |
+| [02-common.md](spec/02-common.md) | 小口・売上金で共通する概念 |
 | [03-petty-cash.md](spec/03-petty-cash.md) | 小口タブの仕様 |
-| [04-vendor.md](spec/04-vendor.md) | 業者タブの仕様 |
+| [04-vendor.md](spec/04-vendor.md) | 売上金タブの仕様 |
 
 ## architecture/ — DDD でどう実現しているか
 
@@ -48,7 +48,7 @@
 | [display-logic.md](api-screens/display-logic.md) | 画面の表示ロジック |
 | [frontend-api-flow.md](api-screens/frontend-api-flow.md) | フロントエンド → API 呼び出しの概要 |
 | [frontend-api-flow-detail.md](api-screens/frontend-api-flow-detail.md) | 同上の詳細（1操作の HTTP リクエストを追う） |
-| [vendor-screen-data-flow.md](api-screens/vendor-screen-data-flow.md) | 業者管理画面の表示データの出どころ |
+| [vendor-screen-data-flow.md](api-screens/vendor-screen-data-flow.md) | 売上金管理画面の表示データの出どころ |
 | [how-to-investigate-screen.md](api-screens/how-to-investigate-screen.md) | 画面からコードを調査する手順 |
 
 ## csharp/ — C# 学習ノート
