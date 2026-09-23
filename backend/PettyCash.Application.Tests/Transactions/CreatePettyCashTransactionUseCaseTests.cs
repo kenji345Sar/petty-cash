@@ -35,7 +35,7 @@ public class CreatePettyCashTransactionUseCaseTests
     public async Task 出金時に残高チェックが行われる()
     {
         var safe = Safe.Create("テスト金庫", "", DateTime.UtcNow);
-        safe.SetBalances(3000, 2000); // 合計5000
+        safe.SetBalances(3000, 5000); // 小口は5000
         _safeRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(safe);
 
         var dto = new CreatePettyCashTransactionRequestDto(1, "Withdrawal", 3000, "出金", DateTime.UtcNow);
@@ -46,10 +46,10 @@ public class CreatePettyCashTransactionUseCaseTests
     }
 
     [Fact]
-    public async Task 出金時に残高不足なら例外()
+    public async Task 出金時に小口残高を超えるなら例外_売上金は算入しない()
     {
         var safe = Safe.Create("テスト金庫", "", DateTime.UtcNow);
-        safe.SetBalances(1000, 1000); // 合計2000
+        safe.SetBalances(48000, 2000); // 合計50000だが小口は2000
         _safeRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(safe);
 
         var dto = new CreatePettyCashTransactionRequestDto(1, "Withdrawal", 3000, "出金", DateTime.UtcNow);

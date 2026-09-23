@@ -29,18 +29,21 @@ Domain を読めば「このシステムが何を守っているか」がわか�
 |-------|-------|
 | 金庫名は必須 | `if (string.IsNullOrWhiteSpace(name)) throw` |
 | 残高は売上金・小口に分かれる | `VendorBalance` / `PettyCashBalance` の2プロパティ |
-| 残高を超える出金はできない | `EnsureCanWithdraw()` で `amount > CurrentBalance` を弾く |
+| その出納の残高を超える出金はできない | `EnsureCanWithdrawPettyCash()` / `EnsureCanWithdrawVendor()` で、それぞれの残高を超える額を弾く |
 
 ```csharp
-public void EnsureCanWithdraw(int amount)
-{
-    if (amount > CurrentBalance)
-        throw new InvalidOperationException(
-            $"残高不足です。現在残高: {CurrentBalance}円、出金額: {amount}円");
-}
+// 小口の出金は小口残高で判定する（売上金残高は算入しない）
+public void EnsureCanWithdrawPettyCash(int amount)
+    => EnsureCanWithdraw(amount, PettyCashBalance, "小口残高");
+
+// 売上金の出金は売上金残高で判定する
+public void EnsureCanWithdrawVendor(int amount)
+    => EnsureCanWithdraw(amount, VendorBalance, "売上金残高");
 ```
 
-UseCase は `safe.EnsureCanWithdraw(amount)` を呼ぶだけ。
+合計残高（`CurrentBalance`）は画面の表示にだけ使い、出金の判定には使わない。小口現金と売上金は別の出納なので、片方の残高でもう片方の出金を通してはいけない。
+
+UseCase は `safe.EnsureCanWithdrawPettyCash(amount)` のように、その出納に合うほうを呼ぶだけ。
 「残高チェックのロジック」はドメインが持っている。
 
 ---
@@ -106,7 +109,7 @@ PrepBag.Create()             → バッグなし・重複バッグを弾く
 PrepBag.Cancel()             → 引渡済みの取消を弾く
 PrepBag.MarkHandedOver()     → 二重引渡を弾く
 PettyCashTransaction.CreateAdjustment() → 差額ゼロの調整取引を弾く
-Safe.EnsureCanWithdraw()     → 残高超過の出金を弾く
+Safe.EnsureCanWithdrawPettyCash() / EnsureCanWithdrawVendor() → その出納の残高を超える出金を弾く
 Safe.Create()                → 名前なしの金庫作成を弾く
 ```
 
@@ -150,7 +153,7 @@ UI の流れの違い（金種表で金額をセットするか、有高チェ�
 | `DenominationInput.tsx` | 金種表。合計を金額欄にセットして戻る |
 | `DenominationCheckForm.tsx` | 有高チェック。帳簿との差額を表示し、API で保存する |
 
-`DenominationInput.tsx` は金種の定義を `frontend/src/shared/denomination.ts`（`DENOM_ITEMS`）から読むが、`DenominationCheckForm.tsx` は同じ一覧をファイル内に持っている（重複。[issue.md](../issue.md) の 3.）。
+`DenominationInput.tsx` は金種の定義を `frontend/src/shared/denomination.ts`（`DENOM_ITEMS`）から読むが、`DenominationCheckForm.tsx` は同じ一覧をファイル内に持っている（重複。[issue.md](../issue.md) の 2.）。
 
 ---
 

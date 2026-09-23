@@ -140,7 +140,7 @@ var useCase = new CreatePettyCashTransactionUseCase(
 ## 5. 変わらないもの
 
 - **残高は取引行に保存する**（`BalanceService.AssignBalanceAsync`）。Read Model はその値を読みやすい形に写すだけで、残高の計算方法は変わらない。
-- **業務ルールはドメイン層にある**（`PettyCashTransaction.Create`、`Safe.EnsureCanWithdraw` など）。ES+CQRS は保存と読み込みの仕組みを変えるもので、業務の判断には影響しない。
+- **業務ルールはドメイン層にある**（`PettyCashTransaction.Create`、`Safe.EnsureCanWithdrawPettyCash` など）。ES+CQRS は保存と読み込みの仕組みを変えるもので、業務の判断には影響しない。
 
 ## 6. 以前の実装で追加していた制約
 

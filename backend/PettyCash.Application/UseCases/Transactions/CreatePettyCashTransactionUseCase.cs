@@ -37,7 +37,7 @@ public class CreatePettyCashTransactionUseCase(
         {
             var safe = await safeRepository.GetByIdAsync(dto.SafeId)
                 ?? throw new KeyNotFoundException($"金庫(ID={dto.SafeId})が見つかりません。");
-            safe.EnsureCanWithdraw(transaction.Amount);
+            safe.EnsureCanWithdrawPettyCash(transaction.Amount);
         }
 
         await sequenceNumberService.AssignAsync(transaction);

@@ -30,7 +30,7 @@ public class ReversePettyCashTransactionUseCase(
         {
             var safe = await safeRepository.GetByIdAsync(original.SafeId)
                 ?? throw new KeyNotFoundException($"金庫(ID={original.SafeId})が見つかりません。");
-            safe.EnsureCanWithdraw(reversal.Amount);
+            safe.EnsureCanWithdrawPettyCash(reversal.Amount);
         }
 
         await sequenceNumberService.AssignAsync(reversal);

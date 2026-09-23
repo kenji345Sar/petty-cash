@@ -12,11 +12,11 @@
 | 項目 | 値 |
 |---|---|
 | 対象範囲 | Domain層（Entity / ValueObject） + Application層（UseCase） |
-| Domainテスト総数 | **61件** |
+| Domainテスト総数 | **64件** |
 | Applicationテスト総数 | **57件** |
-| 合計 | **118件** |
+| 合計 | **121件** |
 | 今回追加 | **+46件**（Domain +11 / Application +35） |
-| バグ修正 | PrepBag.MarkHandedOver — Cancelled 状態から引渡できた不具合を修正（[4.1](#41-prepbagmarkhandedover--cancelled-状態からの引渡)）<br>小口の有高チェックが合計残高と比べ、調整を売上金取引に記録していた不具合を修正（4.2） |
+| バグ修正 | PrepBag.MarkHandedOver — Cancelled 状態から引渡できた不具合を修正（[4.1](#41-prepbagmarkhandedover--cancelled-状態からの引渡)）<br>小口の有高チェックが合計残高と比べ、調整を売上金取引に記録していた不具合を修正（4.2）<br>出金の残高チェックが合計残高だった不具合を修正（4.3） |
 | 仕様未確定として残した項目 | 2件（詳細は [Section 5](#5-仕様未確定として残した項目)） |
 
 ---
@@ -183,9 +183,11 @@
 |---|---|---|---|
 | 名前は必須 | `Create_名前が必須` | Domain | ✅ |
 | VendorBalance + PettyCashBalance = CurrentBalance | `SetBalances_合計残高が正しい` | Domain | ✅ |
-| 残高以内の出金は通る | `EnsureCanWithdraw_残高内なら例外なし` | Domain | ✅ |
-| 残高超過は例外 | `EnsureCanWithdraw_残高超過は例外` | Domain | ✅ |
-| 0円以下の出金は例外 | `EnsureCanWithdraw_ゼロ以下は例外` | Domain | ✅ |
+| 小口残高以内の出金は通る | `EnsureCanWithdrawPettyCash_小口残高内なら例外なし` | Domain | ✅ |
+| 売上金があっても小口残高超過は例外 | `EnsureCanWithdrawPettyCash_売上金があっても小口残高超過は例外` | Domain | ✅ |
+| 売上金残高以内の出金は通る | `EnsureCanWithdrawVendor_売上金残高内なら例外なし` | Domain | ✅ |
+| 小口があっても売上金残高超過は例外 | `EnsureCanWithdrawVendor_小口があっても売上金残高超過は例外` | Domain | ✅ |
+| 0円以下の出金は例外 | `EnsureCanWithdrawPettyCash_ゼロ以下は例外` / `EnsureCanWithdrawVendor_ゼロ以下は例外` | Domain | ✅ |
 
 ### 棚卸チェック（CheckSafe / CheckCashBag / CheckChangeBag）
 
@@ -279,6 +281,44 @@ if (Status == PrepBagStatus.Cancelled)
 | 調整取引の生成（プラス / マイナス / ゼロは例外） | `CreateAdjustment_プラス差額` / `CreateAdjustment_マイナス差額` / `CreateAdjustment_差額ゼロは例外` | Domain |
 
 `VendorTransaction` の `CreateSafeAdjustment_*` テスト2件は、メソッドの削除に合わせて削除した。
+
+### 4.3 Safe.EnsureCanWithdraw — 出金チェックが合計残高で判定していた
+
+#### どの業務が、どう変わったか
+
+| 業務 | 画面・操作 | 修正前の動き | 修正後の動き |
+|---|---|---|---|
+| 小口現金の出金 | 小口タブ →「入出金登録」→ 出金 | 小口 2,000円でも、売上金が 48,000円あれば 3,000円の出金が通り、小口残高が −1,000円になった | 小口残高を超える出金は「残高不足です。小口残高: 2,000円」で弾かれる |
+| 小口の赤伝 | 小口タブ → 入金行の「赤伝」 | 取り消しは出金になるため、同じく売上金の残高で通っていた | 小口残高の範囲内でのみ赤伝できる |
+| 売上金の赤伝 | 売上金タブ → 入金行の「赤伝」 | 小口残高を当てにして通ることがあった | 売上金残高の範囲内でのみ赤伝できる |
+| バッグの移動・引渡 | 売上金タブ → バッグの「移動」「引渡」 | 残高チェックなし | 変えていない（下の「残した課題」） |
+
+修正後の仕様は [spec/03-petty-cash.md](./spec/03-petty-cash.md) の「6. 業務ルール」と [spec/04-vendor.md](./spec/04-vendor.md) の「6.0」に記載。
+
+#### 不具合の内容
+
+出金できるかどうかの判定（`Safe.EnsureCanWithdraw`）が、小口残高でも売上金残高でもなく、**合計残高**（売上金＋小口）と比べていた。
+小口現金と売上金は別の出納なので、片方の残高でもう片方の出金が通ってしまっていた。
+
+```
+例: 売上金 48,000円 / 小口 2,000円 の金庫
+  小口から 3,000円 出金 → 合計 50,000円 と比べるので通る → 小口残高がマイナスになる
+```
+
+#### 修正内容
+
+- `EnsureCanWithdraw` を `EnsureCanWithdrawPettyCash`（小口残高で判定）と `EnsureCanWithdrawVendor`（売上金残高で判定）に分けた。合計残高を見るメソッドは残していない
+- 呼び出し側: 小口の入出金登録・小口の赤伝 → 小口用、売上金の赤伝 → 売上金用
+- エラーメッセージを「小口残高」「売上金残高」と書き分けた
+
+#### 追加・変更したテスト
+
+上記「Safe（金庫）」の表のとおり、小口・売上金それぞれで「残高内は通る」「もう片方の残高があっても超過は例外」「0円以下は例外」を確認している。
+Application 層の `出金時に小口残高を超えるなら例外_売上金は算入しない` でも、UseCase 経由で同じことを保証している。
+
+#### 残した課題
+
+バッグの操作（両替金バッグのレジ移動、準備バッグの引渡）には、今も残高チェックがない。バッグの金額分しか動かないため帳簿上は残高を超えない前提だが、確認はしていない。
 
 ---
 
