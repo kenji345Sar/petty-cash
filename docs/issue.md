@@ -50,40 +50,31 @@ SaveChangesAsync()
 
 ---
 
-## 2. 小口の出金チェックが合計残高で判定している
-
-- **見つけた日**: 2026-09-21
-- **状態**: 未対応（仕様の確認が必要）
-
-### 現象
-
-小口の出金（入出金登録・赤伝）で残高不足を判定する `Safe.EnsureCanWithdraw` が、小口残高ではなく**合計残高**（売上金＋小口）と比べている。
-そのため、小口残高が 15,000円でも、売上金残高が 48,000円あれば 60,000円の出金が通ってしまい、小口残高がマイナスになる。
-
-```csharp
-// backend/PettyCash.Domain/Safe/Safe.cs
-if (amount > CurrentBalance)   // CurrentBalance = VendorBalance + PettyCashBalance
-    throw new InvalidOperationException(...);
-```
-
-### 確認したいこと
-
-- 小口の出金は、小口残高の範囲内に限るべきか（小口の有高チェックと同じ考え方なら、限るべき）
-- 売上金側の出金にも、同じ判定を入れるべきか
-
-### 関連
-
-小口の有高チェックが合計残高と比べていた不具合は、2026-09-21 に修正済み（[test-specification.md](test-specification.md) の 4.2）。これと同じ種類の問題。
-
----
-
-## 3. 金種の一覧が画面側で重複している
+## 2. 金種の一覧が画面側で重複している
 
 - **見つけた日**: 2026-09-22
 - **状態**: 未対応
 
 金種の一覧（1万円〜1円、セット枚数）が、`frontend/src/shared/denomination.ts`（`DENOM_ITEMS`）と `frontend/src/components/DenominationCheckForm.tsx`（`DENOMINATIONS`）の2か所にある。
 金種を変えるときに片方だけ直す事故が起きうる。ドメイン側で `Denomination` を共通にしている理由（[architecture/02-domain-model.md](architecture/02-domain-model.md)）と同じ考え方で、画面側も `DENOM_ITEMS` に一本化するのがよい。
+
+---
+
+## 3. DB に使われていないテーブル・列が残っている
+
+- **見つけた日**: 2026-09-23
+- **状態**: 未対応
+
+現行コードが使っていないものが DB に残っている。ドメインを変えても DB が追従しないため（`Program.cs` は `EnsureCreated()` で、既存テーブルを変更しない）。
+
+| 対象 | 状況 |
+|---|---|
+| `safes.current_balance` 列 | 値も入っている（名古屋 106,345 / 梅田 12,000 / 銀座 0）が、現行コードは `Ignore` していて読み書きしない。残高を金庫に持たせていた頃の名残 |
+| `domain_events` テーブル | 12行。イベントソーシングを削除したときにテーブルだけ残った |
+| `denomination_checks` テーブル | 8行。有高チェックを小口用・売上金用に分ける前のテーブル |
+
+消す前に、入っている値が何なのかを確認する必要がある。
+また、消しても同じことが再発するので、先にスキーマの追従方法（EF Core のマイグレーション導入など）を決めるべき。
 
 ---
 
